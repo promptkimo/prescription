@@ -22,30 +22,14 @@
     
     .hidden-mode { display: none !important; } 
 
-    /* 🔥 純文字質感 Header 排版 (移除圖片，用漸層展現專業感) */
-    .brand-header { 
-      background: linear-gradient(135deg, #06C755 0%, #009933 100%); 
-      padding: 45px 20px 35px; 
-      border-radius: 0 0 25px 25px; /* 只有下方有圓角 */
-      text-align: center; 
-      margin-bottom: 20px; 
-      color: white; 
-      box-shadow: 0 4px 15px rgba(6, 199, 85, 0.2); 
-    }
+    .brand-header { background: linear-gradient(135deg, #06C755 0%, #009933 100%); padding: 45px 20px 35px; border-radius: 0 0 25px 25px; text-align: center; margin-bottom: 20px; color: white; box-shadow: 0 4px 15px rgba(6, 199, 85, 0.2); }
     .brand-title { font-weight: 900; font-size: 2rem; letter-spacing: 2px; margin-bottom: 8px; text-shadow: 0 2px 4px rgba(0,0,0,0.15); } 
     .brand-subtitle { font-size: 0.95rem; opacity: 0.9; margin-bottom: 0; font-weight: 500; letter-spacing: 1px; }
 
-    /* 各個功能頁面的內距 */
     .padded-view { padding: 15px 15px 0 15px; }
 
-    /* 🔥 絕對不會不見的返回按鈕 */
     .back-btn-container { margin-bottom: 15px; }
-    .back-btn { 
-      font-size: 1rem; font-weight: bold; color: #495057; 
-      padding: 8px 18px; background: white; 
-      border-radius: 50px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); 
-      display: inline-flex; align-items: center; border: none; transition: 0.2s;
-    }
+    .back-btn { font-size: 1rem; font-weight: bold; color: #495057; padding: 8px 18px; background: white; border-radius: 50px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); display: inline-flex; align-items: center; border: none; transition: 0.2s; }
     .back-btn:active { transform: scale(0.95); background: #f8f9fa; }
     .back-btn i { font-size: 1.2rem; margin-right: 5px; color: #06C755; }
 
@@ -114,11 +98,8 @@
   </div>
 
   <div id="view-form" class="hidden-mode padded-view">
-    
     <div class="back-btn-container">
-      <button class="back-btn" onclick="goHome()">
-        <i class="bi bi-chevron-left"></i> 返回主畫面
-      </button>
+      <button class="back-btn" onclick="goHome()"><i class="bi bi-chevron-left"></i> 返回主畫面</button>
     </div>
 
     <div class="card p-4 shadow-sm border-0">
@@ -161,11 +142,8 @@
   </div>
 
   <div id="view-bind" class="hidden-mode padded-view">
-    
     <div class="back-btn-container">
-      <button class="back-btn" onclick="goHome()">
-        <i class="bi bi-chevron-left"></i> 返回主畫面
-      </button>
+      <button class="back-btn" onclick="goHome()"><i class="bi bi-chevron-left"></i> 返回主畫面</button>
     </div>
 
     <div class="card p-4 shadow-sm border-0 border-top border-primary border-4">
@@ -186,11 +164,8 @@
   </div>
 
   <div id="view-history" class="hidden-mode padded-view">
-    
     <div class="back-btn-container">
-      <button class="back-btn" onclick="goHome()">
-        <i class="bi bi-chevron-left"></i> 返回主畫面
-      </button>
+      <button class="back-btn" onclick="goHome()"><i class="bi bi-chevron-left"></i> 返回主畫面</button>
     </div>
 
     <div class="card p-4 shadow-sm border-0" id="authSection">
@@ -235,8 +210,9 @@
   let fileName = "";
   let isRegisterMode = false;
   
+  // 🔥 抓取網址上的參數 (完全取代 localStorage)
   const urlParams = new URLSearchParams(window.location.search);
-  const directRegister = urlParams.get('mode') === 'register';
+  const currentMode = urlParams.get('mode');
 
   window.onload = function() {
     initLiff();
@@ -245,14 +221,6 @@
   function initLiff() {
     liff.init({ liffId: LIFF_ID }).then(() => {
       document.getElementById('loading').style.display = 'none';
-
-      // 🔥 抓取全新的金鑰，徹底擺脫舊快取的糾纏
-      const pending = localStorage.getItem('rx_pending_mode');
-      
-      // 🔥 無情大掃除：只要讀完，馬上清空所有相關的暫存
-      localStorage.removeItem('rx_pending_mode');
-      localStorage.removeItem('pending_mode');
-      sessionStorage.removeItem('pending_mode');
 
       if (liff.isLoggedIn()) {
         liff.getProfile().then(profile => {
@@ -269,18 +237,21 @@
           document.getElementById('userInfo').classList.remove('hidden-mode');
           document.getElementById('btnOptionalLogin').classList.add('hidden-mode');
 
-          // 判斷該導向哪個畫面
-          if (pending === 'register' || directRegister) {
+          // 🔥 根據網址參數，精準導向對應的畫面
+          if (currentMode === 'bind' || currentMode === 'register') {
             openBindLine();
-          } else if (pending === 'upload') {
+          } else if (currentMode === 'upload') {
             openUpload();
           } else {
-            goHome(); // 預設回到主畫面
+            goHome(); // 預設回到主選單
           }
         });
       } else {
+        // 未登入狀態
         document.getElementById('btnOptionalLogin').classList.remove('hidden-mode');
-        if (directRegister) {
+        
+        // 如果網址帶有綁定指令，強制叫出 LINE 登入
+        if (currentMode === 'bind' || currentMode === 'register') {
           openBindLine(); 
         } else {
           goHome();
@@ -297,20 +268,22 @@
     if (confirm("確定要登出 LINE 帳號嗎？")) {
       if (liff.isLoggedIn()) {
         liff.logout();
+        // 清除參數重整
         location.href = window.location.href.split('?')[0]; 
       }
     }
   }
 
+  // 上傳處方箋的「臨時登入」
   function doOptionalLogin() {
-    // 寫入全新的金鑰
-    localStorage.setItem('rx_pending_mode', 'upload');
-    liff.login();
+    // 🔥 明確指定登入後要帶的網址參數
+    let cleanUrl = window.location.href.split('?')[0];
+    liff.login({ redirectUri: cleanUrl + "?mode=upload" });
   }
 
   function goHome() {
-    // 清除一切可能干擾的暫存
-    localStorage.removeItem('rx_pending_mode');
+    // 清除網址參數，保持乾淨
+    window.history.replaceState({}, document.title, window.location.pathname);
     
     document.getElementById('view-home').classList.remove('hidden-mode');
     document.getElementById('view-form').classList.add('hidden-mode');
@@ -334,9 +307,10 @@
   }
 
   function openBindLine() {
+    // 🔥 如果沒登入，強制帶上 ?mode=bind 跳轉去登入
     if (!liff.isLoggedIn()) {
-      localStorage.setItem('rx_pending_mode', 'register');
-      liff.login(); 
+      let cleanUrl = window.location.href.split('?')[0];
+      liff.login({ redirectUri: cleanUrl + "?mode=bind" }); 
       return;
     }
 
