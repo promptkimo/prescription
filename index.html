@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>藥局雲端服務系統</title>
+  <title>樂森藥局 雲服務</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -22,20 +22,17 @@
     
     .hidden-mode { display: none !important; } 
 
-    /* 主選單按鈕樣式 */
     .menu-btn { padding: 20px; border-radius: 16px; font-weight: bold; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; flex-direction: column; text-align: center; transition: 0.2s; border: 2px solid; }
     .menu-btn i { font-size: 2rem; margin-bottom: 8px; }
     .menu-btn:active { transform: scale(0.97); }
 
     #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
 
-    /* 摺疊選單樣式 */
     .accordion-item { border: none; border-radius: 12px !important; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); overflow: hidden; }
     .accordion-button { font-weight: bold; color: #0f5132; background-color: #f8fff9; padding: 15px; border-radius: 12px !important; }
     .accordion-button:not(.collapsed) { background-color: #e8f5e9; color: #0f5132; box-shadow: none; border-bottom-left-radius: 0 !important; border-bottom-right-radius: 0 !important; }
     .accordion-button:focus { box-shadow: none; border-color: rgba(0,0,0,.125); }
 
-    /* 表格樣式微調 */
     .med-table th { font-weight: 600; background-color: #f8f9fa; white-space: nowrap; }
     .med-table td { vertical-align: middle; }
     .nhi-col { font-family: monospace; color: #6c757d; white-space: nowrap; }
@@ -54,7 +51,10 @@
 
   <div id="view-home">
     <div class="text-center py-4 mb-2">
-      <h3 class="fw-bold text-success"><i class="bi bi-hospital"></i> 藥局雲端服務</h3>
+      <div class="d-flex align-items-center justify-content-center mb-2">
+        <img src="logo.PNG" alt="樂森藥局" style="height: 45px; margin-right: 12px; object-fit: contain;">
+        <h3 class="fw-bold text-success mb-0">樂森藥局 雲服務</h3>
+      </div>
       <p class="text-muted small">請選擇您需要的服務</p>
     </div>
 
@@ -66,7 +66,7 @@
           <div class="fw-bold text-dark" id="userNameDisplay">訪客</div>
         </div>
       </div>
-      <button class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="doLiffLogout()">登出</button>
+      <button class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold" onclick="doLiffLogout()">登出</button>
     </div>
 
     <div class="d-grid gap-3 px-2">
@@ -167,7 +167,6 @@
   let fileName = "";
   let isRegisterMode = false;
   
-  // 檢查是否從 QR Code 直接掃描進入綁定模式
   const urlParams = new URLSearchParams(window.location.search);
   const directRegister = urlParams.get('mode') === 'register';
 
@@ -175,13 +174,11 @@
     initLiff();
   };
 
-  // 初始化 LIFF，但「不強制」登入
   function initLiff() {
     liff.init({ liffId: LIFF_ID }).then(() => {
       document.getElementById('loading').style.display = 'none';
 
       if (liff.isLoggedIn()) {
-        // 如果已經登入過，讀取資料顯示在首頁
         liff.getProfile().then(profile => {
           lineUserId = profile.userId;
           lineDisplayName = profile.displayName;
@@ -196,7 +193,6 @@
         });
       }
 
-      // 如果網址帶有 mode=register，直接跳轉到綁定頁面
       if (directRegister) {
         openBindLine();
       }
@@ -207,19 +203,15 @@
     });
   }
 
-  // 登出功能
   function doLiffLogout() {
     if (confirm("確定要登出 LINE 帳號嗎？")) {
       if (liff.isLoggedIn()) {
         liff.logout();
-        location.href = window.location.href.split('?')[0]; // 清除網址參數並重整
+        location.href = window.location.href.split('?')[0]; 
       }
     }
   }
 
-  // ==========================================
-  // 導覽切換控制
-  // ==========================================
   function goHome() {
     document.getElementById('view-home').classList.remove('hidden-mode');
     document.getElementById('view-form').classList.add('hidden-mode');
@@ -227,7 +219,6 @@
     isRegisterMode = false;
   }
 
-  // 1. 開啟「上傳處方箋」
   function openUpload() {
     isRegisterMode = false;
     document.getElementById('view-home').classList.add('hidden-mode');
@@ -238,17 +229,13 @@
     document.getElementById('notifySection').style.display = 'block';
     document.getElementById('formTitle').innerHTML = '<i class="bi bi-camera"></i> 上傳處方箋';
 
-    // 防呆：如果沒登入 LINE，預設選電話通知
     if(!liff.isLoggedIn()) {
       document.getElementById('uNotify').value = "電話通知";
     }
   }
 
-  // 2. 開啟「LINE 綁定通知領藥」
   function openBindLine() {
-    // 如果還沒登入，強制要求登入 LINE
     if (!liff.isLoggedIn()) {
-      // 登入後自動導回此模式
       let callbackUrl = window.location.href.split('?')[0] + "?mode=register";
       liff.login({ redirectUri: callbackUrl });
       return;
@@ -258,22 +245,17 @@
     document.getElementById('view-home').classList.add('hidden-mode');
     document.getElementById('view-form').classList.remove('hidden-mode');
     
-    // 隱藏不必要的欄位
     document.getElementById('cameraSection').style.display = 'none';
     document.getElementById('deptSection').style.display = 'none';
     document.getElementById('notifySection').style.display = 'none';
     document.getElementById('formTitle').innerHTML = '<i class="bi bi-person-check"></i> LINE 綁定領藥登記';
   }
 
-  // 3. 開啟「雲端藥歷」
   function openHistory() {
     document.getElementById('view-home').classList.add('hidden-mode');
     document.getElementById('view-history').classList.remove('hidden-mode');
   }
 
-  // ==========================================
-  // 表單上傳功能
-  // ==========================================
   function handleFile(input) {
     if (input.files && input.files[0]) {
       const file = input.files[0];
@@ -306,7 +288,6 @@
       dept = "現場登記"; 
       notify = "LINE通知"; 
     } else {
-      // 檢查：如果在一般上傳選擇 LINE 通知，但沒登入
       if (notify === "LINE通知" && !liff.isLoggedIn()) {
         alert("⚠️ 您目前尚未登入 LINE！\n請改選【電話通知】，或返回主選單進行 LINE 綁定。");
         return;
@@ -335,9 +316,6 @@
     .catch(error => { document.getElementById('loading').style.display = 'none'; alert("傳送完成。"); goHome(); });
   }
 
-  // ==========================================
-  // 💊 藥歷查詢功能
-  // ==========================================
   function queryMedData() {
     const qName = document.getElementById('qName').value.trim();
     const qId = document.getElementById('qId').value.trim();
