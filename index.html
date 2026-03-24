@@ -10,7 +10,7 @@
   
   <style>
     body { background-color: #f0f2f5; font-family: -apple-system, sans-serif; padding-bottom: 30px; }
-    .container { max-width: 600px; padding-top: 15px; }
+    .container { max-width: 600px; padding-top: 0; }
     .card { border-radius: 12px; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; }
     
     .user-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
@@ -22,11 +22,30 @@
     
     .hidden-mode { display: none !important; } 
 
-    .brand-header { background: #fff; padding: 25px 20px; border-bottom: 2px solid #e8f5e9; text-align: center; margin-bottom: 20px;}
-    .brand-logo-wrap { margin-bottom: 15px; }
-    .brand-logo-wrap img { height: 75px; object-fit: contain; } 
-    .brand-title { color: #0f5132; font-weight: 800; } 
-    .brand-subtitle { font-size: 0.85rem; color: #6c757d; margin-bottom: 0; }
+    /* 🔥 純文字質感 Header 排版 */
+    .brand-header { 
+      background: linear-gradient(135deg, #06C755 0%, #009933 100%); 
+      padding: 40px 20px 30px; 
+      border-bottom-left-radius: 25px; 
+      border-bottom-right-radius: 25px; 
+      text-align: center; 
+      margin-bottom: 25px; 
+      color: white; 
+      box-shadow: 0 4px 15px rgba(6, 199, 85, 0.2); 
+    }
+    .brand-title { font-weight: 900; font-size: 2rem; letter-spacing: 2px; margin-bottom: 8px; text-shadow: 0 2px 4px rgba(0,0,0,0.1); } 
+    .brand-subtitle { font-size: 0.95rem; opacity: 0.9; margin-bottom: 0; font-weight: 500; }
+
+    /* 🔥 醒目的返回按鈕 */
+    .back-btn { 
+      font-size: 1rem; font-weight: bold; color: #495057; 
+      padding: 8px 18px; background: white; 
+      border-radius: 50px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); 
+      display: inline-flex; align-items: center; 
+      margin-bottom: 15px; margin-top: 15px; border: none; transition: 0.2s;
+    }
+    .back-btn:active { transform: scale(0.95); background: #f8f9fa; }
+    .back-btn i { font-size: 1.2rem; margin-right: 5px; color: #06C755; }
 
     .menu-btn { padding: 20px; border-radius: 16px; font-weight: bold; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; flex-direction: column; text-align: center; transition: 0.2s; border: 2px solid; }
     .menu-btn i { font-size: 2rem; margin-bottom: 8px; }
@@ -56,14 +75,9 @@
 <div class="container p-0"> 
 
   <div id="view-home">
-    <div class="brand-header shadow-sm">
-      <div class="brand-logo-wrap">
-        <img src="logo.PNG" alt="樂森藥局" onerror="this.src='https://placehold.co/150x75?text=Lisen+Pharmacy'">
-      </div>
-      <div class="brand-text-wrap">
-        <h3 class="fw-bold brand-title mb-1">樂森藥局 雲服務</h3>
-        <p class="brand-subtitle">您的智慧領藥 & 健康藥歷助手</p>
-      </div>
+    <div class="brand-header">
+      <h1 class="brand-title">樂森藥局</h1>
+      <p class="brand-subtitle">LISEN PHARMACY CLOUD</p>
     </div>
 
     <div class="px-3">
@@ -98,7 +112,7 @@
   </div>
 
   <div id="view-form" class="hidden-mode px-3">
-    <button class="btn btn-link text-secondary mb-2 text-decoration-none fw-bold" onclick="goHome()">
+    <button class="back-btn" onclick="goHome()">
       <i class="bi bi-chevron-left"></i> 返回主畫面
     </button>
 
@@ -133,10 +147,17 @@
 
       <button class="btn btn-success w-100 fw-bold py-2" onclick="submitData()">確認送出</button>
     </div>
+
+    <div id="uploadHistorySection" class="hidden-mode mb-4">
+      <h6 class="fw-bold text-secondary mb-3"><i class="bi bi-clock-history"></i> 最近上傳紀錄</h6>
+      <div id="uploadHistoryList">
+        </div>
+    </div>
+
   </div>
 
   <div id="view-history" class="hidden-mode px-3">
-    <button class="btn btn-link text-secondary mb-2 text-decoration-none fw-bold" onclick="goHome()">
+    <button class="back-btn" onclick="goHome()">
       <i class="bi bi-chevron-left"></i> 返回主畫面
     </button>
 
@@ -207,7 +228,6 @@
           document.getElementById('userInfo').classList.remove('hidden-mode');
           document.getElementById('btnOptionalLogin').classList.add('hidden-mode');
 
-          // 🔥 讀取記憶體，看看登入前是點了哪個按鈕
           const pending = sessionStorage.getItem('pending_mode');
           if (pending === 'register') {
             sessionStorage.removeItem('pending_mode');
@@ -220,10 +240,9 @@
           }
         });
       } else {
-        // 沒登入時
         document.getElementById('btnOptionalLogin').classList.remove('hidden-mode');
         if (directRegister) {
-          openBindLine(); // QR Code 直連會觸發強制登入
+          openBindLine(); 
         }
       }
     }).catch(err => { 
@@ -241,7 +260,6 @@
     }
   }
 
-  // 選擇性登入 (給點擊上傳處方箋，但想臨時登入的人)
   function doOptionalLogin() {
     sessionStorage.setItem('pending_mode', 'upload');
     liff.login();
@@ -264,14 +282,16 @@
     document.getElementById('notifySection').style.display = 'block';
     document.getElementById('formTitle').innerHTML = '<i class="bi bi-camera"></i> 上傳處方箋';
 
-    // 如果未登入，強制預設電話通知
     if(!liff.isLoggedIn()) {
       document.getElementById('uNotify').value = "電話通知";
+      document.getElementById('uploadHistorySection').classList.add('hidden-mode');
+    } else {
+      // 🔥 如果有登入，就去抓取他的歷史上傳紀錄
+      fetchUploadHistory();
     }
   }
 
   function openBindLine() {
-    // 🔥 取消了 redirectUri 參數，改用 sessionStorage 記憶，徹底解決 400 Bad Request
     if (!liff.isLoggedIn()) {
       sessionStorage.setItem('pending_mode', 'register');
       liff.login(); 
@@ -286,12 +306,72 @@
     document.getElementById('deptSection').style.display = 'none';
     document.getElementById('notifySection').style.display = 'none';
     document.getElementById('btnOptionalLogin').classList.add('hidden-mode');
+    document.getElementById('uploadHistorySection').classList.add('hidden-mode');
     document.getElementById('formTitle').innerHTML = '<i class="bi bi-person-check"></i> LINE 綁定領藥登記';
   }
 
   function openHistory() {
     document.getElementById('view-home').classList.add('hidden-mode');
     document.getElementById('view-history').classList.remove('hidden-mode');
+  }
+
+  // 🔥 抓取歷史上傳紀錄 API
+  function fetchUploadHistory() {
+    if (!lineUserId) return;
+    
+    document.getElementById('uploadHistorySection').classList.remove('hidden-mode');
+    document.getElementById('uploadHistoryList').innerHTML = `
+      <div class="text-center text-muted small py-4 bg-white rounded-3 shadow-sm border-0">
+        <div class="spinner-border spinner-border-sm text-success me-2" role="status"></div> 讀取歷史紀錄中...
+      </div>`;
+
+    fetch(GAS_URL, {
+      method: "POST",
+      body: JSON.stringify({ action: "history", lineUserId: lineUserId })
+    })
+    .then(res => res.json())
+    .then(res => {
+      if (res.status === 'success') {
+        renderUploadHistory(res.history);
+      } else {
+        document.getElementById('uploadHistoryList').innerHTML = '<div class="text-center text-danger small py-3">讀取失敗</div>';
+      }
+    }).catch(err => {
+      document.getElementById('uploadHistoryList').innerHTML = '<div class="text-center text-danger small py-3">網路連線異常</div>';
+    });
+  }
+
+  // 🔥 渲染歷史上傳紀錄列表
+  function renderUploadHistory(data) {
+    const container = document.getElementById('uploadHistoryList');
+    container.innerHTML = '';
+    
+    if (!data || data.length === 0) {
+      container.innerHTML = '<div class="text-center text-muted small py-4 bg-white rounded-3 shadow-sm border-0">尚無上傳紀錄</div>';
+      return;
+    }
+    
+    data.forEach(item => {
+      // 根據狀態給予不同顏色的標籤
+      let statusColor = 'bg-secondary';
+      if (item.status === '可領藥') statusColor = 'bg-success';
+      if (item.status === '待處理') statusColor = 'bg-warning text-dark';
+      if (item.status === '處理中') statusColor = 'bg-primary';
+
+      let imgSrc = item.img || 'https://placehold.co/60x60?text=No+Img';
+      
+      let html = `
+        <div class="card p-2 mb-2 shadow-sm border-0 flex-row align-items-center">
+          <img src="${imgSrc}" style="width: 55px; height: 55px; object-fit: cover; border-radius: 8px; margin-right: 15px;" onclick="window.open('${item.img}', '_blank')">
+          <div class="flex-grow-1">
+            <div class="fw-bold" style="font-size:0.95rem; color:#333;">${item.date}</div>
+            <div class="small text-muted">${item.dept || '一般領藥'}</div>
+          </div>
+          <div><span class="badge ${statusColor} px-2 py-1">${item.status}</span></div>
+        </div>
+      `;
+      container.innerHTML += html;
+    });
   }
 
   function handleFile(input) {
