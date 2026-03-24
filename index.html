@@ -3,17 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>藥局服務系統</title>
+  <title>藥局雲端服務系統</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   
   <style>
-    body { background-color: #f0f2f5; font-family: -apple-system, sans-serif; padding-bottom: 70px; }
+    body { background-color: #f0f2f5; font-family: -apple-system, sans-serif; padding-bottom: 30px; }
     .container { max-width: 600px; padding-top: 15px; }
     .card { border-radius: 12px; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; }
     
-    .user-card { background: white; padding: 15px; display: flex; align-items: center; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+    .user-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
     .user-avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; margin-right: 15px; border: 2px solid #06C755; }
     
     .preview-box { width: 100%; height: 200px; background: #e9ecef; border: 2px dashed #ced4da; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; position: relative; margin-bottom: 15px; }
@@ -22,14 +22,14 @@
     
     .hidden-mode { display: none !important; } 
 
-    /* 底部導覽列 */
-    .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: white; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); display: flex; justify-content: space-around; z-index: 100; border-top: 1px solid #eee; }
-    .nav-btn { flex: 1; text-align: center; padding: 12px 0; color: #6c757d; font-size: 0.9rem; font-weight: bold; background: none; border: none; }
-    .nav-btn.active { color: #06C755; border-bottom: 3px solid #06C755; }
+    /* 🔥 新增：頂部膠囊導覽列 */
+    .top-nav-container { background: #fff; border-radius: 50px; padding: 5px; display: flex; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px; }
+    .nav-btn { flex: 1; border: none; background: transparent; padding: 10px 0; font-weight: bold; color: #6c757d; border-radius: 50px; transition: 0.3s; font-size: 0.95rem; }
+    .nav-btn.active { background: #06C755; color: white; box-shadow: 0 2px 8px rgba(6, 199, 85, 0.3); }
 
     #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
 
-    /* 🔥 新增：摺疊選單樣式優化 */
+    /* 摺疊選單樣式 */
     .accordion-item { border: none; border-radius: 12px !important; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); overflow: hidden; }
     .accordion-button { font-weight: bold; color: #0f5132; background-color: #f8fff9; padding: 15px; border-radius: 12px !important; }
     .accordion-button:not(.collapsed) { background-color: #e8f5e9; color: #0f5132; box-shadow: none; border-bottom-left-radius: 0 !important; border-bottom-right-radius: 0 !important; }
@@ -50,12 +50,26 @@
 
 <div class="container">
   
-  <div class="user-card" id="userInfo" style="display: none;">
-    <img id="userThumb" src="https://placehold.co/50?text=U" class="user-avatar">
-    <div>
-      <div class="small text-muted">歡迎使用</div>
-      <div class="fw-bold fs-5" id="userNameDisplay">訪客</div>
+  <div class="user-card d-flex justify-content-between align-items-center" id="userInfo" style="display: none;">
+    <div class="d-flex align-items-center">
+      <img id="userThumb" src="https://placehold.co/50?text=U" class="user-avatar">
+      <div>
+        <div class="small text-muted">歡迎使用</div>
+        <div class="fw-bold fs-5" id="userNameDisplay">訪客</div>
+      </div>
     </div>
+    <button class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold" onclick="doLiffLogout()">
+      <i class="bi bi-box-arrow-right"></i> 登出
+    </button>
+  </div>
+
+  <div class="top-nav-container" id="topNav">
+    <button class="nav-btn active" id="btn-tab-upload" onclick="switchMainTab('upload')">
+      <i class="bi bi-file-earmark-medical"></i> 領藥服務
+    </button>
+    <button class="nav-btn" id="btn-tab-medhistory" onclick="switchMainTab('medhistory')">
+      <i class="bi bi-cloud-arrow-up"></i> 雲端藥歷
+    </button>
   </div>
 
   <div id="tab-upload">
@@ -109,15 +123,14 @@
 
 </div>
 
-<div class="bottom-nav">
-  <button class="nav-btn active" id="btn-tab-upload" onclick="switchMainTab('upload')"><i class="bi bi-file-earmark-medical"></i> 領藥服務</button>
-  <button class="nav-btn" id="btn-tab-medhistory" onclick="switchMainTab('medhistory')"><i class="bi bi-capsule"></i> 我的藥歷</button>
-</div>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+  // ==========================================
+  // ⚠️ 您的設定
+  // ==========================================
   const GAS_URL = "https://script.google.com/macros/s/AKfycbyUXCejmkI52ZJVUN1K1t1j2ZvfdZMCgHsgB79okITgzn7to2sfte43R5I0GOQnFp1opQ/exec"; 
   const LIFF_ID = "2008912977-DuJTm5u1"; 
+  // ==========================================
 
   let lineUserId = "";
   let lineDisplayName = "";
@@ -132,7 +145,17 @@
     initLiff();
   };
 
-  // 切換下方大頁籤
+  // 🔥 登出功能
+  function doLiffLogout() {
+    if (confirm("確定要登出並切換 LINE 帳號嗎？")) {
+      if (liff.isLoggedIn()) {
+        liff.logout();
+        location.reload(); // 重整頁面，會再次觸發登入
+      }
+    }
+  }
+
+  // 切換上方大頁籤
   function switchMainTab(tab) {
     document.getElementById('tab-upload').classList.toggle('hidden-mode', tab !== 'upload');
     document.getElementById('tab-medhistory').classList.toggle('hidden-mode', tab !== 'medhistory');
@@ -145,6 +168,7 @@
       document.getElementById('cameraSection').classList.add('hidden-mode');
       document.getElementById('deptSection').classList.add('hidden-mode');
       document.getElementById('notifySection').classList.add('hidden-mode');
+      document.getElementById('topNav').classList.add('hidden-mode'); // 現場登記時隱藏導覽列，專心填表
       document.getElementById('formTitle').innerHTML = '<i class="bi bi-person-check"></i> 現場領藥登記';
     }
   }
@@ -190,7 +214,7 @@
       if(res.status === 'success') {
         document.getElementById('authSection').classList.add('hidden-mode');
         document.getElementById('resultSection').classList.remove('hidden-mode');
-        renderMedListGrouped(qName, res.data); // 🔥 改用群組化渲染函式
+        renderMedListGrouped(qName, res.data); 
       } else {
         alert("查詢失敗，請重試。");
       }
@@ -201,7 +225,6 @@
     });
   }
 
-  // 🔥 核心更新：將資料依照「日期」群組化並產生摺疊選單
   function renderMedListGrouped(patientName, data) {
     const container = document.getElementById('medAccordion');
     container.innerHTML = "";
@@ -214,29 +237,21 @@
 
     document.getElementById('resultTitle').innerText = `${patientName} 的藥歷`;
 
-    // 1. 將資料按日期分組 (Grouping)
     const groupedData = {};
     data.forEach(item => {
-      // 確保沒有日期的歸類為 '未知日期'
       const dateKey = item.date ? item.date : '未知日期';
-      if (!groupedData[dateKey]) {
-        groupedData[dateKey] = [];
-      }
+      if (!groupedData[dateKey]) groupedData[dateKey] = [];
       groupedData[dateKey].push(item);
     });
 
-    // 2. 取出所有日期並確保由新到舊排序
     const dates = Object.keys(groupedData).sort((a, b) => new Date(b) - new Date(a));
 
-    // 3. 產生 HTML (Bootstrap Accordion)
     dates.forEach((date, index) => {
       const drugs = groupedData[date];
-      // 預設展開最新的一筆 (index === 0)
       const isFirst = index === 0;
       const collapseClass = isFirst ? "show" : "";
       const buttonClass = isFirst ? "" : "collapsed";
 
-      // 組合該日期底下的所有藥品清單
       let drugsHtml = "";
       drugs.forEach(drug => {
         drugsHtml += `
@@ -252,7 +267,6 @@
         `;
       });
 
-      // 組合摺疊外框
       const accordionItem = `
         <div class="accordion-item bg-white">
           <h2 class="accordion-header" id="heading-${index}">
