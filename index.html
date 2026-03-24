@@ -22,28 +22,11 @@
     
     .hidden-mode { display: none !important; } 
 
-    /* 🔥 純文字質感 Header 排版 */
-    .brand-header { 
-      background: linear-gradient(135deg, #06C755 0%, #009933 100%); 
-      padding: 40px 20px 30px; 
-      border-bottom-left-radius: 25px; 
-      border-bottom-right-radius: 25px; 
-      text-align: center; 
-      margin-bottom: 25px; 
-      color: white; 
-      box-shadow: 0 4px 15px rgba(6, 199, 85, 0.2); 
-    }
+    .brand-header { background: linear-gradient(135deg, #06C755 0%, #009933 100%); padding: 40px 20px 30px; border-bottom-left-radius: 25px; border-bottom-right-radius: 25px; text-align: center; margin-bottom: 25px; color: white; box-shadow: 0 4px 15px rgba(6, 199, 85, 0.2); }
     .brand-title { font-weight: 900; font-size: 2rem; letter-spacing: 2px; margin-bottom: 8px; text-shadow: 0 2px 4px rgba(0,0,0,0.1); } 
     .brand-subtitle { font-size: 0.95rem; opacity: 0.9; margin-bottom: 0; font-weight: 500; }
 
-    /* 🔥 醒目的返回按鈕 */
-    .back-btn { 
-      font-size: 1rem; font-weight: bold; color: #495057; 
-      padding: 8px 18px; background: white; 
-      border-radius: 50px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); 
-      display: inline-flex; align-items: center; 
-      margin-bottom: 15px; margin-top: 15px; border: none; transition: 0.2s;
-    }
+    .back-btn { font-size: 1rem; font-weight: bold; color: #495057; padding: 8px 18px; background: white; border-radius: 50px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); display: inline-flex; align-items: center; margin-bottom: 15px; margin-top: 15px; border: none; transition: 0.2s;}
     .back-btn:active { transform: scale(0.95); background: #f8f9fa; }
     .back-btn i { font-size: 1.2rem; margin-right: 5px; color: #06C755; }
 
@@ -134,8 +117,9 @@
           <input type="file" id="fileInput" accept="image/*" style="display: none;" onchange="handleFile(this)">
       </div>
 
-      <div class="mb-3"><label class="form-label small fw-bold">領藥人姓名 (病人)</label><input type="text" class="form-control" id="uName"></div>
+      <div class="mb-3"><label class="form-label small fw-bold" id="nameLabel">領藥人姓名 (病人)</label><input type="text" class="form-control" id="uName"></div>
       <div class="mb-3"><label class="form-label small fw-bold">聯絡電話</label><input type="tel" class="form-control" id="uPhone" placeholder="請輸入聯絡電話"></div>
+      
       <div class="mb-3" id="deptSection"><label class="form-label small fw-bold">科別 (選填)</label><input type="text" class="form-control" id="uDept" placeholder="例如：牙科、內科..."></div>
       <div class="mb-4" id="notifySection">
         <label class="form-label small fw-bold">希望通知方式</label>
@@ -145,13 +129,12 @@
         </select>
       </div>
 
-      <button class="btn btn-success w-100 fw-bold py-2" onclick="submitData()">確認送出</button>
+      <button class="btn btn-success w-100 fw-bold py-2" id="btnSubmit" onclick="submitData()">確認上傳</button>
     </div>
 
     <div id="uploadHistorySection" class="hidden-mode mb-4">
       <h6 class="fw-bold text-secondary mb-3"><i class="bi bi-clock-history"></i> 最近上傳紀錄</h6>
-      <div id="uploadHistoryList">
-        </div>
+      <div id="uploadHistoryList"></div>
     </div>
 
   </div>
@@ -228,12 +211,13 @@
           document.getElementById('userInfo').classList.remove('hidden-mode');
           document.getElementById('btnOptionalLogin').classList.add('hidden-mode');
 
-          const pending = sessionStorage.getItem('pending_mode');
+          // 🔥 使用 localStorage 確保跳轉 100% 存活
+          const pending = localStorage.getItem('pending_mode');
           if (pending === 'register') {
-            sessionStorage.removeItem('pending_mode');
+            localStorage.removeItem('pending_mode');
             openBindLine();
           } else if (pending === 'upload') {
-            sessionStorage.removeItem('pending_mode');
+            localStorage.removeItem('pending_mode');
             openUpload();
           } else if (directRegister) {
             openBindLine();
@@ -261,7 +245,8 @@
   }
 
   function doOptionalLogin() {
-    sessionStorage.setItem('pending_mode', 'upload');
+    // 🔥 使用 localStorage 
+    localStorage.setItem('pending_mode', 'upload');
     liff.login();
   }
 
@@ -280,20 +265,25 @@
     document.getElementById('cameraSection').style.display = 'block';
     document.getElementById('deptSection').style.display = 'block';
     document.getElementById('notifySection').style.display = 'block';
+    
+    // 🔥 UI 明確呈現為「上傳」
     document.getElementById('formTitle').innerHTML = '<i class="bi bi-camera"></i> 上傳處方箋';
+    document.getElementById('nameLabel').innerText = "領藥人姓名 (病人)";
+    document.getElementById('btnSubmit').innerText = "確認上傳";
+    document.getElementById('btnSubmit').className = "btn btn-success w-100 fw-bold py-2"; // 恢復綠色按鈕
 
     if(!liff.isLoggedIn()) {
       document.getElementById('uNotify').value = "電話通知";
       document.getElementById('uploadHistorySection').classList.add('hidden-mode');
     } else {
-      // 🔥 如果有登入，就去抓取他的歷史上傳紀錄
       fetchUploadHistory();
     }
   }
 
   function openBindLine() {
     if (!liff.isLoggedIn()) {
-      sessionStorage.setItem('pending_mode', 'register');
+      // 🔥 使用 localStorage
+      localStorage.setItem('pending_mode', 'register');
       liff.login(); 
       return;
     }
@@ -307,7 +297,12 @@
     document.getElementById('notifySection').style.display = 'none';
     document.getElementById('btnOptionalLogin').classList.add('hidden-mode');
     document.getElementById('uploadHistorySection').classList.add('hidden-mode');
-    document.getElementById('formTitle').innerHTML = '<i class="bi bi-person-check"></i> LINE 綁定領藥登記';
+    
+    // 🔥 UI 徹底改頭換面，杜絕誤會
+    document.getElementById('formTitle').innerHTML = '<i class="bi bi-link-45deg"></i> LINE 綁定作業';
+    document.getElementById('nameLabel').innerText = "您的真實姓名 (綁定用)";
+    document.getElementById('btnSubmit').innerText = "確認綁定 LINE";
+    document.getElementById('btnSubmit').className = "btn btn-primary w-100 fw-bold py-2"; // 變成藍色按鈕強調是 LINE 綁定
   }
 
   function openHistory() {
@@ -315,7 +310,6 @@
     document.getElementById('view-history').classList.remove('hidden-mode');
   }
 
-  // 🔥 抓取歷史上傳紀錄 API
   function fetchUploadHistory() {
     if (!lineUserId) return;
     
@@ -341,7 +335,6 @@
     });
   }
 
-  // 🔥 渲染歷史上傳紀錄列表
   function renderUploadHistory(data) {
     const container = document.getElementById('uploadHistoryList');
     container.innerHTML = '';
@@ -352,7 +345,6 @@
     }
     
     data.forEach(item => {
-      // 根據狀態給予不同顏色的標籤
       let statusColor = 'bg-secondary';
       if (item.status === '可領藥') statusColor = 'bg-success';
       if (item.status === '待處理') statusColor = 'bg-warning text-dark';
@@ -425,7 +417,13 @@
     .then(response => {
       document.getElementById('loading').style.display = 'none';
       if(response.status === 'success') { 
-        alert("✅ 登記成功！\n藥師確認後會發送通知。"); 
+        // 🔥 根據模式顯示不同的成功訊息
+        if (isRegisterMode) {
+           alert("✅ 綁定成功！\n藥局將能透過 LINE 通知您領藥。");
+        } else {
+           alert("✅ 處方箋上傳成功！\n藥師確認後會發送通知。"); 
+        }
+
         if(liff.isInClient()) liff.closeWindow(); 
         else goHome(); 
       } 
