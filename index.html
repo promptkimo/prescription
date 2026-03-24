@@ -22,7 +22,7 @@
     
     .hidden-mode { display: none !important; } 
 
-    /* 🔥 新增：頂部膠囊導覽列 */
+    /* 頂部膠囊導覽列 */
     .top-nav-container { background: #fff; border-radius: 50px; padding: 5px; display: flex; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px; }
     .nav-btn { flex: 1; border: none; background: transparent; padding: 10px 0; font-weight: bold; color: #6c757d; border-radius: 50px; transition: 0.3s; font-size: 0.95rem; }
     .nav-btn.active { background: #06C755; color: white; box-shadow: 0 2px 8px rgba(6, 199, 85, 0.3); }
@@ -34,11 +34,13 @@
     .accordion-button { font-weight: bold; color: #0f5132; background-color: #f8fff9; padding: 15px; border-radius: 12px !important; }
     .accordion-button:not(.collapsed) { background-color: #e8f5e9; color: #0f5132; box-shadow: none; border-bottom-left-radius: 0 !important; border-bottom-right-radius: 0 !important; }
     .accordion-button:focus { box-shadow: none; border-color: rgba(0,0,0,.125); }
-    .drug-item { padding: 12px 15px; border-bottom: 1px solid #f0f0f0; }
-    .drug-item:last-child { border-bottom: none; }
-    .drug-title { font-size: 1rem; font-weight: bold; color: #333; margin-bottom: 4px; }
-    .drug-meta { font-size: 0.85rem; color: #666; margin-bottom: 6px; }
-    .drug-badge { font-size: 0.8rem; background: #f1f3f5; color: #495057; padding: 3px 8px; border-radius: 6px; border: 1px solid #e9ecef; margin-right: 4px; display: inline-block; margin-bottom: 4px;}
+
+    /* 表格樣式微調 */
+    .med-table th { font-weight: 600; background-color: #f8f9fa; white-space: nowrap; }
+    .med-table td { vertical-align: middle; }
+    .nhi-col { font-family: monospace; color: #6c757d; white-space: nowrap; }
+    .drug-col { font-weight: bold; color: #333; min-width: 120px; }
+    .num-col { white-space: nowrap; text-align: center; }
   </style>
 </head>
 <body>
@@ -145,17 +147,15 @@
     initLiff();
   };
 
-  // 🔥 登出功能
   function doLiffLogout() {
     if (confirm("確定要登出並切換 LINE 帳號嗎？")) {
       if (liff.isLoggedIn()) {
         liff.logout();
-        location.reload(); // 重整頁面，會再次觸發登入
+        location.reload(); 
       }
     }
   }
 
-  // 切換上方大頁籤
   function switchMainTab(tab) {
     document.getElementById('tab-upload').classList.toggle('hidden-mode', tab !== 'upload');
     document.getElementById('tab-medhistory').classList.toggle('hidden-mode', tab !== 'medhistory');
@@ -168,7 +168,7 @@
       document.getElementById('cameraSection').classList.add('hidden-mode');
       document.getElementById('deptSection').classList.add('hidden-mode');
       document.getElementById('notifySection').classList.add('hidden-mode');
-      document.getElementById('topNav').classList.add('hidden-mode'); // 現場登記時隱藏導覽列，專心填表
+      document.getElementById('topNav').classList.add('hidden-mode'); 
       document.getElementById('formTitle').innerHTML = '<i class="bi bi-person-check"></i> 現場領藥登記';
     }
   }
@@ -183,7 +183,7 @@
           const pic = profile.pictureUrl;
           document.getElementById('userNameDisplay').innerText = lineDisplayName;
           document.getElementById('uName').value = lineDisplayName; 
-          document.getElementById('qName').value = lineDisplayName; // 預填查詢名字
+          document.getElementById('qName').value = lineDisplayName; 
           if(pic) document.getElementById('userThumb').src = pic;
           document.getElementById('userInfo').style.display = 'flex';
           document.getElementById('loading').style.display = 'none';
@@ -192,9 +192,6 @@
     }).catch(err => { document.getElementById('loading').style.display = 'none'; });
   }
 
-  // ==========================================
-  // 💊 藥歷查詢與群組化功能
-  // ==========================================
   function queryMedData() {
     const qName = document.getElementById('qName').value.trim();
     const qId = document.getElementById('qId').value.trim();
@@ -225,6 +222,7 @@
     });
   }
 
+  // 🔥 核心更新：將資料改為 Bootstrap Table 呈現
   function renderMedListGrouped(patientName, data) {
     const container = document.getElementById('medAccordion');
     container.innerHTML = "";
@@ -252,21 +250,43 @@
       const collapseClass = isFirst ? "show" : "";
       const buttonClass = isFirst ? "" : "collapsed";
 
-      let drugsHtml = "";
+      // 🔥 表格頭部與結構
+      let tableHtml = `
+        <div class="table-responsive">
+          <table class="table table-sm table-striped table-hover med-table mb-0" style="font-size: 0.85rem;">
+            <thead>
+              <tr>
+                <th>健保碼</th>
+                <th>藥品名稱</th>
+                <th class="text-center">用量</th>
+                <th class="text-center">天數</th>
+                <th class="text-center">總量</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+
+      // 表格內容 (一行一藥品)
       drugs.forEach(drug => {
-        drugsHtml += `
-          <div class="drug-item">
-            <div class="drug-title">${drug.drug}</div>
-            <div class="drug-meta"><i class="bi bi-upc-scan"></i> 健保碼：${drug.nhi}</div>
-            <div>
-              <span class="drug-badge">用量: ${drug.dosage}</span>
-              <span class="drug-badge">天數: ${drug.days}</span>
-              <span class="drug-badge">總量: ${drug.total}</span>
-            </div>
-          </div>
+        tableHtml += `
+          <tr>
+            <td class="nhi-col">${drug.nhi}</td>
+            <td class="drug-col">${drug.drug}</td>
+            <td class="num-col">${drug.dosage}</td>
+            <td class="num-col">${drug.days}</td>
+            <td class="num-col text-success fw-bold">${drug.total}</td>
+          </tr>
         `;
       });
 
+      // 收尾表格
+      tableHtml += `
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      // 組合摺疊外框
       const accordionItem = `
         <div class="accordion-item bg-white">
           <h2 class="accordion-header" id="heading-${index}">
@@ -276,8 +296,7 @@
           </h2>
           <div id="collapse-${index}" class="accordion-collapse collapse ${collapseClass}" data-bs-parent="#medAccordion">
             <div class="accordion-body p-0">
-              ${drugsHtml}
-            </div>
+              ${tableHtml} </div>
           </div>
         </div>
       `;
@@ -292,9 +311,6 @@
     document.getElementById('medAccordion').innerHTML = "";
   }
 
-  // ==========================================
-  // 原有上傳功能
-  // ==========================================
   function handleFile(input) {
     if (input.files && input.files[0]) {
       const file = input.files[0];
