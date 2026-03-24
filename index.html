@@ -82,7 +82,7 @@
         </button>
 
         <button class="btn btn-outline-primary menu-btn" onclick="openBindLine()">
-          <i class="bi bi-line"></i>
+          <i class="bi bi-link-45deg"></i>
           <span>2. LINE 綁定通知領藥</span>
         </button>
 
@@ -100,11 +100,11 @@
     </button>
 
     <div class="card p-4 shadow-sm border-0">
-      <h5 class="fw-bold text-success mb-3" id="formTitle"><i class="bi bi-camera"></i> 上傳處方箋</h5>
+      <h5 class="fw-bold text-success mb-3"><i class="bi bi-camera"></i> 上傳處方箋</h5>
       
       <div id="btnOptionalLogin" class="alert alert-warning small d-flex justify-content-between align-items-center hidden-mode p-2 mb-3">
          <span class="fw-bold text-dark">未綁定 LINE (僅能選電話通知)</span>
-         <button class="btn btn-sm btn-success fw-bold rounded-pill px-3" onclick="doOptionalLogin()">登入綁定</button>
+         <button class="btn btn-sm btn-success fw-bold rounded-pill px-3" onclick="doOptionalLogin()">登入 LINE</button>
       </div>
 
       <div id="cameraSection">
@@ -117,7 +117,7 @@
           <input type="file" id="fileInput" accept="image/*" style="display: none;" onchange="handleFile(this)">
       </div>
 
-      <div class="mb-3"><label class="form-label small fw-bold" id="nameLabel">領藥人姓名 (病人)</label><input type="text" class="form-control" id="uName"></div>
+      <div class="mb-3"><label class="form-label small fw-bold">領藥人姓名 (病人)</label><input type="text" class="form-control" id="uName"></div>
       <div class="mb-3"><label class="form-label small fw-bold">聯絡電話</label><input type="tel" class="form-control" id="uPhone" placeholder="請輸入聯絡電話"></div>
       
       <div class="mb-3" id="deptSection"><label class="form-label small fw-bold">科別 (選填)</label><input type="text" class="form-control" id="uDept" placeholder="例如：牙科、內科..."></div>
@@ -129,14 +129,35 @@
         </select>
       </div>
 
-      <button class="btn btn-success w-100 fw-bold py-2" id="btnSubmit" onclick="submitData()">確認上傳</button>
+      <button class="btn btn-success w-100 fw-bold py-2" onclick="submitData()">確認上傳</button>
     </div>
 
     <div id="uploadHistorySection" class="hidden-mode mb-4">
       <h6 class="fw-bold text-secondary mb-3"><i class="bi bi-clock-history"></i> 最近上傳紀錄</h6>
       <div id="uploadHistoryList"></div>
     </div>
+  </div>
 
+  <div id="view-bind" class="hidden-mode px-3">
+    <button class="back-btn" onclick="goHome()">
+      <i class="bi bi-chevron-left"></i> 返回主畫面
+    </button>
+
+    <div class="card p-4 shadow-sm border-0 border-top border-primary border-4">
+      <h5 class="fw-bold text-primary mb-3"><i class="bi bi-link-45deg"></i> LINE 綁定作業</h5>
+      <p class="small text-muted mb-4">請填寫您的真實資料。綁定完成後，藥師就能直接透過 LINE 通知您來拿藥！</p>
+
+      <div class="mb-3">
+        <label class="form-label small fw-bold text-primary">您的真實姓名</label>
+        <input type="text" class="form-control" id="bName" placeholder="請輸入姓名">
+      </div>
+      <div class="mb-4">
+        <label class="form-label small fw-bold text-primary">聯絡電話</label>
+        <input type="tel" class="form-control" id="bPhone" placeholder="請輸入手機號碼">
+      </div>
+
+      <button class="btn btn-primary w-100 fw-bold py-2" onclick="submitBind()">🔗 確認綁定 LINE</button>
+    </div>
   </div>
 
   <div id="view-history" class="hidden-mode px-3">
@@ -145,7 +166,7 @@
     </button>
 
     <div class="card p-4 shadow-sm border-0" id="authSection">
-      <h5 class="fw-bold text-primary mb-3"><i class="bi bi-shield-lock"></i> 安全藥歷查詢</h5>
+      <h5 class="fw-bold text-secondary mb-3"><i class="bi bi-shield-lock"></i> 安全藥歷查詢</h5>
       <p class="small text-muted mb-4">為保護您的個資，請輸入病人的姓名與身分證字號進行安全驗證。</p>
       
       <div class="mb-3">
@@ -157,7 +178,7 @@
         <input type="text" class="form-control" id="qId" placeholder="請輸入身分證字號 (包含大寫英文字母)">
       </div>
       
-      <button class="btn btn-primary w-100 fw-bold py-2" onclick="queryMedData()">驗證並查詢</button>
+      <button class="btn btn-secondary w-100 fw-bold py-2" onclick="queryMedData()">驗證並查詢</button>
     </div>
 
     <div id="resultSection" class="hidden-mode">
@@ -184,7 +205,6 @@
   let lineDisplayName = "";
   let base64Image = "";
   let fileName = "";
-  let isRegisterMode = false;
   
   const urlParams = new URLSearchParams(window.location.search);
   const directRegister = urlParams.get('mode') === 'register';
@@ -204,23 +224,23 @@
           const pic = profile.pictureUrl;
           
           document.getElementById('userNameDisplay').innerText = lineDisplayName;
+          // 自動填入姓名到各個表單
           document.getElementById('uName').value = lineDisplayName; 
+          document.getElementById('bName').value = lineDisplayName; 
           document.getElementById('qName').value = lineDisplayName; 
           if(pic) document.getElementById('userThumb').src = pic;
           
           document.getElementById('userInfo').classList.remove('hidden-mode');
           document.getElementById('btnOptionalLogin').classList.add('hidden-mode');
 
-          // 🔥 使用 localStorage 確保跳轉 100% 存活
+          // 🔥 取出跳轉記憶，決定開啟哪個畫面
           const pending = localStorage.getItem('pending_mode');
-          if (pending === 'register') {
-            localStorage.removeItem('pending_mode');
+          localStorage.removeItem('pending_mode'); // 用完馬上清除
+
+          if (pending === 'register' || directRegister) {
             openBindLine();
           } else if (pending === 'upload') {
-            localStorage.removeItem('pending_mode');
             openUpload();
-          } else if (directRegister) {
-            openBindLine();
           }
         });
       } else {
@@ -245,33 +265,24 @@
   }
 
   function doOptionalLogin() {
-    // 🔥 使用 localStorage 
     localStorage.setItem('pending_mode', 'upload');
     liff.login();
   }
 
+  // 🔥 隱藏所有子畫面，回到主畫面
   function goHome() {
     document.getElementById('view-home').classList.remove('hidden-mode');
     document.getElementById('view-form').classList.add('hidden-mode');
+    document.getElementById('view-bind').classList.add('hidden-mode');
     document.getElementById('view-history').classList.add('hidden-mode');
-    isRegisterMode = false;
   }
 
   function openUpload() {
-    isRegisterMode = false;
     document.getElementById('view-home').classList.add('hidden-mode');
+    document.getElementById('view-bind').classList.add('hidden-mode');
+    document.getElementById('view-history').classList.add('hidden-mode');
     document.getElementById('view-form').classList.remove('hidden-mode');
     
-    document.getElementById('cameraSection').style.display = 'block';
-    document.getElementById('deptSection').style.display = 'block';
-    document.getElementById('notifySection').style.display = 'block';
-    
-    // 🔥 UI 明確呈現為「上傳」
-    document.getElementById('formTitle').innerHTML = '<i class="bi bi-camera"></i> 上傳處方箋';
-    document.getElementById('nameLabel').innerText = "領藥人姓名 (病人)";
-    document.getElementById('btnSubmit').innerText = "確認上傳";
-    document.getElementById('btnSubmit').className = "btn btn-success w-100 fw-bold py-2"; // 恢復綠色按鈕
-
     if(!liff.isLoggedIn()) {
       document.getElementById('uNotify').value = "電話通知";
       document.getElementById('uploadHistorySection').classList.add('hidden-mode');
@@ -282,31 +293,21 @@
 
   function openBindLine() {
     if (!liff.isLoggedIn()) {
-      // 🔥 使用 localStorage
       localStorage.setItem('pending_mode', 'register');
       liff.login(); 
       return;
     }
 
-    isRegisterMode = true;
     document.getElementById('view-home').classList.add('hidden-mode');
-    document.getElementById('view-form').classList.remove('hidden-mode');
-    
-    document.getElementById('cameraSection').style.display = 'none';
-    document.getElementById('deptSection').style.display = 'none';
-    document.getElementById('notifySection').style.display = 'none';
-    document.getElementById('btnOptionalLogin').classList.add('hidden-mode');
-    document.getElementById('uploadHistorySection').classList.add('hidden-mode');
-    
-    // 🔥 UI 徹底改頭換面，杜絕誤會
-    document.getElementById('formTitle').innerHTML = '<i class="bi bi-link-45deg"></i> LINE 綁定作業';
-    document.getElementById('nameLabel').innerText = "您的真實姓名 (綁定用)";
-    document.getElementById('btnSubmit').innerText = "確認綁定 LINE";
-    document.getElementById('btnSubmit').className = "btn btn-primary w-100 fw-bold py-2"; // 變成藍色按鈕強調是 LINE 綁定
+    document.getElementById('view-form').classList.add('hidden-mode');
+    document.getElementById('view-history').classList.add('hidden-mode');
+    document.getElementById('view-bind').classList.remove('hidden-mode'); // 打開專屬綁定畫面
   }
 
   function openHistory() {
     document.getElementById('view-home').classList.add('hidden-mode');
+    document.getElementById('view-form').classList.add('hidden-mode');
+    document.getElementById('view-bind').classList.add('hidden-mode');
     document.getElementById('view-history').classList.remove('hidden-mode');
   }
 
@@ -388,46 +389,68 @@
     }
   }
 
+  // 🔥 處理一般上傳處方箋
   function submitData() {
     const name = document.getElementById('uName').value;
     const phone = document.getElementById('uPhone').value;
     let dept = document.getElementById('uDept').value;
     let notify = document.getElementById('uNotify').value;
     
-    if (isRegisterMode) { 
-      dept = "現場登記"; 
-      notify = "LINE通知"; 
-    } else {
-      if (notify === "LINE通知" && !liff.isLoggedIn()) {
-        alert("⚠️ 您目前尚未綁定 LINE！\n請點擊上方的「登入綁定」，或改選【電話通知】。");
-        return;
-      }
-      if (!base64Image) return alert("⚠️ 請拍攝處方箋！");
+    if (notify === "LINE通知" && !liff.isLoggedIn()) {
+      alert("⚠️ 您目前尚未登入 LINE！\n請點擊上方的「登入 LINE」，或改選【電話通知】。");
+      return;
     }
-
+    if (!base64Image) return alert("⚠️ 請拍攝處方箋！");
     if (!name || !phone) return alert("⚠️ 請填寫完整資料！");
 
     document.getElementById('loading').style.display = 'flex';
     document.getElementById('loadingText').innerText = "資料傳送中...";
 
-    const payload = { action: "upload", name: name, lineName: lineDisplayName, phone: phone, dept: dept, notify: notify, fileData: base64Image, fileName: fileName, lineUserId: lineUserId, isRegister: isRegisterMode };
+    const payload = { action: "upload", name: name, lineName: lineDisplayName, phone: phone, dept: dept, notify: notify, fileData: base64Image, fileName: fileName, lineUserId: lineUserId, isRegister: false };
 
     fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload) })
     .then(res => res.json())
     .then(response => {
       document.getElementById('loading').style.display = 'none';
       if(response.status === 'success') { 
-        // 🔥 根據模式顯示不同的成功訊息
-        if (isRegisterMode) {
-           alert("✅ 綁定成功！\n藥局將能透過 LINE 通知您領藥。");
-        } else {
-           alert("✅ 處方箋上傳成功！\n藥師確認後會發送通知。"); 
-        }
+        alert("✅ 處方箋上傳成功！\n藥師確認後會發送通知。"); 
+        goHome(); 
+      } else { alert("❌ 失敗：" + response.message); }
+    })
+    .catch(error => { document.getElementById('loading').style.display = 'none'; alert("傳送完成。"); goHome(); });
+  }
 
-        if(liff.isInClient()) liff.closeWindow(); 
-        else goHome(); 
-      } 
-      else { alert("❌ 失敗：" + response.message); }
+  // 🔥 處理專屬綁定作業
+  function submitBind() {
+    const name = document.getElementById('bName').value;
+    const phone = document.getElementById('bPhone').value;
+    
+    if (!name || !phone) return alert("⚠️ 請填寫完整真實姓名與電話！");
+
+    document.getElementById('loading').style.display = 'flex';
+    document.getElementById('loadingText').innerText = "綁定資料傳送中...";
+
+    const payload = { 
+      action: "upload", 
+      name: name, 
+      lineName: lineDisplayName, 
+      phone: phone, 
+      dept: "現場登記", 
+      notify: "LINE通知", 
+      fileData: "", 
+      fileName: "", 
+      lineUserId: lineUserId, 
+      isRegister: true 
+    };
+
+    fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload) })
+    .then(res => res.json())
+    .then(response => {
+      document.getElementById('loading').style.display = 'none';
+      if(response.status === 'success') { 
+        alert("✅ 綁定成功！\n藥局未來將能透過 LINE 通知您領藥。"); 
+        if(liff.isInClient()) liff.closeWindow(); else goHome(); 
+      } else { alert("❌ 失敗：" + response.message); }
     })
     .catch(error => { document.getElementById('loading').style.display = 'none'; alert("傳送完成。"); goHome(); });
   }
