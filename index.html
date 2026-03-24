@@ -22,10 +22,10 @@
     
     .hidden-mode { display: none !important; } 
 
-    /* 頂部膠囊導覽列 */
-    .top-nav-container { background: #fff; border-radius: 50px; padding: 5px; display: flex; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px; }
-    .nav-btn { flex: 1; border: none; background: transparent; padding: 10px 0; font-weight: bold; color: #6c757d; border-radius: 50px; transition: 0.3s; font-size: 0.95rem; }
-    .nav-btn.active { background: #06C755; color: white; box-shadow: 0 2px 8px rgba(6, 199, 85, 0.3); }
+    /* 主選單按鈕樣式 */
+    .menu-btn { padding: 20px; border-radius: 16px; font-weight: bold; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; flex-direction: column; text-align: center; transition: 0.2s; border: 2px solid; }
+    .menu-btn i { font-size: 2rem; margin-bottom: 8px; }
+    .menu-btn:active { transform: scale(0.97); }
 
     #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
 
@@ -51,31 +51,48 @@
 </div>
 
 <div class="container">
-  
-  <div class="user-card d-flex justify-content-between align-items-center" id="userInfo" style="display: none;">
-    <div class="d-flex align-items-center">
-      <img id="userThumb" src="https://placehold.co/50?text=U" class="user-avatar">
-      <div>
-        <div class="small text-muted">歡迎使用</div>
-        <div class="fw-bold fs-5" id="userNameDisplay">訪客</div>
-      </div>
+
+  <div id="view-home">
+    <div class="text-center py-4 mb-2">
+      <h3 class="fw-bold text-success"><i class="bi bi-hospital"></i> 藥局雲端服務</h3>
+      <p class="text-muted small">請選擇您需要的服務</p>
     </div>
-    <button class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold" onclick="doLiffLogout()">
-      <i class="bi bi-box-arrow-right"></i> 登出
-    </button>
+
+    <div class="user-card d-flex justify-content-between align-items-center hidden-mode" id="userInfo">
+      <div class="d-flex align-items-center">
+        <img id="userThumb" src="https://placehold.co/50?text=U" class="user-avatar">
+        <div>
+          <div class="small text-muted">目前登入帳號</div>
+          <div class="fw-bold text-dark" id="userNameDisplay">訪客</div>
+        </div>
+      </div>
+      <button class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="doLiffLogout()">登出</button>
+    </div>
+
+    <div class="d-grid gap-3 px-2">
+      <button class="btn btn-outline-success menu-btn" onclick="openUpload()">
+        <i class="bi bi-camera"></i>
+        <span>1. 上傳處方箋</span>
+      </button>
+
+      <button class="btn btn-outline-primary menu-btn" onclick="openBindLine()">
+        <i class="bi bi-line"></i>
+        <span>2. LINE 綁定通知領藥</span>
+      </button>
+
+      <button class="btn btn-outline-secondary menu-btn" onclick="openHistory()">
+        <i class="bi bi-cloud-arrow-up"></i>
+        <span>3. 雲端藥歷查詢</span>
+      </button>
+    </div>
   </div>
 
-  <div class="top-nav-container" id="topNav">
-    <button class="nav-btn active" id="btn-tab-upload" onclick="switchMainTab('upload')">
-      <i class="bi bi-file-earmark-medical"></i> 領藥服務
+  <div id="view-form" class="hidden-mode">
+    <button class="btn btn-link text-secondary mb-2 text-decoration-none fw-bold" onclick="goHome()">
+      <i class="bi bi-chevron-left"></i> 返回主畫面
     </button>
-    <button class="nav-btn" id="btn-tab-medhistory" onclick="switchMainTab('medhistory')">
-      <i class="bi bi-cloud-arrow-up"></i> 雲端藥歷
-    </button>
-  </div>
 
-  <div id="tab-upload">
-    <div class="card p-4">
+    <div class="card p-4 shadow-sm border-0">
       <h5 class="fw-bold text-success mb-3" id="formTitle"><i class="bi bi-camera"></i> 上傳處方箋</h5>
       
       <div id="cameraSection">
@@ -89,16 +106,26 @@
       </div>
 
       <div class="mb-3"><label class="form-label small fw-bold">領藥人姓名 (病人)</label><input type="text" class="form-control" id="uName"></div>
-      <div class="mb-3"><label class="form-label small fw-bold">聯絡電話</label><input type="tel" class="form-control" id="uPhone" placeholder="請輸入電話"></div>
+      <div class="mb-3"><label class="form-label small fw-bold">聯絡電話</label><input type="tel" class="form-control" id="uPhone" placeholder="請輸入聯絡電話"></div>
       <div class="mb-3" id="deptSection"><label class="form-label small fw-bold">科別 (選填)</label><input type="text" class="form-control" id="uDept" placeholder="例如：牙科、內科..."></div>
-      <div class="mb-4" id="notifySection"><label class="form-label small fw-bold">希望通知方式</label><select class="form-select" id="uNotify"><option value="LINE通知" selected>LINE 通知 (推薦)</option><option value="電話通知">電話通知</option></select></div>
+      <div class="mb-4" id="notifySection">
+        <label class="form-label small fw-bold">希望通知方式</label>
+        <select class="form-select" id="uNotify">
+          <option value="LINE通知" selected>LINE 通知 (推薦)</option>
+          <option value="電話通知">電話通知</option>
+        </select>
+      </div>
 
       <button class="btn btn-success w-100 fw-bold py-2" onclick="submitData()">確認送出</button>
     </div>
   </div>
 
-  <div id="tab-medhistory" class="hidden-mode">
-    <div class="card p-4" id="authSection">
+  <div id="view-history" class="hidden-mode">
+    <button class="btn btn-link text-secondary mb-2 text-decoration-none fw-bold" onclick="goHome()">
+      <i class="bi bi-chevron-left"></i> 返回主畫面
+    </button>
+
+    <div class="card p-4 shadow-sm border-0" id="authSection">
       <h5 class="fw-bold text-primary mb-3"><i class="bi bi-shield-lock"></i> 安全藥歷查詢</h5>
       <p class="small text-muted mb-4">為保護您的個資，請輸入病人的姓名與身分證字號進行安全驗證。</p>
       
@@ -138,60 +165,179 @@
   let lineDisplayName = "";
   let base64Image = "";
   let fileName = "";
+  let isRegisterMode = false;
   
+  // 檢查是否從 QR Code 直接掃描進入綁定模式
   const urlParams = new URLSearchParams(window.location.search);
-  const isRegisterMode = urlParams.get('mode') === 'register';
+  const directRegister = urlParams.get('mode') === 'register';
 
   window.onload = function() {
-    initInterface(); 
     initLiff();
   };
 
-  function doLiffLogout() {
-    if (confirm("確定要登出並切換 LINE 帳號嗎？")) {
-      if (liff.isLoggedIn()) {
-        liff.logout();
-        location.reload(); 
-      }
-    }
-  }
-
-  function switchMainTab(tab) {
-    document.getElementById('tab-upload').classList.toggle('hidden-mode', tab !== 'upload');
-    document.getElementById('tab-medhistory').classList.toggle('hidden-mode', tab !== 'medhistory');
-    document.getElementById('btn-tab-upload').classList.toggle('active', tab === 'upload');
-    document.getElementById('btn-tab-medhistory').classList.toggle('active', tab === 'medhistory');
-  }
-
-  function initInterface() {
-    if (isRegisterMode) {
-      document.getElementById('cameraSection').classList.add('hidden-mode');
-      document.getElementById('deptSection').classList.add('hidden-mode');
-      document.getElementById('notifySection').classList.add('hidden-mode');
-      document.getElementById('topNav').classList.add('hidden-mode'); 
-      document.getElementById('formTitle').innerHTML = '<i class="bi bi-person-check"></i> 現場領藥登記';
-    }
-  }
-
+  // 初始化 LIFF，但「不強制」登入
   function initLiff() {
     liff.init({ liffId: LIFF_ID }).then(() => {
-      if (!liff.isLoggedIn()) { liff.login(); } 
-      else {
+      document.getElementById('loading').style.display = 'none';
+
+      if (liff.isLoggedIn()) {
+        // 如果已經登入過，讀取資料顯示在首頁
         liff.getProfile().then(profile => {
           lineUserId = profile.userId;
           lineDisplayName = profile.displayName;
           const pic = profile.pictureUrl;
+          
           document.getElementById('userNameDisplay').innerText = lineDisplayName;
           document.getElementById('uName').value = lineDisplayName; 
           document.getElementById('qName').value = lineDisplayName; 
           if(pic) document.getElementById('userThumb').src = pic;
-          document.getElementById('userInfo').style.display = 'flex';
-          document.getElementById('loading').style.display = 'none';
+          
+          document.getElementById('userInfo').classList.remove('hidden-mode');
         });
       }
-    }).catch(err => { document.getElementById('loading').style.display = 'none'; });
+
+      // 如果網址帶有 mode=register，直接跳轉到綁定頁面
+      if (directRegister) {
+        openBindLine();
+      }
+
+    }).catch(err => { 
+      document.getElementById('loading').style.display = 'none'; 
+      console.log("LIFF Init Error:", err);
+    });
   }
 
+  // 登出功能
+  function doLiffLogout() {
+    if (confirm("確定要登出 LINE 帳號嗎？")) {
+      if (liff.isLoggedIn()) {
+        liff.logout();
+        location.href = window.location.href.split('?')[0]; // 清除網址參數並重整
+      }
+    }
+  }
+
+  // ==========================================
+  // 導覽切換控制
+  // ==========================================
+  function goHome() {
+    document.getElementById('view-home').classList.remove('hidden-mode');
+    document.getElementById('view-form').classList.add('hidden-mode');
+    document.getElementById('view-history').classList.add('hidden-mode');
+    isRegisterMode = false;
+  }
+
+  // 1. 開啟「上傳處方箋」
+  function openUpload() {
+    isRegisterMode = false;
+    document.getElementById('view-home').classList.add('hidden-mode');
+    document.getElementById('view-form').classList.remove('hidden-mode');
+    
+    document.getElementById('cameraSection').style.display = 'block';
+    document.getElementById('deptSection').style.display = 'block';
+    document.getElementById('notifySection').style.display = 'block';
+    document.getElementById('formTitle').innerHTML = '<i class="bi bi-camera"></i> 上傳處方箋';
+
+    // 防呆：如果沒登入 LINE，預設選電話通知
+    if(!liff.isLoggedIn()) {
+      document.getElementById('uNotify').value = "電話通知";
+    }
+  }
+
+  // 2. 開啟「LINE 綁定通知領藥」
+  function openBindLine() {
+    // 如果還沒登入，強制要求登入 LINE
+    if (!liff.isLoggedIn()) {
+      // 登入後自動導回此模式
+      let callbackUrl = window.location.href.split('?')[0] + "?mode=register";
+      liff.login({ redirectUri: callbackUrl });
+      return;
+    }
+
+    isRegisterMode = true;
+    document.getElementById('view-home').classList.add('hidden-mode');
+    document.getElementById('view-form').classList.remove('hidden-mode');
+    
+    // 隱藏不必要的欄位
+    document.getElementById('cameraSection').style.display = 'none';
+    document.getElementById('deptSection').style.display = 'none';
+    document.getElementById('notifySection').style.display = 'none';
+    document.getElementById('formTitle').innerHTML = '<i class="bi bi-person-check"></i> LINE 綁定領藥登記';
+  }
+
+  // 3. 開啟「雲端藥歷」
+  function openHistory() {
+    document.getElementById('view-home').classList.add('hidden-mode');
+    document.getElementById('view-history').classList.remove('hidden-mode');
+  }
+
+  // ==========================================
+  // 表單上傳功能
+  // ==========================================
+  function handleFile(input) {
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      fileName = file.name;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image(); img.src = e.target.result;
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          let w = img.width, h = img.height; if(w > 800) { h *= 800/w; w = 800; }
+          canvas.width = w; canvas.height = h;
+          const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, w, h);
+          base64Image = canvas.toDataURL('image/jpeg', 0.7);
+          document.getElementById('previewImg').src = base64Image;
+          document.getElementById('previewImg').style.display = 'block';
+          document.getElementById('placeholder').style.display = 'none';
+        }
+      }
+      reader.readAsDataURL(file);
+    }
+  }
+
+  function submitData() {
+    const name = document.getElementById('uName').value;
+    const phone = document.getElementById('uPhone').value;
+    let dept = document.getElementById('uDept').value;
+    let notify = document.getElementById('uNotify').value;
+    
+    if (isRegisterMode) { 
+      dept = "現場登記"; 
+      notify = "LINE通知"; 
+    } else {
+      // 檢查：如果在一般上傳選擇 LINE 通知，但沒登入
+      if (notify === "LINE通知" && !liff.isLoggedIn()) {
+        alert("⚠️ 您目前尚未登入 LINE！\n請改選【電話通知】，或返回主選單進行 LINE 綁定。");
+        return;
+      }
+      if (!base64Image) return alert("⚠️ 請拍攝處方箋！");
+    }
+
+    if (!name || !phone) return alert("⚠️ 請填寫完整資料！");
+
+    document.getElementById('loading').style.display = 'flex';
+    document.getElementById('loadingText').innerText = "資料傳送中...";
+
+    const payload = { action: "upload", name: name, lineName: lineDisplayName, phone: phone, dept: dept, notify: notify, fileData: base64Image, fileName: fileName, lineUserId: lineUserId, isRegister: isRegisterMode };
+
+    fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload) })
+    .then(res => res.json())
+    .then(response => {
+      document.getElementById('loading').style.display = 'none';
+      if(response.status === 'success') { 
+        alert("✅ 登記成功！\n藥師確認後會發送通知。"); 
+        if(liff.isInClient()) liff.closeWindow(); 
+        else goHome(); 
+      } 
+      else { alert("❌ 失敗：" + response.message); }
+    })
+    .catch(error => { document.getElementById('loading').style.display = 'none'; alert("傳送完成。"); goHome(); });
+  }
+
+  // ==========================================
+  // 💊 藥歷查詢功能
+  // ==========================================
   function queryMedData() {
     const qName = document.getElementById('qName').value.trim();
     const qId = document.getElementById('qId').value.trim();
@@ -222,7 +368,6 @@
     });
   }
 
-  // 🔥 核心更新：將資料改為 Bootstrap Table 呈現
   function renderMedListGrouped(patientName, data) {
     const container = document.getElementById('medAccordion');
     container.innerHTML = "";
@@ -250,7 +395,6 @@
       const collapseClass = isFirst ? "show" : "";
       const buttonClass = isFirst ? "" : "collapsed";
 
-      // 🔥 表格頭部與結構
       let tableHtml = `
         <div class="table-responsive">
           <table class="table table-sm table-striped table-hover med-table mb-0" style="font-size: 0.85rem;">
@@ -266,7 +410,6 @@
             <tbody>
       `;
 
-      // 表格內容 (一行一藥品)
       drugs.forEach(drug => {
         tableHtml += `
           <tr>
@@ -279,14 +422,8 @@
         `;
       });
 
-      // 收尾表格
-      tableHtml += `
-            </tbody>
-          </table>
-        </div>
-      `;
+      tableHtml += `</tbody></table></div>`;
 
-      // 組合摺疊外框
       const accordionItem = `
         <div class="accordion-item bg-white">
           <h2 class="accordion-header" id="heading-${index}">
@@ -296,7 +433,8 @@
           </h2>
           <div id="collapse-${index}" class="accordion-collapse collapse ${collapseClass}" data-bs-parent="#medAccordion">
             <div class="accordion-body p-0">
-              ${tableHtml} </div>
+              ${tableHtml}
+            </div>
           </div>
         </div>
       `;
@@ -311,51 +449,6 @@
     document.getElementById('medAccordion').innerHTML = "";
   }
 
-  function handleFile(input) {
-    if (input.files && input.files[0]) {
-      const file = input.files[0];
-      fileName = file.name;
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const img = new Image(); img.src = e.target.result;
-        img.onload = function() {
-          const canvas = document.createElement('canvas');
-          let w = img.width, h = img.height; if(w > 800) { h *= 800/w; w = 800; }
-          canvas.width = w; canvas.height = h;
-          const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, w, h);
-          base64Image = canvas.toDataURL('image/jpeg', 0.7);
-          document.getElementById('previewImg').src = base64Image;
-          document.getElementById('previewImg').style.display = 'block';
-          document.getElementById('placeholder').style.display = 'none';
-        }
-      }
-      reader.readAsDataURL(file);
-    }
-  }
-
-  function submitData() {
-    const name = document.getElementById('uName').value;
-    const phone = document.getElementById('uPhone').value;
-    let dept = document.getElementById('uDept').value;
-    let notify = document.getElementById('uNotify').value;
-    if (isRegisterMode) { dept = "現場登記"; notify = "LINE通知"; }
-    if (!isRegisterMode && !base64Image) return alert("⚠️ 請拍攝處方箋！");
-    if (!name || !phone) return alert("⚠️ 請填寫完整資料！");
-
-    document.getElementById('loading').style.display = 'flex';
-    document.getElementById('loadingText').innerText = "資料傳送中...";
-
-    const payload = { action: "upload", name: name, lineName: lineDisplayName, phone: phone, dept: dept, notify: notify, fileData: base64Image, fileName: fileName, lineUserId: lineUserId, isRegister: isRegisterMode };
-
-    fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload) })
-    .then(res => res.json())
-    .then(response => {
-      document.getElementById('loading').style.display = 'none';
-      if(response.status === 'success') { alert("✅ 登記成功！\n藥師確認後會發送通知。"); if(isRegisterMode) liff.closeWindow(); else location.reload(); } 
-      else { alert("❌ 失敗：" + response.message); }
-    })
-    .catch(error => { document.getElementById('loading').style.display = 'none'; alert("傳送完成。"); if(isRegisterMode) liff.closeWindow(); else location.reload(); });
-  }
 </script>
 </body>
 </html>
