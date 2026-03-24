@@ -22,27 +22,23 @@
     
     .hidden-mode { display: none !important; } 
 
-    /* 🔥 新增：專屬品牌 Header 樣式 */
     .brand-header { background: #fff; padding: 25px 20px; border-bottom: 2px solid #e8f5e9; text-align: center; margin-bottom: 20px;}
     .brand-logo-wrap { margin-bottom: 15px; }
-    .brand-logo-wrap img { height: 75px; object-fit: contain; } /* 🔥 Logo 大大放大 */
-    .brand-title { color: #0f5132; font-weight: 800; } /* 🔥 標題顏色更沉穩有力 */
+    .brand-logo-wrap img { height: 75px; object-fit: contain; } 
+    .brand-title { color: #0f5132; font-weight: 800; } 
     .brand-subtitle { font-size: 0.85rem; color: #6c757d; margin-bottom: 0; }
 
-    /* 主選單按鈕樣式 */
     .menu-btn { padding: 20px; border-radius: 16px; font-weight: bold; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; flex-direction: column; text-align: center; transition: 0.2s; border: 2px solid; }
     .menu-btn i { font-size: 2rem; margin-bottom: 8px; }
     .menu-btn:active { transform: scale(0.97); }
 
     #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
 
-    /* 摺疊選單樣式 */
     .accordion-item { border: none; border-radius: 12px !important; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); overflow: hidden; }
     .accordion-button { font-weight: bold; color: #0f5132; background-color: #f8fff9; padding: 15px; border-radius: 12px !important; }
     .accordion-button:not(.collapsed) { background-color: #e8f5e9; color: #0f5132; box-shadow: none; border-bottom-left-radius: 0 !important; border-bottom-right-radius: 0 !important; }
     .accordion-button:focus { box-shadow: none; border-color: rgba(0,0,0,.125); }
 
-    /* 表格樣式微調 */
     .med-table th { font-weight: 600; background-color: #f8f9fa; white-space: nowrap; }
     .med-table td { vertical-align: middle; }
     .nhi-col { font-family: monospace; color: #6c757d; white-space: nowrap; }
@@ -57,8 +53,9 @@
   <p class="mt-3 text-secondary fw-bold" id="loadingText">系統連線中...</p>
 </div>
 
-<div class="container p-0"> <div id="view-home">
-    
+<div class="container p-0"> 
+
+  <div id="view-home">
     <div class="brand-header shadow-sm">
       <div class="brand-logo-wrap">
         <img src="logo.PNG" alt="樂森藥局" onerror="this.src='https://placehold.co/150x75?text=Lisen+Pharmacy'">
@@ -108,6 +105,11 @@
     <div class="card p-4 shadow-sm border-0">
       <h5 class="fw-bold text-success mb-3" id="formTitle"><i class="bi bi-camera"></i> 上傳處方箋</h5>
       
+      <div id="btnOptionalLogin" class="alert alert-warning small d-flex justify-content-between align-items-center hidden-mode p-2 mb-3">
+         <span class="fw-bold text-dark">未綁定 LINE (僅能選電話通知)</span>
+         <button class="btn btn-sm btn-success fw-bold rounded-pill px-3" onclick="doOptionalLogin()">登入綁定</button>
+      </div>
+
       <div id="cameraSection">
           <div class="preview-box" onclick="document.getElementById('fileInput').click()">
           <div class="placeholder-text" id="placeholder">
@@ -124,8 +126,8 @@
       <div class="mb-4" id="notifySection">
         <label class="form-label small fw-bold">希望通知方式</label>
         <select class="form-select" id="uNotify">
-          <option value="LINE通知" selected>LINE 通知 (推薦)</option>
-          <option value="電話通知">電話通知</option>
+          <option value="LINE通知" id="optLine" selected>LINE 通知 (推薦)</option>
+          <option value="電話通知" id="optPhone">電話通知</option>
         </select>
       </div>
 
@@ -203,13 +205,27 @@
           if(pic) document.getElementById('userThumb').src = pic;
           
           document.getElementById('userInfo').classList.remove('hidden-mode');
+          document.getElementById('btnOptionalLogin').classList.add('hidden-mode');
+
+          // 🔥 讀取記憶體，看看登入前是點了哪個按鈕
+          const pending = sessionStorage.getItem('pending_mode');
+          if (pending === 'register') {
+            sessionStorage.removeItem('pending_mode');
+            openBindLine();
+          } else if (pending === 'upload') {
+            sessionStorage.removeItem('pending_mode');
+            openUpload();
+          } else if (directRegister) {
+            openBindLine();
+          }
         });
+      } else {
+        // 沒登入時
+        document.getElementById('btnOptionalLogin').classList.remove('hidden-mode');
+        if (directRegister) {
+          openBindLine(); // QR Code 直連會觸發強制登入
+        }
       }
-
-      if (directRegister) {
-        openBindLine();
-      }
-
     }).catch(err => { 
       document.getElementById('loading').style.display = 'none'; 
       console.log("LIFF Init Error:", err);
@@ -223,6 +239,12 @@
         location.href = window.location.href.split('?')[0]; 
       }
     }
+  }
+
+  // 選擇性登入 (給點擊上傳處方箋，但想臨時登入的人)
+  function doOptionalLogin() {
+    sessionStorage.setItem('pending_mode', 'upload');
+    liff.login();
   }
 
   function goHome() {
@@ -242,15 +264,17 @@
     document.getElementById('notifySection').style.display = 'block';
     document.getElementById('formTitle').innerHTML = '<i class="bi bi-camera"></i> 上傳處方箋';
 
+    // 如果未登入，強制預設電話通知
     if(!liff.isLoggedIn()) {
       document.getElementById('uNotify').value = "電話通知";
     }
   }
 
   function openBindLine() {
+    // 🔥 取消了 redirectUri 參數，改用 sessionStorage 記憶，徹底解決 400 Bad Request
     if (!liff.isLoggedIn()) {
-      let callbackUrl = window.location.href.split('?')[0] + "?mode=register";
-      liff.login({ redirectUri: callbackUrl });
+      sessionStorage.setItem('pending_mode', 'register');
+      liff.login(); 
       return;
     }
 
@@ -261,6 +285,7 @@
     document.getElementById('cameraSection').style.display = 'none';
     document.getElementById('deptSection').style.display = 'none';
     document.getElementById('notifySection').style.display = 'none';
+    document.getElementById('btnOptionalLogin').classList.add('hidden-mode');
     document.getElementById('formTitle').innerHTML = '<i class="bi bi-person-check"></i> LINE 綁定領藥登記';
   }
 
@@ -302,7 +327,7 @@
       notify = "LINE通知"; 
     } else {
       if (notify === "LINE通知" && !liff.isLoggedIn()) {
-        alert("⚠️ 您目前尚未登入 LINE！\n請改選【電話通知】，或返回主選單進行 LINE 綁定。");
+        alert("⚠️ 您目前尚未綁定 LINE！\n請點擊上方的「登入綁定」，或改選【電話通知】。");
         return;
       }
       if (!base64Image) return alert("⚠️ 請拍攝處方箋！");
