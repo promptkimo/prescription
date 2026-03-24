@@ -9,8 +9,8 @@
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   
   <style>
-    body { background-color: #f0f2f5; font-family: -apple-system, sans-serif; padding-bottom: 30px; }
-    .container { max-width: 600px; padding-top: 0; }
+    body { background-color: #f0f2f5; font-family: -apple-system, sans-serif; padding-bottom: 30px; margin: 0; }
+    .container { max-width: 600px; padding: 0; }
     .card { border-radius: 12px; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; }
     
     .user-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
@@ -22,11 +22,30 @@
     
     .hidden-mode { display: none !important; } 
 
-    .brand-header { background: linear-gradient(135deg, #06C755 0%, #009933 100%); padding: 40px 20px 30px; border-bottom-left-radius: 25px; border-bottom-right-radius: 25px; text-align: center; margin-bottom: 25px; color: white; box-shadow: 0 4px 15px rgba(6, 199, 85, 0.2); }
-    .brand-title { font-weight: 900; font-size: 2rem; letter-spacing: 2px; margin-bottom: 8px; text-shadow: 0 2px 4px rgba(0,0,0,0.1); } 
-    .brand-subtitle { font-size: 0.95rem; opacity: 0.9; margin-bottom: 0; font-weight: 500; }
+    /* 🔥 純文字質感 Header 排版 (移除圖片，用漸層展現專業感) */
+    .brand-header { 
+      background: linear-gradient(135deg, #06C755 0%, #009933 100%); 
+      padding: 45px 20px 35px; 
+      border-radius: 0 0 25px 25px; /* 只有下方有圓角 */
+      text-align: center; 
+      margin-bottom: 20px; 
+      color: white; 
+      box-shadow: 0 4px 15px rgba(6, 199, 85, 0.2); 
+    }
+    .brand-title { font-weight: 900; font-size: 2rem; letter-spacing: 2px; margin-bottom: 8px; text-shadow: 0 2px 4px rgba(0,0,0,0.15); } 
+    .brand-subtitle { font-size: 0.95rem; opacity: 0.9; margin-bottom: 0; font-weight: 500; letter-spacing: 1px; }
 
-    .back-btn { font-size: 1rem; font-weight: bold; color: #495057; padding: 8px 18px; background: white; border-radius: 50px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); display: inline-flex; align-items: center; margin-bottom: 15px; margin-top: 15px; border: none; transition: 0.2s;}
+    /* 各個功能頁面的內距 */
+    .padded-view { padding: 15px 15px 0 15px; }
+
+    /* 🔥 絕對不會不見的返回按鈕 */
+    .back-btn-container { margin-bottom: 15px; }
+    .back-btn { 
+      font-size: 1rem; font-weight: bold; color: #495057; 
+      padding: 8px 18px; background: white; 
+      border-radius: 50px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); 
+      display: inline-flex; align-items: center; border: none; transition: 0.2s;
+    }
     .back-btn:active { transform: scale(0.95); background: #f8f9fa; }
     .back-btn i { font-size: 1.2rem; margin-right: 5px; color: #06C755; }
 
@@ -55,7 +74,7 @@
   <p class="mt-3 text-secondary fw-bold" id="loadingText">系統連線中...</p>
 </div>
 
-<div class="container p-0"> 
+<div class="container"> 
 
   <div id="view-home">
     <div class="brand-header">
@@ -75,7 +94,7 @@
         <button class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold" onclick="doLiffLogout()">登出</button>
       </div>
 
-      <div class="d-grid gap-3 px-2">
+      <div class="d-grid gap-3">
         <button class="btn btn-outline-success menu-btn" onclick="openUpload()">
           <i class="bi bi-camera"></i>
           <span>1. 上傳處方箋</span>
@@ -94,13 +113,16 @@
     </div>
   </div>
 
-  <div id="view-form" class="hidden-mode px-3">
-    <button class="back-btn" onclick="goHome()">
-      <i class="bi bi-chevron-left"></i> 返回主畫面
-    </button>
+  <div id="view-form" class="hidden-mode padded-view">
+    
+    <div class="back-btn-container">
+      <button class="back-btn" onclick="goHome()">
+        <i class="bi bi-chevron-left"></i> 返回主畫面
+      </button>
+    </div>
 
     <div class="card p-4 shadow-sm border-0">
-      <h5 class="fw-bold text-success mb-3"><i class="bi bi-camera"></i> 上傳處方箋</h5>
+      <h5 class="fw-bold text-success mb-3" id="formTitle"><i class="bi bi-camera"></i> 上傳處方箋</h5>
       
       <div id="btnOptionalLogin" class="alert alert-warning small d-flex justify-content-between align-items-center hidden-mode p-2 mb-3">
          <span class="fw-bold text-dark">未綁定 LINE (僅能選電話通知)</span>
@@ -138,10 +160,13 @@
     </div>
   </div>
 
-  <div id="view-bind" class="hidden-mode px-3">
-    <button class="back-btn" onclick="goHome()">
-      <i class="bi bi-chevron-left"></i> 返回主畫面
-    </button>
+  <div id="view-bind" class="hidden-mode padded-view">
+    
+    <div class="back-btn-container">
+      <button class="back-btn" onclick="goHome()">
+        <i class="bi bi-chevron-left"></i> 返回主畫面
+      </button>
+    </div>
 
     <div class="card p-4 shadow-sm border-0 border-top border-primary border-4">
       <h5 class="fw-bold text-primary mb-3"><i class="bi bi-link-45deg"></i> LINE 綁定作業</h5>
@@ -160,10 +185,13 @@
     </div>
   </div>
 
-  <div id="view-history" class="hidden-mode px-3">
-    <button class="back-btn" onclick="goHome()">
-      <i class="bi bi-chevron-left"></i> 返回主畫面
-    </button>
+  <div id="view-history" class="hidden-mode padded-view">
+    
+    <div class="back-btn-container">
+      <button class="back-btn" onclick="goHome()">
+        <i class="bi bi-chevron-left"></i> 返回主畫面
+      </button>
+    </div>
 
     <div class="card p-4 shadow-sm border-0" id="authSection">
       <h5 class="fw-bold text-secondary mb-3"><i class="bi bi-shield-lock"></i> 安全藥歷查詢</h5>
@@ -205,6 +233,7 @@
   let lineDisplayName = "";
   let base64Image = "";
   let fileName = "";
+  let isRegisterMode = false;
   
   const urlParams = new URLSearchParams(window.location.search);
   const directRegister = urlParams.get('mode') === 'register';
@@ -217,6 +246,14 @@
     liff.init({ liffId: LIFF_ID }).then(() => {
       document.getElementById('loading').style.display = 'none';
 
+      // 🔥 抓取全新的金鑰，徹底擺脫舊快取的糾纏
+      const pending = localStorage.getItem('rx_pending_mode');
+      
+      // 🔥 無情大掃除：只要讀完，馬上清空所有相關的暫存
+      localStorage.removeItem('rx_pending_mode');
+      localStorage.removeItem('pending_mode');
+      sessionStorage.removeItem('pending_mode');
+
       if (liff.isLoggedIn()) {
         liff.getProfile().then(profile => {
           lineUserId = profile.userId;
@@ -224,7 +261,6 @@
           const pic = profile.pictureUrl;
           
           document.getElementById('userNameDisplay').innerText = lineDisplayName;
-          // 自動填入姓名到各個表單
           document.getElementById('uName').value = lineDisplayName; 
           document.getElementById('bName').value = lineDisplayName; 
           document.getElementById('qName').value = lineDisplayName; 
@@ -233,25 +269,27 @@
           document.getElementById('userInfo').classList.remove('hidden-mode');
           document.getElementById('btnOptionalLogin').classList.add('hidden-mode');
 
-          // 🔥 取出跳轉記憶，決定開啟哪個畫面
-          const pending = localStorage.getItem('pending_mode');
-          localStorage.removeItem('pending_mode'); // 用完馬上清除
-
+          // 判斷該導向哪個畫面
           if (pending === 'register' || directRegister) {
             openBindLine();
           } else if (pending === 'upload') {
             openUpload();
+          } else {
+            goHome(); // 預設回到主畫面
           }
         });
       } else {
         document.getElementById('btnOptionalLogin').classList.remove('hidden-mode');
         if (directRegister) {
           openBindLine(); 
+        } else {
+          goHome();
         }
       }
     }).catch(err => { 
       document.getElementById('loading').style.display = 'none'; 
       console.log("LIFF Init Error:", err);
+      goHome();
     });
   }
 
@@ -265,16 +303,20 @@
   }
 
   function doOptionalLogin() {
-    localStorage.setItem('pending_mode', 'upload');
+    // 寫入全新的金鑰
+    localStorage.setItem('rx_pending_mode', 'upload');
     liff.login();
   }
 
-  // 🔥 隱藏所有子畫面，回到主畫面
   function goHome() {
+    // 清除一切可能干擾的暫存
+    localStorage.removeItem('rx_pending_mode');
+    
     document.getElementById('view-home').classList.remove('hidden-mode');
     document.getElementById('view-form').classList.add('hidden-mode');
     document.getElementById('view-bind').classList.add('hidden-mode');
     document.getElementById('view-history').classList.add('hidden-mode');
+    isRegisterMode = false;
   }
 
   function openUpload() {
@@ -293,15 +335,16 @@
 
   function openBindLine() {
     if (!liff.isLoggedIn()) {
-      localStorage.setItem('pending_mode', 'register');
+      localStorage.setItem('rx_pending_mode', 'register');
       liff.login(); 
       return;
     }
 
+    isRegisterMode = true;
     document.getElementById('view-home').classList.add('hidden-mode');
     document.getElementById('view-form').classList.add('hidden-mode');
     document.getElementById('view-history').classList.add('hidden-mode');
-    document.getElementById('view-bind').classList.remove('hidden-mode'); // 打開專屬綁定畫面
+    document.getElementById('view-bind').classList.remove('hidden-mode'); 
   }
 
   function openHistory() {
@@ -389,7 +432,6 @@
     }
   }
 
-  // 🔥 處理一般上傳處方箋
   function submitData() {
     const name = document.getElementById('uName').value;
     const phone = document.getElementById('uPhone').value;
@@ -397,7 +439,7 @@
     let notify = document.getElementById('uNotify').value;
     
     if (notify === "LINE通知" && !liff.isLoggedIn()) {
-      alert("⚠️ 您目前尚未登入 LINE！\n請點擊上方的「登入 LINE」，或改選【電話通知】。");
+      alert("⚠️ 您目前尚未綁定 LINE！\n請點擊上方的「登入 LINE」，或改選【電話通知】。");
       return;
     }
     if (!base64Image) return alert("⚠️ 請拍攝處方箋！");
@@ -420,7 +462,6 @@
     .catch(error => { document.getElementById('loading').style.display = 'none'; alert("傳送完成。"); goHome(); });
   }
 
-  // 🔥 處理專屬綁定作業
   function submitBind() {
     const name = document.getElementById('bName').value;
     const phone = document.getElementById('bPhone').value;
@@ -431,16 +472,8 @@
     document.getElementById('loadingText').innerText = "綁定資料傳送中...";
 
     const payload = { 
-      action: "upload", 
-      name: name, 
-      lineName: lineDisplayName, 
-      phone: phone, 
-      dept: "現場登記", 
-      notify: "LINE通知", 
-      fileData: "", 
-      fileName: "", 
-      lineUserId: lineUserId, 
-      isRegister: true 
+      action: "upload", name: name, lineName: lineDisplayName, phone: phone, 
+      dept: "現場登記", notify: "LINE通知", fileData: "", fileName: "", lineUserId: lineUserId, isRegister: true 
     };
 
     fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload) })
