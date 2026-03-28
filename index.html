@@ -61,7 +61,7 @@
         <button class="btn btn-outline-success menu-btn" onclick="openUpload()"><i class="bi bi-camera"></i><span>1. 上傳處方箋</span></button>
         <button class="btn btn-outline-primary menu-btn" onclick="openBindLine()"><i class="bi bi-link-45deg"></i><span>2. LINE 綁定通知領藥</span></button>
         <button class="btn btn-outline-info menu-btn" onclick="openStatus()"><i class="bi bi-card-checklist"></i><span>3. 查看處方狀態</span></button>
-        <button class="btn btn-outline-secondary menu-btn" disabled style="opacity: 0.6; cursor: not-allowed; border-style: dashed;"><i class="bi bi-cloud-arrow-up"></i><span>4. 雲端藥歷更新中 (尚未開放)</span></button>
+        <button class="btn btn-outline-dark menu-btn" onclick="openMedHistory()"><i class="bi bi-cloud-arrow-up"></i><span>4. 雲端藥歷查詢</span></button>
       </div>
     </div>
   </div>
@@ -99,6 +99,27 @@
       <div id="uploadHistoryList"></div>
     </div>
   </div>
+
+  <div id="view-meds" class="hidden-mode sub-view">
+    <div class="back-btn-container"><button class="back-btn" onclick="goHome()"><i class="bi bi-chevron-left"></i> 返回主畫面</button></div>
+    <div class="card p-4 shadow-sm border-0 border-top border-dark border-4">
+      <h5 class="fw-bold text-dark mb-3"><i class="bi bi-cloud-arrow-up"></i> 雲端藥歷查詢</h5>
+      <p class="small text-muted mb-4">為保護您的個人隱私，請輸入領藥人的【身分證字號】進行安全驗證，以查詢詳細用藥紀錄。</p>
+      
+      <div class="mb-3">
+        <label class="form-label small fw-bold">領藥人姓名</label>
+        <input type="text" class="form-control bg-light" id="qName" readonly>
+      </div>
+      <div class="mb-4">
+        <label class="form-label small fw-bold text-danger">請輸入身分證字號</label>
+        <input type="text" class="form-control text-uppercase" id="qId" placeholder="例如：A123456789">
+      </div>
+      <button class="btn btn-dark w-100 fw-bold py-2 mb-4 shadow-sm" onclick="queryMedHistory()"><i class="bi bi-search"></i> 安全查詢</button>
+
+      <div id="medHistoryResult"></div>
+    </div>
+  </div>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -106,7 +127,6 @@
   const GAS_URL = "https://script.google.com/macros/s/AKfycbyUXCejmkI52ZJVUN1K1t1j2ZvfdZMCgHsgB79okITgzn7to2sfte43R5I0GOQnFp1opQ/exec"; 
   const LIFF_ID = "2008912977-DuJTm5u1"; 
 
-  // 🔥 增加 linePictureUrl 變數來儲存頭像網址
   let lineUserId = "", lineDisplayName = "", linePictureUrl = "", base64Image = "", fileName = "", isRegisterMode = false;
   const urlParams = new URLSearchParams(window.location.search);
   const currentMode = urlParams.get('mode');
@@ -118,25 +138,27 @@
       document.getElementById('loading').style.display = 'none';
       if (liff.isLoggedIn()) {
         liff.getProfile().then(profile => {
-          lineUserId = profile.userId; 
-          lineDisplayName = profile.displayName;
-          linePictureUrl = profile.pictureUrl || ""; // 🔥 抓取真實頭像
-
+          lineUserId = profile.userId; lineDisplayName = profile.displayName; linePictureUrl = profile.pictureUrl || "";
           document.getElementById('userNameDisplay').innerText = lineDisplayName;
           document.getElementById('uName').value = lineDisplayName; 
           document.getElementById('bName').value = lineDisplayName; 
+          document.getElementById('qName').value = lineDisplayName; // 自動填入姓名到藥歷查詢
+          
           if(profile.pictureUrl) document.getElementById('userThumb').src = profile.pictureUrl;
           document.getElementById('userInfo').classList.remove('hidden-mode');
           document.getElementById('btnOptionalLogin').classList.add('hidden-mode');
+          
           if (currentMode === 'bind' || currentMode === 'register') openBindLine();
           else if (currentMode === 'upload') openUpload();
           else if (currentMode === 'status') openStatus();
+          else if (currentMode === 'meds') openMedHistory();
           else goHome(); 
         });
       } else {
         document.getElementById('btnOptionalLogin').classList.remove('hidden-mode');
         if (currentMode === 'bind' || currentMode === 'register') openBindLine(); 
         else if (currentMode === 'status') openStatus();
+        else if (currentMode === 'meds') openMedHistory();
         else goHome();
       }
     }).catch(err => { document.getElementById('loading').style.display = 'none'; goHome(); });
@@ -151,13 +173,204 @@
     document.getElementById('view-form').classList.add('hidden-mode');
     document.getElementById('view-bind').classList.add('hidden-mode');
     document.getElementById('view-status').classList.add('hidden-mode');
+    document.getElementById('view-meds').classList.add('hidden-mode');
     isRegisterMode = false;
   }
 
-  function openUpload() { document.getElementById('view-home').classList.add('hidden-mode'); document.getElementById('view-bind').classList.add('hidden-mode'); document.getElementById('view-status').classList.add('hidden-mode'); document.getElementById('view-form').classList.remove('hidden-mode'); if(!liff.isLoggedIn()) document.getElementById('uNotify').value = "電話通知"; }
-  function openBindLine() { if (!liff.isLoggedIn()) { liff.login({ redirectUri: window.location.href.split('?')[0] + "?mode=bind" }); return; } isRegisterMode = true; document.getElementById('view-home').classList.add('hidden-mode'); document.getElementById('view-form').classList.add('hidden-mode'); document.getElementById('view-status').classList.add('hidden-mode'); document.getElementById('view-bind').classList.remove('hidden-mode'); }
-  function openStatus() { if (!liff.isLoggedIn()) { liff.login({ redirectUri: window.location.href.split('?')[0] + "?mode=status" }); return; } document.getElementById('view-home').classList.add('hidden-mode'); document.getElementById('view-form').classList.add('hidden-mode'); document.getElementById('view-bind').classList.add('hidden-mode'); document.getElementById('view-status').classList.remove('hidden-mode'); fetchUploadHistory(); }
+  function openUpload() { document.getElementById('view-home').classList.add('hidden-mode'); document.getElementById('view-bind').classList.add('hidden-mode'); document.getElementById('view-status').classList.add('hidden-mode'); document.getElementById('view-meds').classList.add('hidden-mode'); document.getElementById('view-form').classList.remove('hidden-mode'); if(!liff.isLoggedIn()) document.getElementById('uNotify').value = "電話通知"; }
+  function openBindLine() { if (!liff.isLoggedIn()) { liff.login({ redirectUri: window.location.href.split('?')[0] + "?mode=bind" }); return; } isRegisterMode = true; document.getElementById('view-home').classList.add('hidden-mode'); document.getElementById('view-form').classList.add('hidden-mode'); document.getElementById('view-status').classList.add('hidden-mode'); document.getElementById('view-meds').classList.add('hidden-mode'); document.getElementById('view-bind').classList.remove('hidden-mode'); }
+  function openStatus() { if (!liff.isLoggedIn()) { liff.login({ redirectUri: window.location.href.split('?')[0] + "?mode=status" }); return; } document.getElementById('view-home').classList.add('hidden-mode'); document.getElementById('view-form').classList.add('hidden-mode'); document.getElementById('view-bind').classList.add('hidden-mode'); document.getElementById('view-meds').classList.add('hidden-mode'); document.getElementById('view-status').classList.remove('hidden-mode'); fetchUploadHistory(); }
+  
+  // 打開藥歷查詢介面
+  function openMedHistory() { 
+    if (!liff.isLoggedIn()) { liff.login({ redirectUri: window.location.href.split('?')[0] + "?mode=meds" }); return; } 
+    document.getElementById('view-home').classList.add('hidden-mode'); 
+    document.getElementById('view-form').classList.add('hidden-mode'); 
+    document.getElementById('view-bind').classList.add('hidden-mode'); 
+    document.getElementById('view-status').classList.add('hidden-mode'); 
+    document.getElementById('view-meds').classList.remove('hidden-mode'); 
+    document.getElementById('medHistoryResult').innerHTML = '';
+    document.getElementById('qId').value = '';
+  }
 
+  // ----------------------------------------------------
+  // 🔥 雲端藥歷查詢與時間推算引擎
+  // ----------------------------------------------------
+  function addDaysToDateStr(dStr, days) {
+      if (!dStr || !days) return "未提供";
+      let s = String(dStr).trim();
+      let y, m, d;
+      
+      if (s.includes('/') || s.includes('-')) {
+          let parts = s.split(/[\/\-]/);
+          y = parseInt(parts[0]);
+          if (y < 1911) y += 1911;
+          m = parseInt(parts[1]) - 1;
+          d = parseInt(parts[2]);
+      } else {
+          let n = s.replace(/\D/g, '');
+          if (n.length === 7) {
+              y = parseInt(n.substring(0,3)) + 1911;
+              m = parseInt(n.substring(3,5)) - 1;
+              d = parseInt(n.substring(5,7));
+          } else if (n.length === 8) {
+              y = parseInt(n.substring(0,4));
+              m = parseInt(n.substring(4,6)) - 1;
+              d = parseInt(n.substring(6,8));
+          } else {
+              return s;
+          }
+      }
+      
+      let dt = new Date(y, m, d);
+      if(isNaN(dt)) return s;
+      dt.setDate(dt.getDate() + parseInt(days));
+      let finalM = String(dt.getMonth()+1).padStart(2,'0');
+      let finalD = String(dt.getDate()).padStart(2,'0');
+      return dt.getFullYear() + '/' + finalM + '/' + finalD;
+  }
+
+  function queryMedHistory() {
+    const name = document.getElementById('qName').value;
+    const idStr = document.getElementById('qId').value.trim().toUpperCase();
+    if (!idStr || idStr.length < 10) return alert("⚠️ 請輸入完整的 10 碼身分證字號！");
+
+    document.getElementById('loading').style.display = 'flex';
+    document.getElementById('loadingText').innerText = "雲端連線查詢中...";
+
+    fetch(GAS_URL, {
+      method: "POST",
+      body: JSON.stringify({ action: "queryMed", name: name, id: idStr })
+    })
+    .then(res => res.json())
+    .then(res => {
+      document.getElementById('loading').style.display = 'none';
+      if (res.status === 'success') {
+        renderMedHistory(res.data);
+      } else {
+        alert("❌ 查詢失敗：" + res.message);
+      }
+    })
+    .catch(err => {
+      document.getElementById('loading').style.display = 'none';
+      alert("連線異常，請稍後再試。");
+    });
+  }
+
+  function renderMedHistory(data) {
+    const container = document.getElementById('medHistoryResult');
+    container.innerHTML = '';
+    
+    if (!data || data.length === 0) {
+      container.innerHTML = '<div class="alert alert-light border border-danger text-center text-danger small py-4 fw-bold shadow-sm">⚠️ 查無藥歷資料！<br>請確認【身分證字號】是否輸入正確，<br>或藥局尚未更新您的資料。</div>';
+      return;
+    }
+
+    // 將回傳的藥品依照 日期+科別+處方日 進行群組化
+    let groups = {};
+    let groupKeys = [];
+    data.forEach(r => {
+       let key = r.date + "_" + (r.rxDate || "noRx");
+       if (!groups[key]) {
+           groups[key] = {
+               date: r.date,
+               rxDate: r.rxDate || "未提供",
+               dept: r.dept || "一般領藥",
+               refill: r.refill || "",
+               nextDate: r.nextDate || "",
+               days: r.days || 28,
+               drugs: []
+           };
+           groupKeys.push(key);
+       }
+       groups[key].drugs.push(r);
+    });
+
+    let html = '';
+    groupKeys.forEach(k => {
+       let g = groups[k];
+
+       // 🔥 推算第二次與第三次領藥時間
+       let curRefill = 1, totRefill = 1;
+       if (g.refill && g.refill.includes('/')) {
+           curRefill = parseInt(g.refill.split('/')[0]) || 1;
+           totRefill = parseInt(g.refill.split('/')[1]) || 1;
+       }
+
+       let next2 = "無", next3 = "無";
+       if (totRefill >= 2) {
+           if (curRefill === 1) {
+               next2 = g.nextDate || addDaysToDateStr(g.date, g.days);
+               if (totRefill >= 3) next3 = addDaysToDateStr(next2, g.days);
+           } else if (curRefill === 2) {
+               next2 = "✅ 已領取完成";
+               if (totRefill >= 3) next3 = g.nextDate || addDaysToDateStr(g.date, g.days);
+           } else if (curRefill >= 3) {
+               next2 = "✅ 已領取完成";
+               next3 = "✅ 已領取完成";
+           }
+       }
+
+       // 領藥進度與預計時間 UI
+       let refillInfoHtml = '';
+       if (totRefill > 1) {
+           refillInfoHtml = `
+              <div class="bg-white border border-info rounded p-3 mb-3 shadow-sm position-relative overflow-hidden">
+                 <div class="position-absolute top-0 start-0 w-100 bg-info" style="height:4px;"></div>
+                 <div class="d-flex justify-content-between align-items-center mb-2 mt-1">
+                     <span class="small fw-bold text-dark"><i class="bi bi-file-medical"></i> 慢箋紀錄</span>
+                     <span class="badge bg-primary text-white shadow-sm" style="font-size:0.8rem;">目前進度: ${g.refill}</span>
+                 </div>
+                 <div class="small text-secondary mb-1">📅 處方日期：<span class="fw-bold text-dark">${g.rxDate}</span></div>
+                 <div class="small text-secondary mb-1">👉 預計第二次領藥：<span class="fw-bold text-danger">${next2}</span></div>
+                 ${totRefill >= 3 ? `<div class="small text-secondary">👉 預計第三次領藥：<span class="fw-bold text-danger">${next3}</span></div>` : ''}
+              </div>
+           `;
+       } else {
+           refillInfoHtml = `
+              <div class="bg-white border rounded p-2 mb-3 shadow-sm d-flex align-items-center">
+                 <div class="bg-success rounded text-white p-1 me-2"><i class="bi bi-file-earmark-medical"></i></div>
+                 <div class="small text-secondary">處方日期：<span class="fw-bold text-dark">${g.rxDate}</span></div>
+              </div>
+           `;
+       }
+
+       // 藥品清單 UI
+       let drugsHtml = g.drugs.map((d, idx) => `
+          <div class="border-bottom border-light py-2 ${idx === g.drugs.length-1 ? 'border-0 pb-0' : ''}">
+             <div class="fw-bold text-dark" style="font-size:0.95rem;"><i class="bi bi-capsule text-success me-1"></i>${d.drug || '未知藥品'}</div>
+             <div class="d-flex justify-content-between text-secondary mt-1 ps-4" style="font-size:0.85rem;">
+                <span><span class="badge bg-light text-secondary border me-1">用法</span>${d.dosage || '-'}</span>
+                <span class="fw-bold text-success">共 ${d.total || '-'} 單位</span>
+             </div>
+          </div>
+       `).join('');
+
+       html += `
+          <div class="card bg-white border border-success border-2 shadow-sm mb-4" style="border-radius:12px; overflow:hidden;">
+             <div class="card-header bg-success text-white py-2 px-3 d-flex justify-content-between align-items-center border-0">
+                <span class="fw-bold" style="font-size:1.05rem;"><i class="bi bi-calendar-check me-1"></i>${g.date} 領藥</span>
+                <span class="badge bg-white text-success shadow-sm">${g.dept}</span>
+             </div>
+             <div class="card-body p-3" style="background-color:#fbfdfc;">
+                ${refillInfoHtml}
+                <div class="fw-bold text-success mb-2 pb-1 border-bottom border-success">
+                  <i class="bi bi-list-check"></i> 領藥明細清單 (${g.drugs.length} 項)
+                </div>
+                <div class="bg-white rounded p-2 shadow-sm border border-light">
+                  ${drugsHtml}
+                </div>
+             </div>
+          </div>
+       `;
+    });
+
+    container.innerHTML = html;
+  }
+
+  // ----------------------------------------------------
+  // 以下為其他原生功能保持不變
+  // ----------------------------------------------------
   function fetchUploadHistory() {
     if (!lineUserId) return;
     document.getElementById('uploadHistoryList').innerHTML = `<div class="text-center text-muted small py-4"><div class="spinner-border spinner-border-sm text-info me-2"></div> 讀取紀錄中...</div>`;
@@ -198,7 +411,6 @@
     }
   }
 
-  // 🔥 兩個提交函式都加入了 linePic 的傳送
   function submitData() {
     const name = document.getElementById('uName').value; const phone = document.getElementById('uPhone').value; let dept = document.getElementById('uDept').value; let notify = document.getElementById('uNotify').value;
     if (notify === "LINE通知" && !liff.isLoggedIn()) return alert("⚠️ 您目前尚未綁定 LINE！\n請點擊上方的「登入 LINE」，或改選【電話通知】。");
