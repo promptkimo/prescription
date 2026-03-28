@@ -143,9 +143,6 @@
           document.getElementById('uName').value = lineDisplayName; 
           document.getElementById('bName').value = lineDisplayName; 
           
-          // 🔥 不再強制填寫 LINE 暱稱到藥歷查詢的姓名欄位，保持空白讓使用者自己填寫
-          // document.getElementById('qName').value = lineDisplayName; 
-          
           if(profile.pictureUrl) document.getElementById('userThumb').src = profile.pictureUrl;
           document.getElementById('userInfo').classList.remove('hidden-mode');
           document.getElementById('btnOptionalLogin').classList.add('hidden-mode');
@@ -195,17 +192,19 @@
     document.getElementById('qId').value = '';
   }
 
-  function addDaysToDateStr(dStr, days) {
-      if (!dStr || !days) return "未提供";
-      let s = String(dStr).trim();
-      let y, m, d;
+  // 🔥 智慧日期解析與格式化引擎 (完全依照台灣健保規則)
+  function parseTwDate(dStr) {
+      if (!dStr) return null;
+      let s = String(dStr).trim().split(' ')[0];
+      if (!s) return null;
       
+      let y, m, d;
       if (s.includes('/') || s.includes('-')) {
           let parts = s.split(/[\/\-]/);
           y = parseInt(parts[0]);
-          if (y < 1911) y += 1911;
           m = parseInt(parts[1]) - 1;
           d = parseInt(parts[2]);
+          if (y < 1911) y += 1911;
       } else {
           let n = s.replace(/\D/g, '');
           if (n.length === 7) {
@@ -216,17 +215,20 @@
               y = parseInt(n.substring(0,4));
               m = parseInt(n.substring(4,6)) - 1;
               d = parseInt(n.substring(6,8));
-          } else {
-              return s;
-          }
+          } else return null;
       }
-      
       let dt = new Date(y, m, d);
-      if(isNaN(dt)) return s;
-      dt.setDate(dt.getDate() + parseInt(days));
-      let finalM = String(dt.getMonth()+1).padStart(2,'0');
-      let finalD = String(dt.getDate()).padStart(2,'0');
-      return dt.getFullYear() + '/' + finalM + '/' + finalD;
+      return isNaN(dt) ? null : dt;
+  }
+
+  function formatFullDate(dt) {
+      if(!dt) return "未知";
+      return dt.getFullYear() + '/' + String(dt.getMonth()+1).padStart(2,'0') + '/' + String(dt.getDate()).padStart(2,'0');
+  }
+
+  function formatShortDate(dt) {
+      if(!dt) return "未知";
+      return String(dt.getMonth()+1).padStart(2,'0') + '/' + String(dt.getDate()).padStart(2,'0');
   }
 
   function queryMedHistory() {
@@ -276,8 +278,7 @@
                rxDate: r.rxDate || "未提供",
                dept: r.dept || "一般領藥",
                refill: r.refill || "",
-               nextDate: r.nextDate || "",
-               days: r.days || 28,
+               days: parseInt(r.days) || 28, // 預設 28 天
                drugs: []
            };
            groupKeys.push(key);
@@ -288,46 +289,88 @@
     let html = '';
     groupKeys.forEach(k => {
        let g = groups[k];
-
        let curRefill = 1, totRefill = 1;
+       
        if (g.refill && g.refill.includes('/')) {
            curRefill = parseInt(g.refill.split('/')[0]) || 1;
            totRefill = parseInt(g.refill.split('/')[1]) || 1;
        }
 
-       let next2 = "無", next3 = "無";
-       if (totRefill >= 2) {
-           if (curRefill === 1) {
-               next2 = g.nextDate || addDaysToDateStr(g.date, g.days);
-               if (totRefill >= 3) next3 = addDaysToDateStr(next2, g.days);
-           } else if (curRefill === 2) {
-               next2 = "✅ 已領取完成";
-               if (totRefill >= 3) next3 = g.nextDate || addDaysToDateStr(g.date, g.days);
-           } else if (curRefill >= 3) {
-               next2 = "✅ 已領取完成";
-               next3 = "✅ 已領取完成";
-           }
-       }
-
+       let rxDt = parseTwDate(g.rxDate);
        let refillInfoHtml = '';
-       if (totRefill > 1) {
+
+       if (rxDt && totRefill > 1) {
+           // 推算第二次領藥：處方日 + (天數)
+           let dt2_end = new Date(rxDt); dt2_end.setDate(dt2_end.getDate() + g.days);
+           let dt2_start = new Date(dt2_end); dt2_start.setDate(dt2_start.getDate() - 10);
+           
+           // 推算第三次領藥：處方日 + (天數 * 2)
+           let dt3_end = new Date(rxDt); dt3_end.setDate(dt3_end.getDate() + (g.days * 2));
+           let dt3_start = new Date(dt3_end); dt3_start.setDate(dt3_start.getDate() - 10);
+
+           // 推算預約回診日 (用罄日)：處方日 + (天數 * 總次數)
+           let returnDt = new Date(rxDt); returnDt.setDate(returnDt.getDate() + (g.days * totRefill));
+
+           let status2 = curRefill >= 2 
+                ? '<span class="badge bg-success shadow-sm">✅ 已領取</span>' 
+                : `<span class="fw-bold text-danger">${formatShortDate(dt2_start)} ~ ${formatShortDate(dt2_end)}</span>`;
+           
+           let status3 = "";
+           if (totRefill >= 3) {
+               status3 = curRefill >= 3 
+                    ? '<span class="badge bg-success shadow-sm">✅ 已領取</span>' 
+                    : `<span class="fw-bold text-danger">${formatShortDate(dt3_start)} ~ ${formatShortDate(dt3_end)}</span>`;
+           }
+
            refillInfoHtml = `
               <div class="bg-white border border-info rounded p-3 mb-3 shadow-sm position-relative overflow-hidden">
                  <div class="position-absolute top-0 start-0 w-100 bg-info" style="height:4px;"></div>
+                 
                  <div class="d-flex justify-content-between align-items-center mb-2 mt-1">
-                     <span class="small fw-bold text-dark"><i class="bi bi-file-medical"></i> 慢箋紀錄</span>
-                     <span class="badge bg-primary text-white shadow-sm" style="font-size:0.8rem;">目前進度: ${g.refill}</span>
+                     <span class="fw-bold text-dark"><i class="bi bi-file-medical text-info"></i> 慢箋領藥進度</span>
+                     <span class="badge bg-primary text-white shadow-sm" style="font-size:0.85rem;">目前進度: ${g.refill}</span>
                  </div>
-                 <div class="small text-secondary mb-1">📅 處方日期：<span class="fw-bold text-dark">${g.rxDate}</span></div>
-                 <div class="small text-secondary mb-1">👉 預計第二次領藥：<span class="fw-bold text-danger">${next2}</span></div>
-                 ${totRefill >= 3 ? `<div class="small text-secondary">👉 預計第三次領藥：<span class="fw-bold text-danger">${next3}</span></div>` : ''}
+                 
+                 <div class="small text-secondary mb-2 border-bottom pb-2">
+                    📅 處方開立：<span class="fw-bold text-dark">${formatFullDate(rxDt)}</span> (單次: ${g.days}天)
+                 </div>
+                 
+                 <div class="small text-secondary mb-2 d-flex justify-content-between align-items-center">
+                    <span>👉 第二次領藥區間：</span> 
+                    <span class="text-end" style="font-size:1rem;">${status2}</span>
+                 </div>
+                 
+                 ${totRefill >= 3 ? `
+                 <div class="small text-secondary mb-2 d-flex justify-content-between align-items-center">
+                    <span>👉 第三次領藥區間：</span> 
+                    <span class="text-end" style="font-size:1rem;">${status3}</span>
+                 </div>` : ''}
+                 
+                 <div class="mt-2 pt-2 border-top border-info border-opacity-25 text-dark d-flex justify-content-between align-items-center bg-light p-2 rounded">
+                    <span class="small fw-bold">🏥 藥品用罄 (回診日)：</span> 
+                    <span class="fw-bold text-danger" style="font-size:1.05rem;">${formatFullDate(returnDt)}</span>
+                 </div>
               </div>
            `;
        } else {
+           // 單次一般處方
+           let returnDtStr = "未知";
+           if(rxDt) {
+               let rDt = new Date(rxDt); rDt.setDate(rDt.getDate() + g.days);
+               returnDtStr = formatFullDate(rDt);
+           }
+           
            refillInfoHtml = `
-              <div class="bg-white border rounded p-2 mb-3 shadow-sm d-flex align-items-center">
-                 <div class="bg-success rounded text-white p-1 me-2"><i class="bi bi-file-earmark-medical"></i></div>
-                 <div class="small text-secondary">處方日期：<span class="fw-bold text-dark">${g.rxDate}</span></div>
+              <div class="bg-white border rounded p-3 mb-3 shadow-sm">
+                 <div class="d-flex align-items-center mb-2">
+                     <div class="bg-success rounded text-white p-1 me-2 shadow-sm"><i class="bi bi-file-earmark-medical"></i></div>
+                     <span class="fw-bold text-dark">一般處方紀錄</span>
+                 </div>
+                 <div class="small text-secondary mb-1">📅 處方開立日：<span class="fw-bold text-dark">${rxDt ? formatFullDate(rxDt) : g.rxDate}</span></div>
+                 <div class="small text-secondary mt-2 pt-2 border-top d-flex justify-content-between bg-light p-2 rounded">
+                    <span class="fw-bold">🏥 預約回診日 (用罄)：</span> 
+                    <span class="fw-bold text-danger">${returnDtStr}</span>
+                 </div>
               </div>
            `;
        }
@@ -336,7 +379,7 @@
           <div class="border-bottom border-light py-2 ${idx === g.drugs.length-1 ? 'border-0 pb-0' : ''}">
              <div class="fw-bold text-dark" style="font-size:0.95rem;"><i class="bi bi-capsule text-success me-1"></i>${d.drug || '未知藥品'}</div>
              <div class="d-flex justify-content-between text-secondary mt-1 ps-4" style="font-size:0.85rem;">
-                <span><span class="badge bg-light text-secondary border me-1">用法</span>${d.dosage || '-'}</span>
+                <span><span class="badge bg-light text-secondary border me-1 shadow-sm">用法</span>${d.dosage || '-'}</span>
                 <span class="fw-bold text-success">共 ${d.total || '-'} 單位</span>
              </div>
           </div>
@@ -346,7 +389,7 @@
           <div class="card bg-white border border-success border-2 shadow-sm mb-4" style="border-radius:12px; overflow:hidden;">
              <div class="card-header bg-success text-white py-2 px-3 d-flex justify-content-between align-items-center border-0">
                 <span class="fw-bold" style="font-size:1.05rem;"><i class="bi bi-calendar-check me-1"></i>${g.date} 領藥</span>
-                <span class="badge bg-white text-success shadow-sm">${g.dept}</span>
+                <span class="badge bg-white text-success shadow-sm" style="font-size:0.85rem;">${g.dept}</span>
              </div>
              <div class="card-body p-3" style="background-color:#fbfdfc;">
                 ${refillInfoHtml}
