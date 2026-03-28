@@ -104,14 +104,14 @@
     <div class="back-btn-container"><button class="back-btn" onclick="goHome()"><i class="bi bi-chevron-left"></i> 返回主畫面</button></div>
     <div class="card p-4 shadow-sm border-0 border-top border-dark border-4">
       <h5 class="fw-bold text-dark mb-3"><i class="bi bi-cloud-arrow-up"></i> 雲端藥歷查詢</h5>
-      <p class="small text-muted mb-4">為保護您的個人隱私，請輸入領藥人的【身分證字號】進行安全驗證，以查詢詳細用藥紀錄。</p>
+      <p class="small text-muted mb-4">為保護個人隱私，請輸入【領藥人姓名】與【身分證字號】進行安全驗證，以查詢詳細用藥紀錄。</p>
       
       <div class="mb-3">
-        <label class="form-label small fw-bold">領藥人姓名</label>
-        <input type="text" class="form-control bg-light" id="qName" readonly>
+        <label class="form-label small fw-bold text-primary">領藥人真實姓名</label>
+        <input type="text" class="form-control" id="qName" placeholder="請輸入領藥人的姓名">
       </div>
       <div class="mb-4">
-        <label class="form-label small fw-bold text-danger">請輸入身分證字號</label>
+        <label class="form-label small fw-bold text-danger">領藥人身分證字號</label>
         <input type="text" class="form-control text-uppercase" id="qId" placeholder="例如：A123456789">
       </div>
       <button class="btn btn-dark w-100 fw-bold py-2 mb-4 shadow-sm" onclick="queryMedHistory()"><i class="bi bi-search"></i> 安全查詢</button>
@@ -142,7 +142,9 @@
           document.getElementById('userNameDisplay').innerText = lineDisplayName;
           document.getElementById('uName').value = lineDisplayName; 
           document.getElementById('bName').value = lineDisplayName; 
-          document.getElementById('qName').value = lineDisplayName; // 自動填入姓名到藥歷查詢
+          
+          // 🔥 不再強制填寫 LINE 暱稱到藥歷查詢的姓名欄位，保持空白讓使用者自己填寫
+          // document.getElementById('qName').value = lineDisplayName; 
           
           if(profile.pictureUrl) document.getElementById('userThumb').src = profile.pictureUrl;
           document.getElementById('userInfo').classList.remove('hidden-mode');
@@ -181,7 +183,6 @@
   function openBindLine() { if (!liff.isLoggedIn()) { liff.login({ redirectUri: window.location.href.split('?')[0] + "?mode=bind" }); return; } isRegisterMode = true; document.getElementById('view-home').classList.add('hidden-mode'); document.getElementById('view-form').classList.add('hidden-mode'); document.getElementById('view-status').classList.add('hidden-mode'); document.getElementById('view-meds').classList.add('hidden-mode'); document.getElementById('view-bind').classList.remove('hidden-mode'); }
   function openStatus() { if (!liff.isLoggedIn()) { liff.login({ redirectUri: window.location.href.split('?')[0] + "?mode=status" }); return; } document.getElementById('view-home').classList.add('hidden-mode'); document.getElementById('view-form').classList.add('hidden-mode'); document.getElementById('view-bind').classList.add('hidden-mode'); document.getElementById('view-meds').classList.add('hidden-mode'); document.getElementById('view-status').classList.remove('hidden-mode'); fetchUploadHistory(); }
   
-  // 打開藥歷查詢介面
   function openMedHistory() { 
     if (!liff.isLoggedIn()) { liff.login({ redirectUri: window.location.href.split('?')[0] + "?mode=meds" }); return; } 
     document.getElementById('view-home').classList.add('hidden-mode'); 
@@ -190,12 +191,10 @@
     document.getElementById('view-status').classList.add('hidden-mode'); 
     document.getElementById('view-meds').classList.remove('hidden-mode'); 
     document.getElementById('medHistoryResult').innerHTML = '';
+    document.getElementById('qName').value = '';
     document.getElementById('qId').value = '';
   }
 
-  // ----------------------------------------------------
-  // 🔥 雲端藥歷查詢與時間推算引擎
-  // ----------------------------------------------------
   function addDaysToDateStr(dStr, days) {
       if (!dStr || !days) return "未提供";
       let s = String(dStr).trim();
@@ -231,8 +230,9 @@
   }
 
   function queryMedHistory() {
-    const name = document.getElementById('qName').value;
+    const name = document.getElementById('qName').value.trim();
     const idStr = document.getElementById('qId').value.trim().toUpperCase();
+    if (!name) return alert("⚠️ 請輸入領藥人姓名！");
     if (!idStr || idStr.length < 10) return alert("⚠️ 請輸入完整的 10 碼身分證字號！");
 
     document.getElementById('loading').style.display = 'flex';
@@ -262,11 +262,10 @@
     container.innerHTML = '';
     
     if (!data || data.length === 0) {
-      container.innerHTML = '<div class="alert alert-light border border-danger text-center text-danger small py-4 fw-bold shadow-sm">⚠️ 查無藥歷資料！<br>請確認【身分證字號】是否輸入正確，<br>或藥局尚未更新您的資料。</div>';
+      container.innerHTML = '<div class="alert alert-light border border-danger text-center text-danger small py-4 fw-bold shadow-sm">⚠️ 查無藥歷資料！<br>請確認【姓名】與【身分證字號】是否完全吻合，<br>或藥局尚未更新您的資料。</div>';
       return;
     }
 
-    // 將回傳的藥品依照 日期+科別+處方日 進行群組化
     let groups = {};
     let groupKeys = [];
     data.forEach(r => {
@@ -290,7 +289,6 @@
     groupKeys.forEach(k => {
        let g = groups[k];
 
-       // 🔥 推算第二次與第三次領藥時間
        let curRefill = 1, totRefill = 1;
        if (g.refill && g.refill.includes('/')) {
            curRefill = parseInt(g.refill.split('/')[0]) || 1;
@@ -311,7 +309,6 @@
            }
        }
 
-       // 領藥進度與預計時間 UI
        let refillInfoHtml = '';
        if (totRefill > 1) {
            refillInfoHtml = `
@@ -335,7 +332,6 @@
            `;
        }
 
-       // 藥品清單 UI
        let drugsHtml = g.drugs.map((d, idx) => `
           <div class="border-bottom border-light py-2 ${idx === g.drugs.length-1 ? 'border-0 pb-0' : ''}">
              <div class="fw-bold text-dark" style="font-size:0.95rem;"><i class="bi bi-capsule text-success me-1"></i>${d.drug || '未知藥品'}</div>
@@ -368,9 +364,6 @@
     container.innerHTML = html;
   }
 
-  // ----------------------------------------------------
-  // 以下為其他原生功能保持不變
-  // ----------------------------------------------------
   function fetchUploadHistory() {
     if (!lineUserId) return;
     document.getElementById('uploadHistoryList').innerHTML = `<div class="text-center text-muted small py-4"><div class="spinner-border spinner-border-sm text-info me-2"></div> 讀取紀錄中...</div>`;
