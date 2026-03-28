@@ -9,7 +9,6 @@
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   
   <style>
-    /* 🔥 設定整個網頁基礎高度為螢幕高度 */
     body { background-color: #f0f2f5; font-family: -apple-system, sans-serif; margin: 0; padding: 0; min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; }
     .container { max-width: 600px; padding: 0; flex-grow: 1; display: flex; flex-direction: column; margin: 0 auto; width: 100%; }
     
@@ -23,23 +22,19 @@
     
     .hidden-mode { display: none !important; } 
 
-    /* 🔥 首頁專屬排版 (滿版不捲動) */
     #view-home { height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
     
     .brand-header { background: linear-gradient(135deg, #06C755 0%, #009933 100%); padding: 30px 20px 20px; border-radius: 0 0 20px 20px; text-align: center; margin-bottom: 15px; color: white; box-shadow: 0 4px 10px rgba(6, 199, 85, 0.15); flex-shrink: 0; }
     .brand-title { font-weight: 900; font-size: 1.8rem; letter-spacing: 2px; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.15); } 
     .brand-subtitle { font-size: 0.9rem; opacity: 0.9; margin-bottom: 0; font-weight: 500; letter-spacing: 1px; }
 
-    /* 🔥 彈性按鈕區域：會自動填滿剩下的高度 */
     .home-content { display: flex; flex-direction: column; flex-grow: 1; padding: 0 15px 20px 15px; min-height: 0; }
     .home-btn-group { display: flex; flex-direction: column; flex-grow: 1; gap: 10px; }
     
-    /* 🔥 彈性按鈕設計 */
     .menu-btn { flex-grow: 1; border-radius: 14px; font-weight: bold; font-size: 1.05rem; display: flex; align-items: center; justify-content: center; flex-direction: column; text-align: center; transition: 0.2s; border: 2px solid; padding: 5px; min-height: 60px; }
     .menu-btn i { font-size: 1.6rem; margin-bottom: 4px; }
     .menu-btn:active:not(:disabled) { transform: scale(0.97); }
 
-    /* 子頁面設定 (可捲動) */
     .sub-view { flex-grow: 1; padding: 15px 15px 30px 15px; overflow-y: auto; }
 
     .back-btn-container { margin-bottom: 15px; }
@@ -52,128 +47,58 @@
 </head>
 <body>
 
-<div id="loading">
-  <div class="spinner-border text-success" role="status"></div>
-  <p class="mt-3 text-secondary fw-bold" id="loadingText">系統連線中...</p>
-</div>
+<div id="loading"><div class="spinner-border text-success" role="status"></div><p class="mt-3 text-secondary fw-bold" id="loadingText">系統連線中...</p></div>
 
 <div class="container"> 
-
   <div id="view-home">
-    <div class="brand-header">
-      <h1 class="brand-title">樂森藥局</h1>
-      <p class="brand-subtitle">Lawson Pharmacy Cloud</p>
-    </div>
-
+    <div class="brand-header"><h1 class="brand-title">樂森藥局</h1><p class="brand-subtitle">Lawson Pharmacy Cloud</p></div>
     <div class="home-content">
       <div class="user-card d-flex justify-content-between align-items-center hidden-mode" id="userInfo">
-        <div class="d-flex align-items-center">
-          <img id="userThumb" src="https://placehold.co/50?text=U" class="user-avatar">
-          <div>
-            <div class="small text-muted" style="font-size:0.75rem;">目前登入帳號</div>
-            <div class="fw-bold text-dark" id="userNameDisplay" style="font-size:0.95rem;">訪客</div>
-          </div>
-        </div>
+        <div class="d-flex align-items-center"><img id="userThumb" src="https://placehold.co/50" class="user-avatar"><div><div class="small text-muted" style="font-size:0.75rem;">目前登入帳號</div><div class="fw-bold text-dark" id="userNameDisplay" style="font-size:0.95rem;">訪客</div></div></div>
         <button class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold" onclick="doLiffLogout()">登出</button>
       </div>
-
       <div class="home-btn-group">
-        <button class="btn btn-outline-success menu-btn" onclick="openUpload()">
-          <i class="bi bi-camera"></i>
-          <span>1. 上傳處方箋</span>
-        </button>
-
-        <button class="btn btn-outline-primary menu-btn" onclick="openBindLine()">
-          <i class="bi bi-link-45deg"></i>
-          <span>2. LINE 綁定通知領藥</span>
-        </button>
-
-        <button class="btn btn-outline-info menu-btn" onclick="openStatus()">
-          <i class="bi bi-card-checklist"></i>
-          <span>3. 查看處方狀態</span>
-        </button>
-
-        <button class="btn btn-outline-secondary menu-btn" disabled style="opacity: 0.6; cursor: not-allowed; border-style: dashed;">
-          <i class="bi bi-cloud-arrow-up"></i>
-          <span>4. 雲端藥歷更新中 (尚未開放)</span>
-        </button>
+        <button class="btn btn-outline-success menu-btn" onclick="openUpload()"><i class="bi bi-camera"></i><span>1. 上傳處方箋</span></button>
+        <button class="btn btn-outline-primary menu-btn" onclick="openBindLine()"><i class="bi bi-link-45deg"></i><span>2. LINE 綁定通知領藥</span></button>
+        <button class="btn btn-outline-info menu-btn" onclick="openStatus()"><i class="bi bi-card-checklist"></i><span>3. 查看處方狀態</span></button>
+        <button class="btn btn-outline-secondary menu-btn" disabled style="opacity: 0.6; cursor: not-allowed; border-style: dashed;"><i class="bi bi-cloud-arrow-up"></i><span>4. 雲端藥歷更新中 (尚未開放)</span></button>
       </div>
     </div>
   </div>
 
   <div id="view-form" class="hidden-mode sub-view">
-    <div class="back-btn-container">
-      <button class="back-btn" onclick="goHome()"><i class="bi bi-chevron-left"></i> 返回主畫面</button>
-    </div>
-
+    <div class="back-btn-container"><button class="back-btn" onclick="goHome()"><i class="bi bi-chevron-left"></i> 返回主畫面</button></div>
     <div class="card p-4 shadow-sm border-0">
       <h5 class="fw-bold text-success mb-3" id="formTitle"><i class="bi bi-camera"></i> 上傳處方箋</h5>
-      
-      <div id="btnOptionalLogin" class="alert alert-warning small d-flex justify-content-between align-items-center hidden-mode p-2 mb-3">
-         <span class="fw-bold text-dark">未綁定 LINE (僅能選電話通知)</span>
-         <button class="btn btn-sm btn-success fw-bold rounded-pill px-3" onclick="doOptionalLogin()">登入 LINE</button>
-      </div>
-
-      <div id="cameraSection">
-          <div class="preview-box" onclick="document.getElementById('fileInput').click()">
-          <div class="placeholder-text" id="placeholder">
-              <span style="font-size: 2rem;">📷</span><br>點此拍照 / 選照片
-          </div>
-          <img id="previewImg">
-          </div>
-          <input type="file" id="fileInput" accept="image/*" style="display: none;" onchange="handleFile(this)">
-      </div>
-
+      <div id="btnOptionalLogin" class="alert alert-warning small d-flex justify-content-between align-items-center hidden-mode p-2 mb-3"><span class="fw-bold text-dark">未綁定 LINE (僅選電話通知)</span><button class="btn btn-sm btn-success fw-bold rounded-pill px-3" onclick="doOptionalLogin()">登入 LINE</button></div>
+      <div id="cameraSection"><div class="preview-box" onclick="document.getElementById('fileInput').click()"><div class="placeholder-text" id="placeholder"><span style="font-size: 2rem;">📷</span><br>點此拍照 / 選照片</div><img id="previewImg"></div><input type="file" id="fileInput" accept="image/*" style="display: none;" onchange="handleFile(this)"></div>
       <div class="mb-3"><label class="form-label small fw-bold">領藥人姓名 (病人)</label><input type="text" class="form-control" id="uName"></div>
       <div class="mb-3"><label class="form-label small fw-bold">聯絡電話</label><input type="tel" class="form-control" id="uPhone" placeholder="請輸入聯絡電話"></div>
       <div class="mb-3" id="deptSection"><label class="form-label small fw-bold">科別 (選填)</label><input type="text" class="form-control" id="uDept" placeholder="例如：牙科、內科..."></div>
-      <div class="mb-4" id="notifySection">
-        <label class="form-label small fw-bold">希望通知方式</label>
-        <select class="form-select" id="uNotify">
-          <option value="LINE通知" id="optLine" selected>LINE 通知 (推薦)</option>
-          <option value="電話通知" id="optPhone">電話通知</option>
-        </select>
-      </div>
-
+      <div class="mb-4" id="notifySection"><label class="form-label small fw-bold">希望通知方式</label><select class="form-select" id="uNotify"><option value="LINE通知" id="optLine" selected>LINE 通知 (推薦)</option><option value="電話通知" id="optPhone">電話通知</option></select></div>
       <button class="btn btn-success w-100 fw-bold py-2" onclick="submitData()">確認上傳</button>
     </div>
   </div>
 
   <div id="view-bind" class="hidden-mode sub-view">
-    <div class="back-btn-container">
-      <button class="back-btn" onclick="goHome()"><i class="bi bi-chevron-left"></i> 返回主畫面</button>
-    </div>
-
+    <div class="back-btn-container"><button class="back-btn" onclick="goHome()"><i class="bi bi-chevron-left"></i> 返回主畫面</button></div>
     <div class="card p-4 shadow-sm border-0 border-top border-primary border-4">
       <h5 class="fw-bold text-primary mb-3"><i class="bi bi-link-45deg"></i> LINE 綁定作業</h5>
       <p class="small text-muted mb-4">請填寫您的真實資料。綁定完成後，藥師就能直接透過 LINE 通知您來拿藥！</p>
-
-      <div class="mb-3">
-        <label class="form-label small fw-bold text-primary">您的真實姓名</label>
-        <input type="text" class="form-control" id="bName" placeholder="請輸入姓名">
-      </div>
-      <div class="mb-4">
-        <label class="form-label small fw-bold text-primary">聯絡電話</label>
-        <input type="tel" class="form-control" id="bPhone" placeholder="請輸入手機號碼">
-      </div>
-
+      <div class="mb-3"><label class="form-label small fw-bold text-primary">您的真實姓名</label><input type="text" class="form-control" id="bName" placeholder="請輸入姓名"></div>
+      <div class="mb-4"><label class="form-label small fw-bold text-primary">聯絡電話</label><input type="tel" class="form-control" id="bPhone" placeholder="請輸入手機號碼"></div>
       <button class="btn btn-primary w-100 fw-bold py-2" onclick="submitBind()">🔗 確認綁定 LINE</button>
     </div>
   </div>
 
   <div id="view-status" class="hidden-mode sub-view">
-    <div class="back-btn-container">
-      <button class="back-btn" onclick="goHome()"><i class="bi bi-chevron-left"></i> 返回主畫面</button>
-    </div>
-
+    <div class="back-btn-container"><button class="back-btn" onclick="goHome()"><i class="bi bi-chevron-left"></i> 返回主畫面</button></div>
     <div class="card p-4 shadow-sm border-0">
       <h5 class="fw-bold text-info mb-3"><i class="bi bi-card-checklist"></i> 處方狀態查詢</h5>
       <p class="small text-muted mb-3">以下是您曾經上傳過的處方箋紀錄與目前處理進度：</p>
-      
       <div id="uploadHistoryList"></div>
     </div>
   </div>
-
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -190,7 +115,6 @@
   function initLiff() {
     liff.init({ liffId: LIFF_ID }).then(() => {
       document.getElementById('loading').style.display = 'none';
-
       if (liff.isLoggedIn()) {
         liff.getProfile().then(profile => {
           lineUserId = profile.userId; lineDisplayName = profile.displayName;
@@ -198,10 +122,8 @@
           document.getElementById('uName').value = lineDisplayName; 
           document.getElementById('bName').value = lineDisplayName; 
           if(profile.pictureUrl) document.getElementById('userThumb').src = profile.pictureUrl;
-          
           document.getElementById('userInfo').classList.remove('hidden-mode');
           document.getElementById('btnOptionalLogin').classList.add('hidden-mode');
-
           if (currentMode === 'bind' || currentMode === 'register') openBindLine();
           else if (currentMode === 'upload') openUpload();
           else if (currentMode === 'status') openStatus();
@@ -209,7 +131,6 @@
         });
       } else {
         document.getElementById('btnOptionalLogin').classList.remove('hidden-mode');
-        
         if (currentMode === 'bind' || currentMode === 'register') openBindLine(); 
         else if (currentMode === 'status') openStatus();
         else goHome();
@@ -229,31 +150,9 @@
     isRegisterMode = false;
   }
 
-  function openUpload() {
-    document.getElementById('view-home').classList.add('hidden-mode');
-    document.getElementById('view-bind').classList.add('hidden-mode');
-    document.getElementById('view-status').classList.add('hidden-mode');
-    document.getElementById('view-form').classList.remove('hidden-mode');
-    if(!liff.isLoggedIn()) document.getElementById('uNotify').value = "電話通知"; 
-  }
-
-  function openBindLine() {
-    if (!liff.isLoggedIn()) { liff.login({ redirectUri: window.location.href.split('?')[0] + "?mode=bind" }); return; }
-    isRegisterMode = true;
-    document.getElementById('view-home').classList.add('hidden-mode');
-    document.getElementById('view-form').classList.add('hidden-mode');
-    document.getElementById('view-status').classList.add('hidden-mode');
-    document.getElementById('view-bind').classList.remove('hidden-mode'); 
-  }
-
-  function openStatus() {
-    if (!liff.isLoggedIn()) { liff.login({ redirectUri: window.location.href.split('?')[0] + "?mode=status" }); return; }
-    document.getElementById('view-home').classList.add('hidden-mode');
-    document.getElementById('view-form').classList.add('hidden-mode');
-    document.getElementById('view-bind').classList.add('hidden-mode');
-    document.getElementById('view-status').classList.remove('hidden-mode');
-    fetchUploadHistory();
-  }
+  function openUpload() { document.getElementById('view-home').classList.add('hidden-mode'); document.getElementById('view-bind').classList.add('hidden-mode'); document.getElementById('view-status').classList.add('hidden-mode'); document.getElementById('view-form').classList.remove('hidden-mode'); if(!liff.isLoggedIn()) document.getElementById('uNotify').value = "電話通知"; }
+  function openBindLine() { if (!liff.isLoggedIn()) { liff.login({ redirectUri: window.location.href.split('?')[0] + "?mode=bind" }); return; } isRegisterMode = true; document.getElementById('view-home').classList.add('hidden-mode'); document.getElementById('view-form').classList.add('hidden-mode'); document.getElementById('view-status').classList.add('hidden-mode'); document.getElementById('view-bind').classList.remove('hidden-mode'); }
+  function openStatus() { if (!liff.isLoggedIn()) { liff.login({ redirectUri: window.location.href.split('?')[0] + "?mode=status" }); return; } document.getElementById('view-home').classList.add('hidden-mode'); document.getElementById('view-form').classList.add('hidden-mode'); document.getElementById('view-bind').classList.add('hidden-mode'); document.getElementById('view-status').classList.remove('hidden-mode'); fetchUploadHistory(); }
 
   function fetchUploadHistory() {
     if (!lineUserId) return;
@@ -282,9 +181,17 @@
         const img = new Image(); img.src = e.target.result;
         img.onload = function() {
           const canvas = document.createElement('canvas');
-          let w = img.width, h = img.height; if(w > 800) { h *= 800/w; w = 800; }
+          let w = img.width, h = img.height; 
+          
+          // 🔥 畫質升級：從 800px 提升至 1600px，保留列印的清晰度！
+          const MAX_SIZE = 1600;
+          if (w > h && w > MAX_SIZE) { h *= MAX_SIZE / w; w = MAX_SIZE; } 
+          else if (h > w && h > MAX_SIZE) { w *= MAX_SIZE / h; h = MAX_SIZE; }
+          
           canvas.width = w; canvas.height = h; const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, w, h);
-          base64Image = canvas.toDataURL('image/jpeg', 0.7);
+          
+          // 🔥 壓縮比優化：從 0.7 提升至 0.85，保留小字細節
+          base64Image = canvas.toDataURL('image/jpeg', 0.85);
           document.getElementById('previewImg').src = base64Image; document.getElementById('previewImg').style.display = 'block'; document.getElementById('placeholder').style.display = 'none';
         }
       }; reader.readAsDataURL(file);
@@ -311,13 +218,9 @@
     fetch(GAS_URL, { method: "POST", body: JSON.stringify({ action: "upload", name: name, lineName: lineDisplayName, phone: phone, dept: "LINE綁定", notify: "LINE通知", fileData: "", fileName: "", lineUserId: lineUserId, isRegister: true }) })
     .then(res => res.json()).then(res => {
       document.getElementById('loading').style.display = 'none';
-      if(res.status === 'success') { 
-        alert("✅ 綁定成功！\n藥局未來將能透過 LINE 通知您領藥。"); 
-        if(liff.isInClient()) liff.closeWindow(); else goHome(); 
-      } else if(res.status === 'duplicate') {
-        alert("⚠️ " + res.message); 
-        goHome();
-      } else { alert("❌ 失敗：" + res.message); }
+      if(res.status === 'success') { alert("✅ 綁定成功！\n藥局未來將能透過 LINE 通知您領藥。"); if(liff.isInClient()) liff.closeWindow(); else goHome(); } 
+      else if(res.status === 'duplicate') { alert("⚠️ " + res.message); goHome(); } 
+      else { alert("❌ 失敗：" + res.message); }
     }).catch(err => { document.getElementById('loading').style.display = 'none'; goHome(); });
   }
 </script>
