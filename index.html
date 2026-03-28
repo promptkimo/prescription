@@ -38,21 +38,6 @@
     .menu-btn:active:not(:disabled) { transform: scale(0.97); }
 
     #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-
-    .accordion-item { border: none; border-radius: 12px !important; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); overflow: hidden; }
-    .accordion-button { font-weight: bold; color: #0f5132; background-color: #f8fff9; padding: 15px; border-radius: 12px !important; flex-direction: column; align-items: flex-start; }
-    .accordion-button::after { position: absolute; right: 15px; top: 25px; }
-    .accordion-button:not(.collapsed) { background-color: #e8f5e9; color: #0f5132; box-shadow: none; border-bottom-left-radius: 0 !important; border-bottom-right-radius: 0 !important; }
-    
-    .med-table th { font-weight: 600; background-color: #f8f9fa; white-space: nowrap; }
-    .med-table td { vertical-align: middle; }
-    .nhi-col { font-family: monospace; color: #6c757d; white-space: nowrap; }
-    .drug-col { font-weight: bold; color: #333; min-width: 120px; }
-    .num-col { white-space: nowrap; text-align: center; }
-    
-    .meta-box { background: rgba(6, 199, 85, 0.1); padding: 8px 12px; border-radius: 8px; margin-top: 8px; width: 90%; border: 1px solid rgba(6, 199, 85, 0.2); }
-    .meta-item { font-size: 0.85rem; color: #0f5132; font-weight: normal; margin-bottom: 3px; display: flex; align-items: center; }
-    .meta-item i { margin-right: 6px; font-size: 0.95rem; }
   </style>
 </head>
 <body>
@@ -126,7 +111,6 @@
 
       <div class="mb-3"><label class="form-label small fw-bold">領藥人姓名 (病人)</label><input type="text" class="form-control" id="uName"></div>
       <div class="mb-3"><label class="form-label small fw-bold">聯絡電話</label><input type="tel" class="form-control" id="uPhone" placeholder="請輸入聯絡電話"></div>
-      
       <div class="mb-3" id="deptSection"><label class="form-label small fw-bold">科別 (選填)</label><input type="text" class="form-control" id="uDept" placeholder="例如：牙科、內科..."></div>
       <div class="mb-4" id="notifySection">
         <label class="form-label small fw-bold">希望通知方式</label>
@@ -167,440 +151,140 @@
     </div>
   </div>
 
-  <div id="view-history" class="hidden-mode padded-view">
-    <div class="back-btn-container">
-      <button class="back-btn" onclick="goHome()"><i class="bi bi-chevron-left"></i> 返回主畫面</button>
-    </div>
-
-    <div class="card p-4 shadow-sm border-0" id="authSection">
-      <h5 class="fw-bold text-secondary mb-3"><i class="bi bi-shield-lock"></i> 安全藥歷查詢</h5>
-      <p class="small text-muted mb-4">為保護您的個資，請輸入病人的姓名與身分證字號進行安全驗證。</p>
-      
-      <div class="mb-3">
-        <label class="form-label small fw-bold">病人姓名</label>
-        <input type="text" class="form-control" id="qName" placeholder="請輸入姓名">
-      </div>
-      <div class="mb-4">
-        <label class="form-label small fw-bold">身分證字號</label>
-        <input type="text" class="form-control" id="qId" placeholder="請輸入身分證字號 (包含大寫英文字母)">
-      </div>
-      
-      <button class="btn btn-secondary w-100 fw-bold py-2" onclick="queryMedData()">驗證並查詢</button>
-    </div>
-
-    <div id="resultSection" class="hidden-mode">
-      <div class="d-flex justify-content-between align-items-center mb-3 px-1">
-         <h6 class="fw-bold text-success mb-0" id="resultTitle">查無資料</h6>
-         <button class="btn btn-sm btn-outline-secondary" onclick="resetQuery()">重新查詢</button>
-      </div>
-      <div class="accordion pb-4" id="medAccordion"></div>
-    </div>
-  </div>
-
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  // ==========================================
-  // ⚠️ 您的設定
-  // ==========================================
   const GAS_URL = "https://script.google.com/macros/s/AKfycbyUXCejmkI52ZJVUN1K1t1j2ZvfdZMCgHsgB79okITgzn7to2sfte43R5I0GOQnFp1opQ/exec"; 
   const LIFF_ID = "2008912977-DuJTm5u1"; 
-  // ==========================================
 
-  let lineUserId = "";
-  let lineDisplayName = "";
-  let base64Image = "";
-  let fileName = "";
-  let isRegisterMode = false;
-  
+  let lineUserId = "", lineDisplayName = "", base64Image = "", fileName = "", isRegisterMode = false;
   const urlParams = new URLSearchParams(window.location.search);
   const currentMode = urlParams.get('mode');
 
-  window.onload = function() {
-    initLiff();
-  };
+  window.onload = function() { initLiff(); };
 
   function initLiff() {
     liff.init({ liffId: LIFF_ID }).then(() => {
       document.getElementById('loading').style.display = 'none';
 
-      const pending = localStorage.getItem('rx_pending_mode');
-      
-      localStorage.removeItem('rx_pending_mode');
-      localStorage.removeItem('pending_mode');
-      sessionStorage.removeItem('pending_mode');
-
       if (liff.isLoggedIn()) {
         liff.getProfile().then(profile => {
-          lineUserId = profile.userId;
-          lineDisplayName = profile.displayName;
-          const pic = profile.pictureUrl;
-          
+          lineUserId = profile.userId; lineDisplayName = profile.displayName;
           document.getElementById('userNameDisplay').innerText = lineDisplayName;
           document.getElementById('uName').value = lineDisplayName; 
           document.getElementById('bName').value = lineDisplayName; 
-          document.getElementById('qName').value = lineDisplayName; 
-          if(pic) document.getElementById('userThumb').src = pic;
+          if(profile.pictureUrl) document.getElementById('userThumb').src = profile.pictureUrl;
           
           document.getElementById('userInfo').classList.remove('hidden-mode');
           document.getElementById('btnOptionalLogin').classList.add('hidden-mode');
 
-          if (currentMode === 'bind' || currentMode === 'register') {
-            openBindLine();
-          } else if (currentMode === 'upload') {
-            openUpload();
-          } else {
-            goHome(); 
-          }
+          if (currentMode === 'bind' || currentMode === 'register') openBindLine();
+          else if (currentMode === 'upload') openUpload();
+          else goHome(); 
         });
       } else {
         document.getElementById('btnOptionalLogin').classList.remove('hidden-mode');
-        
-        if (currentMode === 'bind' || currentMode === 'register') {
-          openBindLine(); 
-        } else {
-          goHome();
-        }
+        if (currentMode === 'bind' || currentMode === 'register') openBindLine(); 
+        else goHome();
       }
-    }).catch(err => { 
-      document.getElementById('loading').style.display = 'none'; 
-      console.log("LIFF Init Error:", err);
-      goHome();
-    });
+    }).catch(err => { document.getElementById('loading').style.display = 'none'; goHome(); });
   }
 
-  function doLiffLogout() {
-    if (confirm("確定要登出 LINE 帳號嗎？")) {
-      if (liff.isLoggedIn()) {
-        liff.logout();
-        location.href = window.location.href.split('?')[0]; 
-      }
-    }
-  }
-
-  function doOptionalLogin() {
-    let cleanUrl = window.location.href.split('?')[0];
-    liff.login({ redirectUri: cleanUrl + "?mode=upload" });
-  }
+  function doLiffLogout() { if (confirm("確定要登出嗎？")) { if (liff.isLoggedIn()) { liff.logout(); location.href = window.location.href.split('?')[0]; } } }
+  function doOptionalLogin() { liff.login({ redirectUri: window.location.href.split('?')[0] + "?mode=upload" }); }
 
   function goHome() {
     window.history.replaceState({}, document.title, window.location.pathname);
-    
     document.getElementById('view-home').classList.remove('hidden-mode');
     document.getElementById('view-form').classList.add('hidden-mode');
     document.getElementById('view-bind').classList.add('hidden-mode');
-    document.getElementById('view-history').classList.add('hidden-mode');
     isRegisterMode = false;
   }
 
   function openUpload() {
     document.getElementById('view-home').classList.add('hidden-mode');
     document.getElementById('view-bind').classList.add('hidden-mode');
-    document.getElementById('view-history').classList.add('hidden-mode');
     document.getElementById('view-form').classList.remove('hidden-mode');
-    
-    if(!liff.isLoggedIn()) {
-      document.getElementById('uNotify').value = "電話通知";
-      document.getElementById('uploadHistorySection').classList.add('hidden-mode');
-    } else {
-      fetchUploadHistory();
-    }
+    if(!liff.isLoggedIn()) { document.getElementById('uNotify').value = "電話通知"; document.getElementById('uploadHistorySection').classList.add('hidden-mode'); } 
+    else fetchUploadHistory();
   }
 
   function openBindLine() {
-    if (!liff.isLoggedIn()) {
-      let cleanUrl = window.location.href.split('?')[0];
-      liff.login({ redirectUri: cleanUrl + "?mode=bind" }); 
-      return;
-    }
-
+    if (!liff.isLoggedIn()) { liff.login({ redirectUri: window.location.href.split('?')[0] + "?mode=bind" }); return; }
     isRegisterMode = true;
     document.getElementById('view-home').classList.add('hidden-mode');
     document.getElementById('view-form').classList.add('hidden-mode');
-    document.getElementById('view-history').classList.add('hidden-mode');
     document.getElementById('view-bind').classList.remove('hidden-mode'); 
-  }
-
-  // 保留函式，但按鈕已被停用
-  function openHistory() {
-    document.getElementById('view-home').classList.add('hidden-mode');
-    document.getElementById('view-form').classList.add('hidden-mode');
-    document.getElementById('view-bind').classList.add('hidden-mode');
-    document.getElementById('view-history').classList.remove('hidden-mode');
   }
 
   function fetchUploadHistory() {
     if (!lineUserId) return;
-    
     document.getElementById('uploadHistorySection').classList.remove('hidden-mode');
-    document.getElementById('uploadHistoryList').innerHTML = `
-      <div class="text-center text-muted small py-4 bg-white rounded-3 shadow-sm border-0">
-        <div class="spinner-border spinner-border-sm text-success me-2" role="status"></div> 讀取歷史紀錄中...
-      </div>`;
-
-    fetch(GAS_URL, {
-      method: "POST",
-      body: JSON.stringify({ action: "history", lineUserId: lineUserId })
-    })
-    .then(res => res.json())
-    .then(res => {
-      if (res.status === 'success') {
-        renderUploadHistory(res.history);
-      } else {
-        document.getElementById('uploadHistoryList').innerHTML = '<div class="text-center text-danger small py-3">讀取失敗</div>';
-      }
-    }).catch(err => {
-      document.getElementById('uploadHistoryList').innerHTML = '<div class="text-center text-danger small py-3">網路連線異常</div>';
-    });
+    document.getElementById('uploadHistoryList').innerHTML = `<div class="text-center text-muted small py-4"><div class="spinner-border spinner-border-sm text-success me-2"></div> 讀取紀錄中...</div>`;
+    fetch(GAS_URL, { method: "POST", body: JSON.stringify({ action: "history", lineUserId: lineUserId }) })
+    .then(res => res.json()).then(res => {
+      if (res.status === 'success') renderUploadHistory(res.history);
+      else document.getElementById('uploadHistoryList').innerHTML = '<div class="text-center text-danger small py-3">讀取失敗</div>';
+    }).catch(err => { document.getElementById('uploadHistoryList').innerHTML = '<div class="text-center text-danger small py-3">連線異常</div>'; });
   }
 
   function renderUploadHistory(data) {
-    const container = document.getElementById('uploadHistoryList');
-    container.innerHTML = '';
-    
-    if (!data || data.length === 0) {
-      container.innerHTML = '<div class="text-center text-muted small py-4 bg-white rounded-3 shadow-sm border-0">尚無上傳紀錄</div>';
-      return;
-    }
-    
+    const container = document.getElementById('uploadHistoryList'); container.innerHTML = '';
+    if (!data || data.length === 0) { container.innerHTML = '<div class="text-center text-muted small py-4 bg-white rounded-3 shadow-sm border-0">尚無上傳紀錄</div>'; return; }
     data.forEach(item => {
-      let statusColor = 'bg-secondary';
-      if (item.status === '可領藥') statusColor = 'bg-success';
-      if (item.status === '待處理') statusColor = 'bg-warning text-dark';
-      if (item.status === '處理中') statusColor = 'bg-primary';
-
-      let imgSrc = item.img || 'https://placehold.co/60x60?text=No+Img';
-      
-      let html = `
-        <div class="card p-2 mb-2 shadow-sm border-0 flex-row align-items-center">
-          <img src="${imgSrc}" style="width: 55px; height: 55px; object-fit: cover; border-radius: 8px; margin-right: 15px;" onclick="window.open('${item.img}', '_blank')">
-          <div class="flex-grow-1">
-            <div class="fw-bold" style="font-size:0.95rem; color:#333;">${item.date}</div>
-            <div class="small text-muted">${item.dept || '一般領藥'}</div>
-          </div>
-          <div><span class="badge ${statusColor} px-2 py-1">${item.status}</span></div>
-        </div>
-      `;
-      container.innerHTML += html;
+      let statusColor = item.status === '可領藥' ? 'bg-success' : (item.status === '待處理' ? 'bg-warning text-dark' : 'bg-primary');
+      let imgSrc = item.img || 'https://placehold.co/60?text=No+Img';
+      container.innerHTML += `<div class="card p-2 mb-2 shadow-sm border-0 flex-row align-items-center"><img src="${imgSrc}" style="width: 55px; height: 55px; object-fit: cover; border-radius: 8px; margin-right: 15px;" onclick="window.open('${item.img}', '_blank')"><div class="flex-grow-1"><div class="fw-bold" style="font-size:0.95rem; color:#333;">${item.date}</div><div class="small text-muted">${item.dept || '一般領藥'}</div></div><div><span class="badge ${statusColor} px-2 py-1">${item.status}</span></div></div>`;
     });
   }
 
   function handleFile(input) {
     if (input.files && input.files[0]) {
-      const file = input.files[0];
-      fileName = file.name;
-      const reader = new FileReader();
+      const file = input.files[0]; fileName = file.name; const reader = new FileReader();
       reader.onload = function(e) {
         const img = new Image(); img.src = e.target.result;
         img.onload = function() {
           const canvas = document.createElement('canvas');
           let w = img.width, h = img.height; if(w > 800) { h *= 800/w; w = 800; }
-          canvas.width = w; canvas.height = h;
-          const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, w, h);
+          canvas.width = w; canvas.height = h; const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, w, h);
           base64Image = canvas.toDataURL('image/jpeg', 0.7);
-          document.getElementById('previewImg').src = base64Image;
-          document.getElementById('previewImg').style.display = 'block';
-          document.getElementById('placeholder').style.display = 'none';
+          document.getElementById('previewImg').src = base64Image; document.getElementById('previewImg').style.display = 'block'; document.getElementById('placeholder').style.display = 'none';
         }
-      }
-      reader.readAsDataURL(file);
+      }; reader.readAsDataURL(file);
     }
   }
 
   function submitData() {
-    const name = document.getElementById('uName').value;
-    const phone = document.getElementById('uPhone').value;
-    let dept = document.getElementById('uDept').value;
-    let notify = document.getElementById('uNotify').value;
-    
-    if (notify === "LINE通知" && !liff.isLoggedIn()) {
-      alert("⚠️ 您目前尚未綁定 LINE！\n請點擊上方的「登入 LINE」，或改選【電話通知】。");
-      return;
-    }
-    if (!base64Image) return alert("⚠️ 請拍攝處方箋！");
-    if (!name || !phone) return alert("⚠️ 請填寫完整資料！");
-
-    document.getElementById('loading').style.display = 'flex';
-    document.getElementById('loadingText').innerText = "資料傳送中...";
-
-    const payload = { action: "upload", name: name, lineName: lineDisplayName, phone: phone, dept: dept, notify: notify, fileData: base64Image, fileName: fileName, lineUserId: lineUserId, isRegister: false };
-
-    fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload) })
-    .then(res => res.json())
-    .then(response => {
+    const name = document.getElementById('uName').value; const phone = document.getElementById('uPhone').value; let dept = document.getElementById('uDept').value; let notify = document.getElementById('uNotify').value;
+    if (notify === "LINE通知" && !liff.isLoggedIn()) return alert("⚠️ 您目前尚未綁定 LINE！\n請點擊上方的「登入 LINE」，或改選【電話通知】。");
+    if (!base64Image) return alert("⚠️ 請拍攝處方箋！"); if (!name || !phone) return alert("⚠️ 請填寫完整資料！");
+    document.getElementById('loading').style.display = 'flex'; document.getElementById('loadingText').innerText = "資料傳送中...";
+    fetch(GAS_URL, { method: "POST", body: JSON.stringify({ action: "upload", name: name, lineName: lineDisplayName, phone: phone, dept: dept, notify: notify, fileData: base64Image, fileName: fileName, lineUserId: lineUserId, isRegister: false }) })
+    .then(res => res.json()).then(res => {
       document.getElementById('loading').style.display = 'none';
-      if(response.status === 'success') { 
-        alert("✅ 處方箋上傳成功！\n藥師確認後會發送通知。"); 
-        goHome(); 
-      } else { alert("❌ 失敗：" + response.message); }
-    })
-    .catch(error => { document.getElementById('loading').style.display = 'none'; alert("傳送完成。"); goHome(); });
+      if(res.status === 'success') { alert("✅ 處方箋上傳成功！\n系統已發送 LINE 通知，藥師處理完畢將立即通知您。"); goHome(); } 
+      else { alert("❌ 失敗：" + res.message); }
+    }).catch(err => { document.getElementById('loading').style.display = 'none'; goHome(); });
   }
 
+  // 🔥 綁定專屬傳送 (加入防重複攔截處理)
   function submitBind() {
-    const name = document.getElementById('bName').value;
-    const phone = document.getElementById('bPhone').value;
-    
+    const name = document.getElementById('bName').value; const phone = document.getElementById('bPhone').value;
     if (!name || !phone) return alert("⚠️ 請填寫完整真實姓名與電話！");
-
-    document.getElementById('loading').style.display = 'flex';
-    document.getElementById('loadingText').innerText = "綁定資料傳送中...";
-
-    const payload = { 
-      action: "upload", name: name, lineName: lineDisplayName, phone: phone, 
-      dept: "現場登記", notify: "LINE通知", fileData: "", fileName: "", lineUserId: lineUserId, isRegister: true 
-    };
-
-    fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload) })
-    .then(res => res.json())
-    .then(response => {
+    document.getElementById('loading').style.display = 'flex'; document.getElementById('loadingText').innerText = "綁定資料傳送中...";
+    fetch(GAS_URL, { method: "POST", body: JSON.stringify({ action: "upload", name: name, lineName: lineDisplayName, phone: phone, dept: "LINE綁定", notify: "LINE通知", fileData: "", fileName: "", lineUserId: lineUserId, isRegister: true }) })
+    .then(res => res.json()).then(res => {
       document.getElementById('loading').style.display = 'none';
-      if(response.status === 'success') { 
+      if(res.status === 'success') { 
         alert("✅ 綁定成功！\n藥局未來將能透過 LINE 通知您領藥。"); 
         if(liff.isInClient()) liff.closeWindow(); else goHome(); 
-      } else { alert("❌ 失敗：" + response.message); }
-    })
-    .catch(error => { document.getElementById('loading').style.display = 'none'; alert("傳送完成。"); goHome(); });
+      } else if(res.status === 'duplicate') {
+        alert("⚠️ " + res.message); // 跳出重複綁定提示
+        goHome();
+      } else { alert("❌ 失敗：" + res.message); }
+    }).catch(err => { document.getElementById('loading').style.display = 'none'; goHome(); });
   }
-
-  function queryMedData() {
-    const qName = document.getElementById('qName').value.trim();
-    const qId = document.getElementById('qId').value.trim();
-
-    if(!qName || !qId) return alert("請輸入完整姓名與身分證字號");
-
-    document.getElementById('loading').style.display = 'flex';
-    document.getElementById('loadingText').innerText = "雲端檢索中...";
-
-    fetch(GAS_URL, {
-      method: "POST",
-      body: JSON.stringify({ action: "queryMed", name: qName, id: qId })
-    })
-    .then(res => res.json())
-    .then(res => {
-      document.getElementById('loading').style.display = 'none';
-      if(res.status === 'success') {
-        document.getElementById('authSection').classList.add('hidden-mode');
-        document.getElementById('resultSection').classList.remove('hidden-mode');
-        renderMedListGrouped(qName, res.data); 
-      } else {
-        alert("查詢失敗，請重試。");
-      }
-    })
-    .catch(err => {
-      document.getElementById('loading').style.display = 'none';
-      alert("網路異常，請稍後再試。");
-    });
-  }
-
-  function renderMedListGrouped(patientName, data) {
-    const container = document.getElementById('medAccordion');
-    container.innerHTML = "";
-    
-    if(!data || data.length === 0) {
-      document.getElementById('resultTitle').innerText = `${patientName} 的藥歷`;
-      container.innerHTML = `<div class="text-center py-5 text-muted">查無用藥紀錄</div>`;
-      return;
-    }
-
-    document.getElementById('resultTitle').innerText = `${patientName} 的藥歷`;
-
-    const groupedData = {};
-    data.forEach(item => {
-      const dateKey = item.date ? item.date : '未知日期';
-      if (!groupedData[dateKey]) groupedData[dateKey] = [];
-      groupedData[dateKey].push(item);
-    });
-
-    const dates = Object.keys(groupedData).sort((a, b) => new Date(b) - new Date(a));
-
-    dates.forEach((date, index) => {
-      const drugs = groupedData[date];
-      const isFirst = index === 0;
-      const collapseClass = isFirst ? "show" : "";
-      const buttonClass = isFirst ? "" : "collapsed";
-
-      const meta = drugs[0];
-      let metaHtml = "";
-      
-      if (meta.dept || meta.nextDate) {
-        let refillText = meta.refill ? ` (第 ${meta.refill} 次)` : "";
-        let nextLabel = "下回可領藥日";
-        
-        if (meta.refill) {
-           let parts = meta.refill.split('/');
-           if (parts.length === 2 && parts[0] === parts[1]) nextLabel = "🏥 預估回診日";
-           else nextLabel = "💊 下回領藥日";
-        }
-
-        metaHtml = `
-          <div class="meta-box">
-            <div class="meta-item"><i class="bi bi-hospital"></i> 處方科別：${meta.dept || '未記錄'}${refillText}</div>
-            ${meta.nextDate ? `<div class="meta-item fw-bold text-danger"><i class="bi bi-calendar-heart"></i> ${nextLabel}：${meta.nextDate}</div>` : ''}
-          </div>
-        `;
-      }
-
-      let tableHtml = `
-        <div class="table-responsive">
-          <table class="table table-sm table-striped table-hover med-table mb-0" style="font-size: 0.85rem;">
-            <thead>
-              <tr>
-                <th>健保碼</th>
-                <th>藥品名稱</th>
-                <th class="text-center">用量</th>
-                <th class="text-center">天數</th>
-                <th class="text-center">總量</th>
-              </tr>
-            </thead>
-            <tbody>
-      `;
-
-      drugs.forEach(drug => {
-        tableHtml += `
-          <tr>
-            <td class="nhi-col">${drug.nhi}</td>
-            <td class="drug-col">${drug.drug}</td>
-            <td class="num-col">${drug.dosage}</td>
-            <td class="num-col">${drug.days}</td>
-            <td class="num-col text-success fw-bold">${drug.total}</td>
-          </tr>
-        `;
-      });
-
-      tableHtml += `</tbody></table></div>`;
-
-      const accordionItem = `
-        <div class="accordion-item bg-white">
-          <h2 class="accordion-header" id="heading-${index}">
-            <button class="accordion-button ${buttonClass}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-${index}">
-              <div class="d-flex align-items-center w-100 mb-1">
-                <i class="bi bi-calendar-check me-2 fs-5"></i> 
-                <span class="fs-5">${date}</span> &nbsp; 
-                <span class="badge bg-success rounded-pill ms-2">${drugs.length} 項藥品</span>
-              </div>
-              ${metaHtml}
-            </button>
-          </h2>
-          <div id="collapse-${index}" class="accordion-collapse collapse ${collapseClass}" data-bs-parent="#medAccordion">
-            <div class="accordion-body p-0">
-              ${tableHtml}
-            </div>
-          </div>
-        </div>
-      `;
-      container.innerHTML += accordionItem;
-    });
-  }
-
-  function resetQuery() {
-    document.getElementById('qId').value = "";
-    document.getElementById('authSection').classList.remove('hidden-mode');
-    document.getElementById('resultSection').classList.add('hidden-mode');
-    document.getElementById('medAccordion').innerHTML = "";
-  }
-
 </script>
 </body>
 </html>
