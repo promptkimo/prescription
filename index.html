@@ -127,20 +127,45 @@
   const GAS_URL = "https://script.google.com/macros/s/AKfycbyUXCejmkI52ZJVUN1K1t1j2ZvfdZMCgHsgB79okITgzn7to2sfte43R5I0GOQnFp1opQ/exec"; 
   const LIFF_ID = "2008912977-DuJTm5u1"; 
 
-  // 🔥 健保局科別代碼對照表
+  // 🔥 終極版健保局科別代碼對照表 (涵蓋大分類與所有次專科)
   const NHI_DEPT_MAP = {
     "00": "不分科", "01": "家醫科", "02": "內科", "03": "外科", "04": "兒科", "05": "婦產科", 
-    "06": "骨科", "07": "神經科", "08": "泌尿科", "09": "耳鼻喉科", "10": "眼科", "11": "皮膚科", 
-    "12": "神經精神科", "13": "精神科", "14": "復健科", "15": "整形外科", "22": "急診醫學科", 
-    "23": "職業醫學科", "40": "牙科", "60": "中醫科", 
+    "06": "骨科", "07": "神經外科", "08": "泌尿科", "09": "耳鼻喉科", "10": "眼科", "11": "皮膚科", 
+    "12": "神經科", "13": "精神科", "14": "復健科", "15": "整形外科", "22": "急診醫學科", 
+    "23": "職業醫學科", "2A": "結核科", "2B": "洗腎科", "39": "牙醫一般科", "40": "牙科", 
+    "60": "中醫一般科", "81": "麻醉科", "82": "放射線科", "83": "病理科", "84": "核子醫學科",
+    
+    // 內科次專科
+    "AA": "消化內科", "AB": "心臟血管內科", "AC": "胸腔內科", "AD": "腎臟內科", "AE": "風濕科", 
+    "AF": "血液科", "AG": "內分泌科", "AH": "感染科", "AI": "免疫科", "AJ": "胃腸內科", 
+    "AK": "腫瘤內科", "AL": "老年醫學科", "AM": "新陳代謝科", "AN": "肝膽胃腸科",
+    
+    // 外科次專科
+    "BA": "一般外科", "BB": "小兒外科", "BC": "大腸直腸外科", "BD": "心臟血管外科", "BE": "胸腔外科", "BF": "消化外科", "BG": "腦神經外科",
+    
+    // 兒科次專科
+    "CA": "一般兒科", "CB": "小兒神經科", "CC": "小兒心臟科", "CD": "小兒胸腔科", "CE": "小兒腎臟科", "CF": "小兒血液科", 
+    "CG": "小兒內分泌科", "CH": "小兒過敏科", "CI": "小兒感染科", "CJ": "小兒胃腸科", "CK": "小兒風濕科", "CL": "小兒免疫科",
+    
+    // 牙科次專科
+    "DA": "一般牙科", "DB": "牙髓病科", "DC": "牙周病科", "DD": "補綴科", "DE": "齒顎矯正科", "DF": "兒童牙科", "DG": "口腔顎面外科",
+    
+    // 中醫次專科
+    "EA": "中醫內科", "EB": "中醫外科", "EC": "中醫兒科", "ED": "中醫婦科", "EE": "中醫傷科", "EF": "中醫針灸科",
+    
+    // 放射與病理次專科
+    "FA": "放射診斷科", "FB": "放射治療科", "FC": "放射線腫瘤科", "FD": "臨床病理科", "FE": "解剖病理科",
+    
+    // 單碼防呆相容
     "1": "家醫科", "2": "內科", "3": "外科", "4": "兒科", "5": "婦產科", "6": "骨科", 
-    "7": "神經科", "8": "泌尿科", "9": "耳鼻喉科"
+    "7": "神經外科", "8": "泌尿科", "9": "耳鼻喉科"
   };
 
   function translateDept(codeStr) {
       if (!codeStr) return "一般領藥";
-      let c = String(codeStr).trim();
-      return NHI_DEPT_MAP[c] ? NHI_DEPT_MAP[c] : c; // 如果有配對到就翻譯，沒有就顯示原本的文字
+      // 自動轉大寫與去空白，以防輸入 "ab" 或 " ab " 導致比對不到
+      let c = String(codeStr).trim().toUpperCase();
+      return NHI_DEPT_MAP[c] ? NHI_DEPT_MAP[c] : c; 
   }
 
   let lineUserId = "", lineDisplayName = "", linePictureUrl = "", base64Image = "", fileName = "", isRegisterMode = false;
@@ -325,7 +350,7 @@
            groups[key] = {
                date: r.date,
                rxDate: r.rxDate || "未提供",
-               dept: translateDept(r.dept), // 🔥 這裡直接將代碼翻譯成中文科別
+               dept: translateDept(r.dept), // 🔥 這裡會呼叫全新的科別翻譯引擎
                refill: r.refill || "",
                days: parseInt(r.days) || 28, 
                drugs: []
@@ -420,7 +445,6 @@
            `;
        }
 
-       // 🔥 升級：清楚標示 每次用量(粒)、天數(天)、總量(粒)
        let drugsHtml = g.drugs.map((d, idx) => `
           <div class="border-bottom border-light py-2 ${idx === g.drugs.length-1 ? 'border-0 pb-0' : ''}">
              <div class="fw-bold text-dark mb-1" style="font-size:0.95rem;"><i class="bi bi-capsule text-success me-1"></i>${d.drug || '未知藥品'}</div>
@@ -436,7 +460,7 @@
           <div class="card bg-white border border-success border-2 shadow-sm mb-4" style="border-radius:12px; overflow:hidden;">
              <div class="card-header bg-success text-white py-2 px-3 d-flex justify-content-between align-items-center border-0">
                 <span class="fw-bold" style="font-size:1.05rem;"><i class="bi bi-calendar-check me-1"></i>${g.date} 領藥</span>
-                <span class="badge bg-white text-success shadow-sm">${g.dept}</span>
+                <span class="badge bg-white text-success shadow-sm" style="font-size:0.85rem;">${g.dept}</span>
              </div>
              <div class="card-body p-3" style="background-color:#fbfdfc;">
                 ${refillInfoHtml}
