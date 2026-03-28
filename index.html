@@ -127,43 +127,27 @@
   const GAS_URL = "https://script.google.com/macros/s/AKfycbyUXCejmkI52ZJVUN1K1t1j2ZvfdZMCgHsgB79okITgzn7to2sfte43R5I0GOQnFp1opQ/exec"; 
   const LIFF_ID = "2008912977-DuJTm5u1"; 
 
-  // 🔥 終極版健保局科別代碼對照表 (涵蓋大分類與所有次專科)
   const NHI_DEPT_MAP = {
     "00": "不分科", "01": "家醫科", "02": "內科", "03": "外科", "04": "兒科", "05": "婦產科", 
     "06": "骨科", "07": "神經外科", "08": "泌尿科", "09": "耳鼻喉科", "10": "眼科", "11": "皮膚科", 
     "12": "神經科", "13": "精神科", "14": "復健科", "15": "整形外科", "22": "急診醫學科", 
     "23": "職業醫學科", "2A": "結核科", "2B": "洗腎科", "39": "牙醫一般科", "40": "牙科", 
     "60": "中醫一般科", "81": "麻醉科", "82": "放射線科", "83": "病理科", "84": "核子醫學科",
-    
-    // 內科次專科
     "AA": "消化內科", "AB": "心臟血管內科", "AC": "胸腔內科", "AD": "腎臟內科", "AE": "風濕科", 
     "AF": "血液科", "AG": "內分泌科", "AH": "感染科", "AI": "免疫科", "AJ": "胃腸內科", 
     "AK": "腫瘤內科", "AL": "老年醫學科", "AM": "新陳代謝科", "AN": "肝膽胃腸科",
-    
-    // 外科次專科
     "BA": "一般外科", "BB": "小兒外科", "BC": "大腸直腸外科", "BD": "心臟血管外科", "BE": "胸腔外科", "BF": "消化外科", "BG": "腦神經外科",
-    
-    // 兒科次專科
     "CA": "一般兒科", "CB": "小兒神經科", "CC": "小兒心臟科", "CD": "小兒胸腔科", "CE": "小兒腎臟科", "CF": "小兒血液科", 
     "CG": "小兒內分泌科", "CH": "小兒過敏科", "CI": "小兒感染科", "CJ": "小兒胃腸科", "CK": "小兒風濕科", "CL": "小兒免疫科",
-    
-    // 牙科次專科
     "DA": "一般牙科", "DB": "牙髓病科", "DC": "牙周病科", "DD": "補綴科", "DE": "齒顎矯正科", "DF": "兒童牙科", "DG": "口腔顎面外科",
-    
-    // 中醫次專科
     "EA": "中醫內科", "EB": "中醫外科", "EC": "中醫兒科", "ED": "中醫婦科", "EE": "中醫傷科", "EF": "中醫針灸科",
-    
-    // 放射與病理次專科
     "FA": "放射診斷科", "FB": "放射治療科", "FC": "放射線腫瘤科", "FD": "臨床病理科", "FE": "解剖病理科",
-    
-    // 單碼防呆相容
     "1": "家醫科", "2": "內科", "3": "外科", "4": "兒科", "5": "婦產科", "6": "骨科", 
     "7": "神經外科", "8": "泌尿科", "9": "耳鼻喉科"
   };
 
   function translateDept(codeStr) {
       if (!codeStr) return "一般領藥";
-      // 自動轉大寫與去空白，以防輸入 "ab" 或 " ab " 導致比對不到
       let c = String(codeStr).trim().toUpperCase();
       return NHI_DEPT_MAP[c] ? NHI_DEPT_MAP[c] : c; 
   }
@@ -220,53 +204,11 @@
   function openUpload() { document.getElementById('view-home').classList.add('hidden-mode'); document.getElementById('view-bind').classList.add('hidden-mode'); document.getElementById('view-status').classList.add('hidden-mode'); document.getElementById('view-meds').classList.add('hidden-mode'); document.getElementById('view-form').classList.remove('hidden-mode'); if(!liff.isLoggedIn()) document.getElementById('uNotify').value = "電話通知"; }
   function openBindLine() { if (!liff.isLoggedIn()) { liff.login({ redirectUri: window.location.href.split('?')[0] + "?mode=bind" }); return; } isRegisterMode = true; document.getElementById('view-home').classList.add('hidden-mode'); document.getElementById('view-form').classList.add('hidden-mode'); document.getElementById('view-status').classList.add('hidden-mode'); document.getElementById('view-meds').classList.add('hidden-mode'); document.getElementById('view-bind').classList.remove('hidden-mode'); }
   function openStatus() { if (!liff.isLoggedIn()) { liff.login({ redirectUri: window.location.href.split('?')[0] + "?mode=status" }); return; } document.getElementById('view-home').classList.add('hidden-mode'); document.getElementById('view-form').classList.add('hidden-mode'); document.getElementById('view-bind').classList.add('hidden-mode'); document.getElementById('view-meds').classList.add('hidden-mode'); document.getElementById('view-status').classList.remove('hidden-mode'); fetchUploadHistory(); }
-  
-  function openMedHistory() { 
-    if (!liff.isLoggedIn()) { liff.login({ redirectUri: window.location.href.split('?')[0] + "?mode=meds" }); return; } 
-    document.getElementById('view-home').classList.add('hidden-mode'); 
-    document.getElementById('view-form').classList.add('hidden-mode'); 
-    document.getElementById('view-bind').classList.add('hidden-mode'); 
-    document.getElementById('view-status').classList.add('hidden-mode'); 
-    document.getElementById('view-meds').classList.remove('hidden-mode'); 
-    document.getElementById('medHistoryResult').innerHTML = '';
-    document.getElementById('qName').value = '';
-    document.getElementById('qId').value = '';
-  }
+  function openMedHistory() { if (!liff.isLoggedIn()) { liff.login({ redirectUri: window.location.href.split('?')[0] + "?mode=meds" }); return; } document.getElementById('view-home').classList.add('hidden-mode'); document.getElementById('view-form').classList.add('hidden-mode'); document.getElementById('view-bind').classList.add('hidden-mode'); document.getElementById('view-status').classList.add('hidden-mode'); document.getElementById('view-meds').classList.remove('hidden-mode'); document.getElementById('medHistoryResult').innerHTML = ''; document.getElementById('qName').value = ''; document.getElementById('qId').value = ''; }
 
-  function addDaysToDateStr(dStr, days) {
-      if (!dStr || !days) return "未提供";
-      let s = String(dStr).trim();
-      let y, m, d;
-      
-      if (s.includes('/') || s.includes('-')) {
-          let parts = s.split(/[\/\-]/);
-          y = parseInt(parts[0]);
-          if (y < 1911) y += 1911;
-          m = parseInt(parts[1]) - 1;
-          d = parseInt(parts[2]);
-      } else {
-          let n = s.replace(/\D/g, '');
-          if (n.length === 7) {
-              y = parseInt(n.substring(0,3)) + 1911;
-              m = parseInt(n.substring(3,5)) - 1;
-              d = parseInt(n.substring(5,7));
-          } else if (n.length === 8) {
-              y = parseInt(n.substring(0,4));
-              m = parseInt(n.substring(4,6)) - 1;
-              d = parseInt(n.substring(6,8));
-          } else {
-              return s;
-          }
-      }
-      
-      let dt = new Date(y, m, d);
-      if(isNaN(dt)) return s;
-      dt.setDate(dt.getDate() + parseInt(days));
-      let finalM = String(dt.getMonth()+1).padStart(2,'0');
-      let finalD = String(dt.getDate()).padStart(2,'0');
-      return dt.getFullYear() + '/' + finalM + '/' + finalD;
-  }
-
+  // ----------------------------------------------------
+  // 🔥 核心推算引擎：解析日期格式並推算天數
+  // ----------------------------------------------------
   function parseTwDate(dStr) {
       if (!dStr) return null;
       let s = String(dStr).trim().split(' ')[0];
@@ -278,7 +220,7 @@
           y = parseInt(parts[0]);
           m = parseInt(parts[1]) - 1;
           d = parseInt(parts[2]);
-          if (y < 1911) y += 1911;
+          if (y < 1911) y += 1911; // 民國轉西元
       } else {
           let n = s.replace(/\D/g, '');
           if (n.length === 7) {
@@ -350,9 +292,9 @@
            groups[key] = {
                date: r.date,
                rxDate: r.rxDate || "未提供",
-               dept: translateDept(r.dept), // 🔥 這裡會呼叫全新的科別翻譯引擎
+               dept: translateDept(r.dept), 
                refill: r.refill || "",
-               days: parseInt(r.days) || 28, 
+               days: parseInt(r.days) || 28, // 抓取領藥天數，預設28天
                drugs: []
            };
            groupKeys.push(key);
@@ -374,6 +316,7 @@
        let refillInfoHtml = '';
 
        if (rxDt && totRefill > 1) {
+           // 🔥 核心推算：處方日 + 天數 = 領藥結束日，往前推 10 天 = 領藥開始日
            let dt2_end = new Date(rxDt); dt2_end.setDate(dt2_end.getDate() + g.days);
            let dt2_start = new Date(dt2_end); dt2_start.setDate(dt2_start.getDate() - 10);
            
@@ -383,13 +326,13 @@
            let returnDt = new Date(rxDt); returnDt.setDate(returnDt.getDate() + (g.days * totRefill));
 
            let status2 = curRefill >= 2 
-                ? '<span class="badge bg-success shadow-sm">✅ 已領取</span>' 
+                ? '<span class="badge bg-success shadow-sm" style="font-size:0.9rem;">✅ 已領取</span>' 
                 : `<span class="fw-bold text-danger">${formatShortDate(dt2_start)} ~ ${formatShortDate(dt2_end)}</span>`;
            
            let status3 = "";
            if (totRefill >= 3) {
                status3 = curRefill >= 3 
-                    ? '<span class="badge bg-success shadow-sm">✅ 已領取</span>' 
+                    ? '<span class="badge bg-success shadow-sm" style="font-size:0.9rem;">✅ 已領取</span>' 
                     : `<span class="fw-bold text-danger">${formatShortDate(dt3_start)} ~ ${formatShortDate(dt3_end)}</span>`;
            }
 
@@ -408,18 +351,18 @@
                  
                  <div class="small text-secondary mb-2 d-flex justify-content-between align-items-center">
                     <span>👉 第二次領藥區間：</span> 
-                    <span class="text-end" style="font-size:1rem;">${status2}</span>
+                    <span class="text-end" style="font-size:1.05rem;">${status2}</span>
                  </div>
                  
                  ${totRefill >= 3 ? `
                  <div class="small text-secondary mb-2 d-flex justify-content-between align-items-center">
                     <span>👉 第三次領藥區間：</span> 
-                    <span class="text-end" style="font-size:1rem;">${status3}</span>
+                    <span class="text-end" style="font-size:1.05rem;">${status3}</span>
                  </div>` : ''}
                  
                  <div class="mt-2 pt-2 border-top border-info border-opacity-25 text-dark d-flex justify-content-between align-items-center bg-light p-2 rounded">
-                    <span class="small fw-bold">🏥 藥品用罄 (回診日)：</span> 
-                    <span class="fw-bold text-danger" style="font-size:1.05rem;">${formatFullDate(returnDt)}</span>
+                    <span class="small fw-bold">🏥 藥品用罄 (預約回診日)：</span> 
+                    <span class="fw-bold text-danger" style="font-size:1.1rem;">${formatFullDate(returnDt)}</span>
                  </div>
               </div>
            `;
@@ -438,7 +381,7 @@
                  </div>
                  <div class="small text-secondary mb-1">📅 處方開立日：<span class="fw-bold text-dark">${rxDt ? formatFullDate(rxDt) : g.rxDate}</span></div>
                  <div class="small text-secondary mt-2 pt-2 border-top d-flex justify-content-between bg-light p-2 rounded">
-                    <span class="fw-bold">🏥 預約回診日 (用罄)：</span> 
+                    <span class="fw-bold">🏥 藥品用罄 (回診日)：</span> 
                     <span class="fw-bold text-danger">${returnDtStr}</span>
                  </div>
               </div>
@@ -478,6 +421,9 @@
     container.innerHTML = html;
   }
 
+  // ----------------------------------------------------
+  // 以下功能保持不變
+  // ----------------------------------------------------
   function fetchUploadHistory() {
     if (!lineUserId) return;
     document.getElementById('uploadHistoryList').innerHTML = `<div class="text-center text-muted small py-4"><div class="spinner-border spinner-border-sm text-info me-2"></div> 讀取紀錄中...</div>`;
