@@ -106,7 +106,8 @@
   const GAS_URL = "https://script.google.com/macros/s/AKfycbyUXCejmkI52ZJVUN1K1t1j2ZvfdZMCgHsgB79okITgzn7to2sfte43R5I0GOQnFp1opQ/exec"; 
   const LIFF_ID = "2008912977-DuJTm5u1"; 
 
-  let lineUserId = "", lineDisplayName = "", base64Image = "", fileName = "", isRegisterMode = false;
+  // 🔥 增加 linePictureUrl 變數來儲存頭像網址
+  let lineUserId = "", lineDisplayName = "", linePictureUrl = "", base64Image = "", fileName = "", isRegisterMode = false;
   const urlParams = new URLSearchParams(window.location.search);
   const currentMode = urlParams.get('mode');
 
@@ -117,7 +118,10 @@
       document.getElementById('loading').style.display = 'none';
       if (liff.isLoggedIn()) {
         liff.getProfile().then(profile => {
-          lineUserId = profile.userId; lineDisplayName = profile.displayName;
+          lineUserId = profile.userId; 
+          lineDisplayName = profile.displayName;
+          linePictureUrl = profile.pictureUrl || ""; // 🔥 抓取真實頭像
+
           document.getElementById('userNameDisplay').innerText = lineDisplayName;
           document.getElementById('uName').value = lineDisplayName; 
           document.getElementById('bName').value = lineDisplayName; 
@@ -170,10 +174,7 @@
     data.forEach(item => {
       let statusColor = item.status === '可領藥' ? 'bg-success' : (item.status === '待處理' ? 'bg-warning text-dark' : 'bg-primary');
       let imgSrc = item.img || 'https://placehold.co/60?text=No+Img';
-      
-      // 🔥 高畫質解鎖引擎：將 w200 的縮圖轉換成 w1600 的超大圖
       let highResImg = item.img ? item.img.replace('w200', 'w1600') : imgSrc;
-
       container.innerHTML += `<div class="card p-2 mb-2 shadow-sm border-0 flex-row align-items-center bg-light"><img src="${imgSrc}" style="width: 55px; height: 55px; object-fit: cover; border-radius: 8px; margin-right: 15px; border:1px solid #ddd;" onclick="window.open('${highResImg}', '_blank')"><div class="flex-grow-1"><div class="fw-bold" style="font-size:0.95rem; color:#333;">${item.date}</div><div class="small text-muted">${item.dept || '一般領藥'}</div></div><div><span class="badge ${statusColor} px-2 py-1 shadow-sm">${item.status}</span></div></div>`;
     });
   }
@@ -197,12 +198,13 @@
     }
   }
 
+  // 🔥 兩個提交函式都加入了 linePic 的傳送
   function submitData() {
     const name = document.getElementById('uName').value; const phone = document.getElementById('uPhone').value; let dept = document.getElementById('uDept').value; let notify = document.getElementById('uNotify').value;
     if (notify === "LINE通知" && !liff.isLoggedIn()) return alert("⚠️ 您目前尚未綁定 LINE！\n請點擊上方的「登入 LINE」，或改選【電話通知】。");
     if (!base64Image) return alert("⚠️ 請拍攝處方箋！"); if (!name || !phone) return alert("⚠️ 請填寫完整資料！");
     document.getElementById('loading').style.display = 'flex'; document.getElementById('loadingText').innerText = "資料傳送中...";
-    fetch(GAS_URL, { method: "POST", body: JSON.stringify({ action: "upload", name: name, lineName: lineDisplayName, phone: phone, dept: dept, notify: notify, fileData: base64Image, fileName: fileName, lineUserId: lineUserId, isRegister: false }) })
+    fetch(GAS_URL, { method: "POST", body: JSON.stringify({ action: "upload", name: name, lineName: lineDisplayName, linePic: linePictureUrl, phone: phone, dept: dept, notify: notify, fileData: base64Image, fileName: fileName, lineUserId: lineUserId, isRegister: false }) })
     .then(res => res.json()).then(res => {
       document.getElementById('loading').style.display = 'none';
       if(res.status === 'success') { alert("✅ 處方箋上傳成功！\n系統已發送 LINE 通知，藥師處理完畢將立即通知您。"); goHome(); } 
@@ -214,7 +216,7 @@
     const name = document.getElementById('bName').value; const phone = document.getElementById('bPhone').value;
     if (!name || !phone) return alert("⚠️ 請填寫完整真實姓名與電話！");
     document.getElementById('loading').style.display = 'flex'; document.getElementById('loadingText').innerText = "綁定資料傳送中...";
-    fetch(GAS_URL, { method: "POST", body: JSON.stringify({ action: "upload", name: name, lineName: lineDisplayName, phone: phone, dept: "LINE綁定", notify: "LINE通知", fileData: "", fileName: "", lineUserId: lineUserId, isRegister: true }) })
+    fetch(GAS_URL, { method: "POST", body: JSON.stringify({ action: "upload", name: name, lineName: lineDisplayName, linePic: linePictureUrl, phone: phone, dept: "LINE綁定", notify: "LINE通知", fileData: "", fileName: "", lineUserId: lineUserId, isRegister: true }) })
     .then(res => res.json()).then(res => {
       document.getElementById('loading').style.display = 'none';
       if(res.status === 'success') { alert("✅ 綁定成功！\n藥局未來將能透過 LINE 通知您領藥。"); if(liff.isInClient()) liff.closeWindow(); else goHome(); } 
