@@ -226,8 +226,11 @@
               y = parseInt(n.substring(0,4));
               m = parseInt(n.substring(4,6)) - 1;
               d = parseInt(n.substring(6,8));
-          } else return s;
+          } else {
+              return s;
+          }
       }
+      
       let dt = new Date(y, m, d);
       if(isNaN(dt)) return s;
       dt.setDate(dt.getDate() + parseInt(days));
@@ -350,7 +353,6 @@
 
            let returnDt = new Date(rxDt); returnDt.setDate(returnDt.getDate() + (g.days * totRefill));
 
-           // 🔥 核心修改：計算出區間字串，並在已領取時，附加保留顯示該區間
            let range2_str = `<span class="fw-bold text-danger">${formatShortDate(dt2_start)} ~ ${formatShortDate(dt2_end)}</span>`;
            let status2 = curRefill >= 2 
                 ? `${range2_str} <span class="badge bg-success shadow-sm ms-1" style="font-size:0.85rem;">✅ 已領取</span>` 
@@ -416,10 +418,14 @@
            `;
        }
 
+       // 🔥 加入了前面的圓形綠色編號 (idx + 1)
        let drugsHtml = g.drugs.map((d, idx) => `
           <div class="border-bottom border-light py-2 ${idx === g.drugs.length-1 ? 'border-0 pb-0' : ''}">
-             <div class="fw-bold text-dark mb-1" style="font-size:0.95rem;"><i class="bi bi-capsule text-success me-1"></i>${d.drug || '未知藥品'}</div>
-             <div class="d-flex flex-wrap text-secondary ps-4" style="font-size:0.85rem; gap: 8px;">
+             <div class="fw-bold text-dark mb-1 d-flex align-items-start" style="font-size:0.95rem;">
+                <span class="badge bg-success me-2 shadow-sm mt-1" style="font-size:0.75rem; border-radius:50%; width:22px; height:22px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">${idx + 1}</span>
+                <span>${d.drug || '未知藥品'}</span>
+             </div>
+             <div class="d-flex flex-wrap text-secondary" style="font-size:0.85rem; gap: 8px; padding-left: 30px;">
                 <div><span class="badge bg-light text-secondary border me-1 shadow-sm">每次用量</span>${d.dosage || '-'} 粒</div>
                 <div><span class="badge bg-light text-secondary border me-1 shadow-sm">天數</span>${d.days || g.days || '-'} 天</div>
                 <div class="fw-bold text-success ms-auto">總量: ${d.total || '-'} 粒</div>
