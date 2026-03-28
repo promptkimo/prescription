@@ -170,7 +170,11 @@
     data.forEach(item => {
       let statusColor = item.status === '可領藥' ? 'bg-success' : (item.status === '待處理' ? 'bg-warning text-dark' : 'bg-primary');
       let imgSrc = item.img || 'https://placehold.co/60?text=No+Img';
-      container.innerHTML += `<div class="card p-2 mb-2 shadow-sm border-0 flex-row align-items-center bg-light"><img src="${imgSrc}" style="width: 55px; height: 55px; object-fit: cover; border-radius: 8px; margin-right: 15px; border:1px solid #ddd;" onclick="window.open('${item.img}', '_blank')"><div class="flex-grow-1"><div class="fw-bold" style="font-size:0.95rem; color:#333;">${item.date}</div><div class="small text-muted">${item.dept || '一般領藥'}</div></div><div><span class="badge ${statusColor} px-2 py-1 shadow-sm">${item.status}</span></div></div>`;
+      
+      // 🔥 高畫質解鎖引擎：將 w200 的縮圖轉換成 w1600 的超大圖
+      let highResImg = item.img ? item.img.replace('w200', 'w1600') : imgSrc;
+
+      container.innerHTML += `<div class="card p-2 mb-2 shadow-sm border-0 flex-row align-items-center bg-light"><img src="${imgSrc}" style="width: 55px; height: 55px; object-fit: cover; border-radius: 8px; margin-right: 15px; border:1px solid #ddd;" onclick="window.open('${highResImg}', '_blank')"><div class="flex-grow-1"><div class="fw-bold" style="font-size:0.95rem; color:#333;">${item.date}</div><div class="small text-muted">${item.dept || '一般領藥'}</div></div><div><span class="badge ${statusColor} px-2 py-1 shadow-sm">${item.status}</span></div></div>`;
     });
   }
 
@@ -182,15 +186,10 @@
         img.onload = function() {
           const canvas = document.createElement('canvas');
           let w = img.width, h = img.height; 
-          
-          // 🔥 畫質升級：從 800px 提升至 1600px，保留列印的清晰度！
           const MAX_SIZE = 1600;
           if (w > h && w > MAX_SIZE) { h *= MAX_SIZE / w; w = MAX_SIZE; } 
           else if (h > w && h > MAX_SIZE) { w *= MAX_SIZE / h; h = MAX_SIZE; }
-          
           canvas.width = w; canvas.height = h; const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, w, h);
-          
-          // 🔥 壓縮比優化：從 0.7 提升至 0.85，保留小字細節
           base64Image = canvas.toDataURL('image/jpeg', 0.85);
           document.getElementById('previewImg').src = base64Image; document.getElementById('previewImg').style.display = 'block'; document.getElementById('placeholder').style.display = 'none';
         }
