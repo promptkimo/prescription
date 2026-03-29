@@ -206,18 +206,7 @@
   function openUpload() { document.getElementById('view-home').classList.add('hidden-mode'); document.getElementById('view-bind').classList.add('hidden-mode'); document.getElementById('view-status').classList.add('hidden-mode'); document.getElementById('view-meds').classList.add('hidden-mode'); document.getElementById('view-form').classList.remove('hidden-mode'); if(!liff.isLoggedIn()) document.getElementById('uNotify').value = "電話通知"; }
   function openBindLine() { if (!liff.isLoggedIn()) { liff.login({ redirectUri: window.location.href.split('?')[0] + "?mode=bind" }); return; } isRegisterMode = true; document.getElementById('view-home').classList.add('hidden-mode'); document.getElementById('view-form').classList.add('hidden-mode'); document.getElementById('view-status').classList.add('hidden-mode'); document.getElementById('view-meds').classList.add('hidden-mode'); document.getElementById('view-bind').classList.remove('hidden-mode'); }
   function openStatus() { if (!liff.isLoggedIn()) { liff.login({ redirectUri: window.location.href.split('?')[0] + "?mode=status" }); return; } document.getElementById('view-home').classList.add('hidden-mode'); document.getElementById('view-form').classList.add('hidden-mode'); document.getElementById('view-bind').classList.add('hidden-mode'); document.getElementById('view-meds').classList.add('hidden-mode'); document.getElementById('view-status').classList.remove('hidden-mode'); fetchUploadHistory(); }
-  
-  function openMedHistory() { 
-    if (!liff.isLoggedIn()) { liff.login({ redirectUri: window.location.href.split('?')[0] + "?mode=meds" }); return; } 
-    document.getElementById('view-home').classList.add('hidden-mode'); 
-    document.getElementById('view-form').classList.add('hidden-mode'); 
-    document.getElementById('view-bind').classList.add('hidden-mode'); 
-    document.getElementById('view-status').classList.add('hidden-mode'); 
-    document.getElementById('view-meds').classList.remove('hidden-mode'); 
-    document.getElementById('medHistoryResult').innerHTML = ''; 
-    document.getElementById('qName').value = ''; 
-    document.getElementById('qId').value = ''; 
-  }
+  function openMedHistory() { if (!liff.isLoggedIn()) { liff.login({ redirectUri: window.location.href.split('?')[0] + "?mode=meds" }); return; } document.getElementById('view-home').classList.add('hidden-mode'); document.getElementById('view-form').classList.add('hidden-mode'); document.getElementById('view-bind').classList.add('hidden-mode'); document.getElementById('view-status').classList.add('hidden-mode'); document.getElementById('view-meds').classList.remove('hidden-mode'); document.getElementById('medHistoryResult').innerHTML = ''; document.getElementById('qName').value = ''; document.getElementById('qId').value = ''; }
 
   function parseTwDate(dStr) {
       if (!dStr) return null;
@@ -284,75 +273,127 @@
     });
   }
 
+  // ==============================================================
+  // 🔥 慢箋智慧整併引擎 (同處方日、同科別合併為同一張卡片)
+  // ==============================================================
   function renderMedHistory(data) {
     const container = document.getElementById('medHistoryResult');
     container.innerHTML = '';
     
-    // 過濾掉 MA1 (系統申報項目)
-    data = data.filter(function(r) {
-       var nhiCode = String(r.nhi).toUpperCase();
-       var drugName = String(r.drug).toUpperCase();
-       return !(nhiCode.includes('MA1') || drugName.includes('MA1'));
-    });
+    // 1. 過濾 MA1 垃圾資料
+    let validData = [];
+    for(let i=0; i<data.length; i++){
+       let r = data[i];
+       let nhiCode = String(r.nhi).toUpperCase();
+       let drugName = String(r.drug).toUpperCase();
+       if (!(nhiCode.includes('MA1') || drugName.includes('MA1'))) {
+           validData.push(r);
+       }
+    }
 
-    if (!data || data.length === 0) {
+    if (validData.length === 0) {
       container.innerHTML = '<div class="alert alert-light border border-danger text-center text-danger small py-4 fw-bold shadow-sm">⚠️ 查無藥歷資料！<br>請確認【姓名】與【身分證字號】是否完全吻合，<br>或藥局尚未更新您的資料。</div>';
       return;
     }
 
+    // 2. 智慧分組邏輯
     let groups = {};
-    let groupKeys = [];
-    data.forEach(r => {
-       let cleanDate = String(r.date).split('T')[0].split(' ')[0]; 
-       let key = cleanDate + "_" + (r.rxDate || "noRx");
+    
+    validData.forEach(r => {
+       let cleanPickupDate = String(r.date).split('T')[0].split(' ')[0]; 
+       let rxDt = r.rxDate ? String(r.rxDate).trim() : "";
+       let deptStr = translateDept(r.dept);
+       
+       let isChronic = false;
+       let curRefill = 1, totRefill = 1;
+       if (r.refill && r.refill.includes('/')) {
+           curRefill = parseInt(r.refill.split('/')[0]) || 1;
+           totRefill = parseInt(r.refill.split('/')[1]) || 1;
+           if (totRefill > 1) isChronic = true;
+       }
+
+       // 🔥 關鍵分組：慢箋以「處方日+科別」作為金鑰；一般箋用「領藥日+處方日」
+       let key = "";
+       if (isChronic && rxDt) {
+           key = "CHRONIC_" + rxDt + "_" + deptStr;
+       } else {
+           key = "NORMAL_" + cleanPickupDate + "_" + (rxDt || "noRx") + "_" + deptStr;
+       }
        
        if (!groups[key]) {
            groups[key] = {
-               date: cleanDate,
-               rxDate: r.rxDate || "未提供",
-               dept: translateDept(r.dept), 
-               refill: r.refill || "",
+               type: isChronic ? 'chronic' : 'normal',
+               rxDateStr: rxDt || "未提供",
+               rxDateObj: parseTwDate(rxDt),
+               dept: deptStr,
+               totRefill: totRefill,
+               maxCurRefill: curRefill, // 紀錄藥局發過的最大進度
+               pickupLog: {}, // 紀錄特定次數的「實際領藥日」
                days: parseInt(r.days) || 28, 
-               drugs: []
+               drugsMap: new Map(), // 利用 Map 去除重複藥品
+               latestPickupDate: cleanPickupDate // 卡片最上方的日期標題
            };
-           groupKeys.push(key);
        }
-       groups[key].drugs.push(r);
+
+       // 3. 更新進度與實際領藥日
+       if (isChronic) {
+           if (curRefill > groups[key].maxCurRefill) groups[key].maxCurRefill = curRefill;
+           groups[key].pickupLog[curRefill] = cleanPickupDate;
+           // 確保卡片最上方顯示的是「最近一次」的領藥日
+           if (cleanPickupDate > groups[key].latestPickupDate) {
+               groups[key].latestPickupDate = cleanPickupDate;
+           }
+       }
+
+       // 4. 藥品去重複寫入
+       let drugName = r.drug || '未知藥品';
+       if (!groups[key].drugsMap.has(drugName)) {
+           groups[key].drugsMap.set(drugName, r);
+       }
+    });
+
+    // 5. 排序：把最近領藥的卡片排在最上面
+    let sortedKeys = Object.keys(groups).sort((a, b) => {
+        let dateA = groups[a].latestPickupDate.replace(/\D/g, '');
+        let dateB = groups[b].latestPickupDate.replace(/\D/g, '');
+        return dateB.localeCompare(dateA);
     });
 
     let html = '';
-    groupKeys.forEach(k => {
+    sortedKeys.forEach(k => {
        let g = groups[k];
-       let curRefill = 1, totRefill = 1;
-       
-       if (g.refill && g.refill.includes('/')) {
-           curRefill = parseInt(g.refill.split('/')[0]) || 1;
-           totRefill = parseInt(g.refill.split('/')[1]) || 1;
-       }
-
-       let rxDt = parseTwDate(g.rxDate);
        let refillInfoHtml = '';
 
-       if (rxDt && totRefill > 1) {
+       if (g.type === 'chronic' && g.rxDateObj) {
+           let rxDt = g.rxDateObj;
+           // 推算時間
            let dt2_end = new Date(rxDt); dt2_end.setDate(dt2_end.getDate() + g.days);
            let dt2_start = new Date(dt2_end); dt2_start.setDate(dt2_start.getDate() - 10);
            
            let dt3_end = new Date(rxDt); dt3_end.setDate(dt3_end.getDate() + (g.days * 2));
            let dt3_start = new Date(dt3_end); dt3_start.setDate(dt3_start.getDate() - 10);
 
-           let returnDt = new Date(rxDt); returnDt.setDate(returnDt.getDate() + (g.days * totRefill));
+           let returnDt = new Date(rxDt); returnDt.setDate(returnDt.getDate() + (g.days * g.totRefill));
 
-           let range2_str = `<span class="fw-bold text-danger">${formatShortDate(dt2_start)} ~ ${formatShortDate(dt2_end)}</span>`;
-           let status2 = curRefill >= 2 
-                ? `${range2_str} <span class="badge bg-success shadow-sm ms-1" style="font-size:0.85rem;">✅ 已領取</span>` 
-                : range2_str;
+           // 🔥 判斷第二次與第三次的實際狀態
+           let status2 = "";
+           if (g.pickupLog[2]) {
+               status2 = `<span class="fw-bold text-success me-2">${formatShortDate(parseTwDate(g.pickupLog[2]))}</span> <span class="badge bg-success shadow-sm" style="font-size:0.85rem;">✅ 已領取</span>`;
+           } else if (g.maxCurRefill >= 2) {
+               status2 = `<span class="badge bg-success shadow-sm" style="font-size:0.85rem;">✅ 已領取</span>`;
+           } else {
+               status2 = `<span class="fw-bold text-danger">${formatShortDate(dt2_start)} ~ ${formatShortDate(dt2_end)}</span>`;
+           }
            
            let status3 = "";
-           if (totRefill >= 3) {
-               let range3_str = `<span class="fw-bold text-danger">${formatShortDate(dt3_start)} ~ ${formatShortDate(dt3_end)}</span>`;
-               status3 = curRefill >= 3 
-                    ? `${range3_str} <span class="badge bg-success shadow-sm ms-1" style="font-size:0.85rem;">✅ 已領取</span>` 
-                    : range3_str;
+           if (g.totRefill >= 3) {
+               if (g.pickupLog[3]) {
+                   status3 = `<span class="fw-bold text-success me-2">${formatShortDate(parseTwDate(g.pickupLog[3]))}</span> <span class="badge bg-success shadow-sm" style="font-size:0.85rem;">✅ 已領取</span>`;
+               } else if (g.maxCurRefill >= 3) {
+                   status3 = `<span class="badge bg-success shadow-sm" style="font-size:0.85rem;">✅ 已領取</span>`;
+               } else {
+                   status3 = `<span class="fw-bold text-danger">${formatShortDate(dt3_start)} ~ ${formatShortDate(dt3_end)}</span>`;
+               }
            }
 
            refillInfoHtml = `
@@ -360,7 +401,7 @@
                  <div class="position-absolute top-0 start-0 w-100 bg-info" style="height:4px;"></div>
                  <div class="d-flex justify-content-between align-items-center mb-2 mt-1">
                      <span class="fw-bold text-dark"><i class="bi bi-file-medical text-info"></i> 慢箋領藥進度</span>
-                     <span class="badge bg-primary text-white shadow-sm" style="font-size:0.85rem;">目前進度: ${g.refill}</span>
+                     <span class="badge bg-primary text-white shadow-sm" style="font-size:0.85rem;">目前進度: ${g.maxCurRefill}/${g.totRefill}</span>
                  </div>
                  <div class="small text-secondary mb-2 border-bottom pb-2">
                     📅 處方開立：<span class="fw-bold text-dark">${formatFullDate(rxDt)}</span> (單次: ${g.days}天)
@@ -369,7 +410,7 @@
                     <span>👉 第二次領藥：</span> 
                     <span class="text-end" style="font-size:1.05rem;">${status2}</span>
                  </div>
-                 ${totRefill >= 3 ? `
+                 ${g.totRefill >= 3 ? `
                  <div class="small text-secondary mb-2 d-flex justify-content-between align-items-center">
                     <span>👉 第三次領藥：</span> 
                     <span class="text-end" style="font-size:1.05rem;">${status3}</span>
@@ -382,18 +423,17 @@
            `;
        } else {
            let returnDtStr = "未知";
-           if(rxDt) {
-               let rDt = new Date(rxDt); rDt.setDate(rDt.getDate() + g.days);
+           if(g.rxDateObj) {
+               let rDt = new Date(g.rxDateObj); rDt.setDate(rDt.getDate() + g.days);
                returnDtStr = formatFullDate(rDt);
            }
-           
            refillInfoHtml = `
               <div class="bg-white border rounded p-3 mb-3 shadow-sm">
                  <div class="d-flex align-items-center mb-2">
                      <div class="bg-success rounded text-white p-1 me-2 shadow-sm"><i class="bi bi-file-earmark-medical"></i></div>
                      <span class="fw-bold text-dark">一般處方紀錄</span>
                  </div>
-                 <div class="small text-secondary mb-1">📅 處方開立日：<span class="fw-bold text-dark">${rxDt ? formatFullDate(rxDt) : g.rxDate}</span></div>
+                 <div class="small text-secondary mb-1">📅 處方開立日：<span class="fw-bold text-dark">${g.rxDateObj ? formatFullDate(g.rxDateObj) : g.rxDateStr}</span></div>
                  <div class="small text-secondary mt-2 pt-2 border-top d-flex justify-content-between bg-light p-2 rounded">
                     <span class="fw-bold">🏥 藥品用罄 (回診日)：</span> 
                     <span class="fw-bold text-danger">${returnDtStr}</span>
@@ -402,8 +442,11 @@
            `;
        }
 
-       let drugsHtml = g.drugs.map((d, idx) => `
-          <div class="border-bottom border-light py-2 ${idx === g.drugs.length-1 ? 'border-0 pb-0' : ''}">
+       // 轉換藥品 Map 回陣列
+       let drugsArray = Array.from(g.drugsMap.values());
+
+       let drugsHtml = drugsArray.map((d, idx) => `
+          <div class="border-bottom border-light py-2 ${idx === drugsArray.length-1 ? 'border-0 pb-0' : ''}">
              <div class="fw-bold text-dark mb-1 d-flex align-items-start" style="font-size:0.95rem;">
                 <span class="badge bg-success me-2 shadow-sm mt-1" style="font-size:0.75rem; border-radius:50%; width:22px; height:22px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">${idx + 1}</span>
                 <span>${d.drug || '未知藥品'}</span>
@@ -416,16 +459,17 @@
           </div>
        `).join('');
 
+       // 慢性病標題改為最新一次領藥日期
        html += `
           <div class="card bg-white border border-success border-2 shadow-sm mb-4" style="border-radius:12px; overflow:hidden;">
              <div class="card-header bg-success text-white py-2 px-3 d-flex justify-content-between align-items-center border-0">
-                <span class="fw-bold" style="font-size:1.05rem;"><i class="bi bi-calendar-check me-1"></i>${g.date} 領藥</span>
+                <span class="fw-bold" style="font-size:1.05rem;"><i class="bi bi-calendar-check me-1"></i>${g.latestPickupDate} 領藥紀錄</span>
                 <span class="badge bg-white text-success shadow-sm" style="font-size:0.85rem;">${g.dept}</span>
              </div>
              <div class="card-body p-3" style="background-color:#fbfdfc;">
                 ${refillInfoHtml}
                 <div class="fw-bold text-success mb-2 pb-1 border-bottom border-success">
-                  <i class="bi bi-list-check"></i> 領藥明細清單 (${g.drugs.length} 項)
+                  <i class="bi bi-list-check"></i> 領藥明細清單 (${drugsArray.length} 項)
                 </div>
                 <div class="bg-white rounded p-2 shadow-sm border border-light">
                   ${drugsHtml}
