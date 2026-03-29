@@ -150,6 +150,7 @@
   function translateDept(codeStr) {
       if (!codeStr) return "一般領藥";
       let c = String(codeStr).trim().toUpperCase();
+      if (c.length === 1 && !isNaN(c)) c = "0" + c;
       return NHI_DEPT_MAP[c] ? NHI_DEPT_MAP[c] : c; 
   }
 
@@ -212,10 +213,7 @@
     document.getElementById('view-form').classList.add('hidden-mode'); 
     document.getElementById('view-bind').classList.add('hidden-mode'); 
     document.getElementById('view-status').classList.add('hidden-mode'); 
-    
-    // 🔥 就是這裡！剛剛不小心少打了 classList，現在已經修正了！
     document.getElementById('view-meds').classList.remove('hidden-mode'); 
-    
     document.getElementById('medHistoryResult').innerHTML = ''; 
     document.getElementById('qName').value = ''; 
     document.getElementById('qId').value = ''; 
