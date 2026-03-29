@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
+  <base target="_top">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>樂森藥局 雲服務</title>
@@ -204,44 +205,11 @@
   function openUpload() { document.getElementById('view-home').classList.add('hidden-mode'); document.getElementById('view-bind').classList.add('hidden-mode'); document.getElementById('view-status').classList.add('hidden-mode'); document.getElementById('view-meds').classList.add('hidden-mode'); document.getElementById('view-form').classList.remove('hidden-mode'); if(!liff.isLoggedIn()) document.getElementById('uNotify').value = "電話通知"; }
   function openBindLine() { if (!liff.isLoggedIn()) { liff.login({ redirectUri: window.location.href.split('?')[0] + "?mode=bind" }); return; } isRegisterMode = true; document.getElementById('view-home').classList.add('hidden-mode'); document.getElementById('view-form').classList.add('hidden-mode'); document.getElementById('view-status').classList.add('hidden-mode'); document.getElementById('view-meds').classList.add('hidden-mode'); document.getElementById('view-bind').classList.remove('hidden-mode'); }
   function openStatus() { if (!liff.isLoggedIn()) { liff.login({ redirectUri: window.location.href.split('?')[0] + "?mode=status" }); return; } document.getElementById('view-home').classList.add('hidden-mode'); document.getElementById('view-form').classList.add('hidden-mode'); document.getElementById('view-bind').classList.add('hidden-mode'); document.getElementById('view-meds').classList.add('hidden-mode'); document.getElementById('view-status').classList.remove('hidden-mode'); fetchUploadHistory(); }
-  function openMedHistory() { if (!liff.isLoggedIn()) { liff.login({ redirectUri: window.location.href.split('?')[0] + "?mode=meds" }); return; } document.getElementById('view-home').classList.add('hidden-mode'); document.getElementById('view-form').classList.add('hidden-mode'); document.getElementById('view-bind').classList.add('hidden-mode'); document.getElementById('view-status').classList.add('hidden-mode'); document.getElementById('view-meds').classList.remove('hidden-mode'); document.getElementById('medHistoryResult').innerHTML = ''; document.getElementById('qName').value = ''; document.getElementById('qId').value = ''; }
-
-  function addDaysToDateStr(dStr, days) {
-      if (!dStr || !days) return "未提供";
-      let s = String(dStr).trim();
-      let y, m, d;
-      if (s.includes('/') || s.includes('-')) {
-          let parts = s.split(/[\/\-]/);
-          y = parseInt(parts[0]);
-          if (y < 1911) y += 1911;
-          m = parseInt(parts[1]) - 1;
-          d = parseInt(parts[2]);
-      } else {
-          let n = s.replace(/\D/g, '');
-          if (n.length === 7) {
-              y = parseInt(n.substring(0,3)) + 1911;
-              m = parseInt(n.substring(3,5)) - 1;
-              d = parseInt(n.substring(5,7));
-          } else if (n.length === 8) {
-              y = parseInt(n.substring(0,4));
-              m = parseInt(n.substring(4,6)) - 1;
-              d = parseInt(n.substring(6,8));
-          } else {
-              return s;
-          }
-      }
-      
-      let dt = new Date(y, m, d);
-      if(isNaN(dt)) return s;
-      dt.setDate(dt.getDate() + parseInt(days));
-      let finalM = String(dt.getMonth()+1).padStart(2,'0');
-      let finalD = String(dt.getDate()).padStart(2,'0');
-      return dt.getFullYear() + '/' + finalM + '/' + finalD;
-  }
+  function openMedHistory() { if (!liff.isLoggedIn()) { liff.login({ redirectUri: window.location.href.split('?')[0] + "?mode=meds" }); return; } document.getElementById('view-home').classList.add('hidden-mode'); document.getElementById('view-form').classList.add('hidden-mode'); document.getElementById('view-bind').classList.add('hidden-mode'); document.getElementById('view-status').classList.add('hidden-mode'); document.getElementById('view-meds').remove('hidden-mode'); document.getElementById('medHistoryResult').innerHTML = ''; document.getElementById('qName').value = ''; document.getElementById('qId').value = ''; }
 
   function parseTwDate(dStr) {
       if (!dStr) return null;
-      let s = String(dStr).trim().split(' ')[0];
+      let s = String(dStr).trim().split('T')[0].split(' ')[0]; // 確保過濾掉 T 字尾
       if (!s) return null;
       let y, m, d;
       if (s.includes('/') || s.includes('-')) {
@@ -268,7 +236,7 @@
 
   function formatFullDate(dt) {
       if(!dt) return "未知";
-      return dt.getFullYear() + '/' + String(dt.getMonth()+1).padStart(2,'0') + '/' + String(dt.getDate()).padStart(2,'0');
+      return dt.getFullYear() + '-' + String(dt.getMonth()+1).padStart(2,'0') + '-' + String(dt.getDate()).padStart(2,'0');
   }
 
   function formatShortDate(dt) {
@@ -308,6 +276,14 @@
     const container = document.getElementById('medHistoryResult');
     container.innerHTML = '';
     
+    // 🔥 過濾掉 MA1 (系統申報項目)
+    data = data.filter(function(r) {
+       var nhiCode = String(r.nhi).toUpperCase();
+       var drugName = String(r.drug).toUpperCase();
+       // 只要健保碼或藥名裡面包含 MA1，就直接忽略不顯示
+       return !(nhiCode.includes('MA1') || drugName.includes('MA1'));
+    });
+
     if (!data || data.length === 0) {
       container.innerHTML = '<div class="alert alert-light border border-danger text-center text-danger small py-4 fw-bold shadow-sm">⚠️ 查無藥歷資料！<br>請確認【姓名】與【身分證字號】是否完全吻合，<br>或藥局尚未更新您的資料。</div>';
       return;
@@ -316,10 +292,13 @@
     let groups = {};
     let groupKeys = [];
     data.forEach(r => {
-       let key = r.date + "_" + (r.rxDate || "noRx");
+       // 🔥 將日期的 T 字尾與時間切除乾淨
+       let cleanDate = String(r.date).split('T')[0].split(' ')[0]; 
+       let key = cleanDate + "_" + (r.rxDate || "noRx");
+       
        if (!groups[key]) {
            groups[key] = {
-               date: r.date,
+               date: cleanDate,
                rxDate: r.rxDate || "未提供",
                dept: translateDept(r.dept), 
                refill: r.refill || "",
@@ -369,27 +348,22 @@
            refillInfoHtml = `
               <div class="bg-white border border-info rounded p-3 mb-3 shadow-sm position-relative overflow-hidden">
                  <div class="position-absolute top-0 start-0 w-100 bg-info" style="height:4px;"></div>
-                 
                  <div class="d-flex justify-content-between align-items-center mb-2 mt-1">
                      <span class="fw-bold text-dark"><i class="bi bi-file-medical text-info"></i> 慢箋領藥進度</span>
                      <span class="badge bg-primary text-white shadow-sm" style="font-size:0.85rem;">目前進度: ${g.refill}</span>
                  </div>
-                 
                  <div class="small text-secondary mb-2 border-bottom pb-2">
                     📅 處方開立：<span class="fw-bold text-dark">${formatFullDate(rxDt)}</span> (單次: ${g.days}天)
                  </div>
-                 
                  <div class="small text-secondary mb-2 d-flex justify-content-between align-items-center">
                     <span>👉 第二次領藥：</span> 
                     <span class="text-end" style="font-size:1.05rem;">${status2}</span>
                  </div>
-                 
                  ${totRefill >= 3 ? `
                  <div class="small text-secondary mb-2 d-flex justify-content-between align-items-center">
                     <span>👉 第三次領藥：</span> 
                     <span class="text-end" style="font-size:1.05rem;">${status3}</span>
                  </div>` : ''}
-                 
                  <div class="mt-2 pt-2 border-top border-info border-opacity-25 text-dark d-flex justify-content-between align-items-center bg-light p-2 rounded">
                     <span class="small fw-bold">🏥 藥品用罄 (預約回診日)：</span> 
                     <span class="fw-bold text-danger" style="font-size:1.1rem;">${formatFullDate(returnDt)}</span>
@@ -418,7 +392,6 @@
            `;
        }
 
-       // 🔥 加入了前面的圓形綠色編號 (idx + 1)
        let drugsHtml = g.drugs.map((d, idx) => `
           <div class="border-bottom border-light py-2 ${idx === g.drugs.length-1 ? 'border-0 pb-0' : ''}">
              <div class="fw-bold text-dark mb-1 d-flex align-items-start" style="font-size:0.95rem;">
@@ -472,7 +445,9 @@
       let statusColor = item.status === '可領藥' ? 'bg-success' : (item.status === '待處理' ? 'bg-warning text-dark' : 'bg-primary');
       let imgSrc = item.img || 'https://placehold.co/60?text=No+Img';
       let highResImg = item.img ? item.img.replace('w200', 'w1600') : imgSrc;
-      container.innerHTML += `<div class="card p-2 mb-2 shadow-sm border-0 flex-row align-items-center bg-light"><img src="${imgSrc}" style="width: 55px; height: 55px; object-fit: cover; border-radius: 8px; margin-right: 15px; border:1px solid #ddd;" onclick="window.open('${highResImg}', '_blank')"><div class="flex-grow-1"><div class="fw-bold" style="font-size:0.95rem; color:#333;">${item.date}</div><div class="small text-muted">${item.dept || '一般領藥'}</div></div><div><span class="badge ${statusColor} px-2 py-1 shadow-sm">${item.status}</span></div></div>`;
+      // 🔥 歷史紀錄的日期也一併切乾淨
+      let cleanDate = String(item.date).split('T')[0].split(' ')[0];
+      container.innerHTML += `<div class="card p-2 mb-2 shadow-sm border-0 flex-row align-items-center bg-light"><img src="${imgSrc}" style="width: 55px; height: 55px; object-fit: cover; border-radius: 8px; margin-right: 15px; border:1px solid #ddd;" onclick="window.open('${highResImg}', '_blank')"><div class="flex-grow-1"><div class="fw-bold" style="font-size:0.95rem; color:#333;">${cleanDate}</div><div class="small text-muted">${item.dept || '一般領藥'}</div></div><div><span class="badge ${statusColor} px-2 py-1 shadow-sm">${item.status}</span></div></div>`;
     });
   }
 
