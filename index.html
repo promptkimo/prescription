@@ -13,6 +13,7 @@
     body { background-color: #f0f2f5; font-family: -apple-system, sans-serif; margin: 0; padding: 0; height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
     .container { max-width: 600px; padding: 0; flex-grow: 1; display: flex; flex-direction: column; margin: 0 auto; width: 100%; height: 100%; }
     
+    /* 基礎卡片樣式維持，供子頁面使用 */
     .card { border-radius: 12px; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; }
     .user-card { background: white; padding: 10px 15px; border-radius: 12px; margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); flex-shrink: 0; }
     .user-avatar { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; margin-right: 15px; border: 2px solid #06C755; }
@@ -29,64 +30,85 @@
     .brand-title { font-weight: 900; font-size: 1.6rem; letter-spacing: 2px; margin-bottom: 3px; text-shadow: 0 2px 4px rgba(0,0,0,0.15); } 
     .brand-subtitle { font-size: 0.85rem; opacity: 0.9; margin-bottom: 0; font-weight: 500; letter-spacing: 1px; }
 
-    .home-content { display: flex; flex-direction: column; flex-grow: 1; padding: 0 15px 20px 15px; min-height: 0; }
+    .home-content { 
+      display: flex; 
+      flex-direction: column; 
+      flex-grow: 1; 
+      padding: 0 15px 30px 15px; 
+      min-height: 0; 
+      justify-content: center; /* 🔥 讓圓形選單垂直置中在畫面裡 */
+    }
     
-    /* 🔥 滿版 2x2 App 網格選單設計 */
+    /* 🔥 全新 2x2 圓形 Icon 選單設計 (移除格線) */
     .home-btn-group { 
       display: grid; 
       grid-template-columns: repeat(2, 1fr); 
-      gap: 12px; 
-      flex-grow: 1; 
-      padding: 5px 0; 
+      gap: 25px; /* 增大圓與圓之間的間距 */
+      width: 100%;
+      max-width: 500px; /* tablet 上限制最大寬度，避免圓太遠 */
+      margin: 0 auto; /* 水平置中 */
+      justify-content: center;
+      justify-items: center; /* 讓內容物在格子裡置中 */
     }
     
     .menu-btn { 
-      background: #ffffff; 
-      border: 2px solid transparent; 
-      border-radius: 20px; 
-      box-shadow: 0 4px 12px rgba(0,0,0,0.06); 
+      background: #ffffff; /* 圓形本身的背景色 */
+      border: 3px solid transparent; /* 預留厚度給變色邊框用 */
+      border-radius: 50%; /* 🔥 關鍵：完美的圓形 */
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15); /* 強烈立體感的陰影 */
       display: flex; 
       flex-direction: column; 
       align-items: center; 
       justify-content: center; 
       color: #495057; 
-      transition: all 0.2s ease-in-out; 
-      width: 100%;
-      height: 100%; 
+      transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1); /* 柔和的回彈動畫 */
       outline: none; 
       cursor: pointer;
       text-decoration: none;
+      padding: 0;
+      width: 90%; /* 依格子大小適應寬度 */
+      max-width: 180px; /* 限制大螢幕上的最大尺寸 */
+      aspect-ratio: 1 / 1; /* 確保不管寬度多少，高度永遠一樣，維持正圓 */
     }
     
-    /* 🔥 質感互動：滑過與點擊變色 */
+    /* 🔥 質感互動：滑過與按壓變色效果 */
     .menu-btn:hover {
       background-color: #f9fbf9;
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(6, 199, 85, 0.1);
+      transform: translateY(-4px);
+      box-shadow: 0 15px 40px rgba(6, 199, 85, 0.15);
       border-color: rgba(6, 199, 85, 0.2);
     }
     
     .menu-btn:active { 
-      background-color: #f0fdf4; 
-      transform: scale(0.96); 
-      box-shadow: 0 2px 8px rgba(6, 199, 85, 0.15); 
-      border-color: #06C755; 
+      background-color: #f0fdf4; /* 淡淡的品牌綠 */
+      transform: scale(0.95); 
+      box-shadow: 0 5px 15px rgba(6, 199, 85, 0.2); 
+      border-color: #06C755; /* 按壓時亮起品牌綠邊框 */
     }
     
-    /* 🔥 圖示霸氣放大到 100px */
+    /* 🔥 圖示霸氣放大到 115px 依比例適應 */
     .menu-icon { 
-      width: 100px; 
-      height: 100px; 
-      margin-bottom: 15px; 
+      width: 60%; /* 圖示占圓形的 60% 寬度，霸氣適配 */
+      height: 60%; 
+      margin-bottom: 8px; /* 文字與 Icon 縮小間距 */
       object-fit: contain; 
-      transition: transform 0.3s; 
+      transition: transform 0.4s ease-out; 
     }
     .menu-btn:hover .menu-icon { transform: scale(1.08); }
     .menu-btn:active .menu-icon { transform: scale(0.95); }
     
-    /* 🔥 文字也稍微加粗加大，撐起視覺平衡 */
-    .menu-btn span { font-size: 1.15rem; font-weight: 900; letter-spacing: 0.5px; color: #333; }
+    /* 🔥 文字也稍微加大加粗，維持視覺平衡 */
+    .menu-btn span { 
+      font-size: 1.15rem; 
+      font-weight: 900; 
+      letter-spacing: 0.5px; 
+      color: #333; 
+      text-align: center;
+      padding: 0 5px;
+      line-height: 1.2;
+    }
 
+    /* 子頁面元件樣式微調 */
     .sub-view { flex-grow: 1; padding: 15px 15px 30px 15px; overflow-y: auto; height: 100%; }
 
     .back-btn-container { margin-bottom: 15px; position: sticky; top: 0; z-index: 10; background: #f0f2f5; padding-top: 10px; padding-bottom: 5px; }
@@ -117,7 +139,7 @@
         </button>
         <button class="menu-btn" onclick="openBindLine()">
           <img src="2.png" class="menu-icon" alt="LINE 綁定">
-          <span>LINE 綁定</span>
+          <span>LINE 綁定通知領藥</span>
         </button>
         <button class="menu-btn" onclick="openStatus()">
           <img src="3.png" class="menu-icon" alt="領藥狀態查詢">
@@ -203,8 +225,8 @@
     "AF": "血液科", "AG": "內分泌科", "AH": "感染科", "AI": "免疫科", "AJ": "胃腸內科", 
     "AK": "腫瘤內科", "AL": "老年醫學科", "AM": "新陳代謝科", "AN": "肝膽胃腸科",
     "BA": "一般外科", "BB": "小兒外科", "BC": "大腸直腸外科", "BD": "心臟血管外科", "BE": "胸腔外科", "BF": "消化外科", "BG": "腦神經外科",
-    "CA": "一般兒科", "CB": "小兒神經科", "CC": "小兒心臟科", "CD": "小兒胸腔科", "CE": "小兒腎臟科", "CF": "小兒血液科", 
-    "CG": "小兒內分泌科", "CH": "小兒過敏科", "CI": "小兒感染科", "CJ": "小兒胃腸科", "CK": "小兒風濕科", "CL": "小兒免疫科",
+    "CA": "一般兒科", "CB": "小兒神經科", "CC": "心兒心臟科", "CD": "心兒胸腔科", "CE": "心兒腎臟科", "CF": "心兒血液科", 
+    "CG": "心兒內分泌科", "CH": "心兒過敏科", "CI": "心兒感染科", "CJ": "心兒胃腸科", "CK": "心兒風濕科", "CL": "心兒免疫科",
     "DA": "一般牙科", "DB": "牙髓病科", "DC": "牙周病科", "DD": "補綴科", "DE": "齒顎矯正科", "DF": "兒童牙科", "DG": "口腔顎面外科",
     "EA": "中醫內科", "EB": "中醫外科", "EC": "中醫兒科", "ED": "中醫婦科", "EE": "中醫傷科", "EF": "中醫針灸科",
     "FA": "放射診斷科", "FB": "放射治療科", "FC": "放射線腫瘤科", "FD": "臨床病理科", "FE": "解剖病理科",
