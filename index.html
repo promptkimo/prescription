@@ -316,7 +316,7 @@
                rxDateStr: rxDt || "未提供",
                rxDateObj: parseTwDate(rxDt),
                dept: deptStr,
-               hospital: r.hospital || "未知醫療院所", // 🔥 讀取醫療院所
+               hospital: r.hospital || "未知醫療院所",
                totRefill: totRefill,
                maxCurRefill: curRefill, 
                pickupLog: {}, 
@@ -353,6 +353,9 @@
        loopIdx++;
        let safeId = 'collapse_meds_' + loopIdx; 
        let g = groups[k];
+       
+       // 🔥 智慧主題色：慢箋為 success(綠色)，一般箋為 primary(藍色)
+       let themeColor = g.type === 'chronic' ? 'success' : 'primary';
        let refillInfoHtml = '';
 
        if (g.type === 'chronic' && g.rxDateObj) {
@@ -367,9 +370,9 @@
 
            let status2 = "";
            if (g.pickupLog[2]) {
-               status2 = `<span class="fw-bold text-success me-2">${formatShortDate(parseTwDate(g.pickupLog[2]))}</span> <span class="badge bg-success shadow-sm" style="font-size:0.85rem;">✅ 已領取</span>`;
+               status2 = `<span class="fw-bold text-${themeColor} me-2">${formatShortDate(parseTwDate(g.pickupLog[2]))}</span> <span class="badge bg-${themeColor} shadow-sm" style="font-size:0.85rem;">✅ 已領取</span>`;
            } else if (g.maxCurRefill >= 2) {
-               status2 = `<span class="badge bg-success shadow-sm" style="font-size:0.85rem;">✅ 已領取</span>`;
+               status2 = `<span class="badge bg-${themeColor} shadow-sm" style="font-size:0.85rem;">✅ 已領取</span>`;
            } else {
                status2 = `<span class="fw-bold text-danger">${formatShortDate(dt2_start)} ~ ${formatShortDate(dt2_end)}</span>`;
            }
@@ -377,21 +380,20 @@
            let status3 = "";
            if (g.totRefill >= 3) {
                if (g.pickupLog[3]) {
-                   status3 = `<span class="fw-bold text-success me-2">${formatShortDate(parseTwDate(g.pickupLog[3]))}</span> <span class="badge bg-success shadow-sm" style="font-size:0.85rem;">✅ 已領取</span>`;
+                   status3 = `<span class="fw-bold text-${themeColor} me-2">${formatShortDate(parseTwDate(g.pickupLog[3]))}</span> <span class="badge bg-${themeColor} shadow-sm" style="font-size:0.85rem;">✅ 已領取</span>`;
                } else if (g.maxCurRefill >= 3) {
-                   status3 = `<span class="badge bg-success shadow-sm" style="font-size:0.85rem;">✅ 已領取</span>`;
+                   status3 = `<span class="badge bg-${themeColor} shadow-sm" style="font-size:0.85rem;">✅ 已領取</span>`;
                } else {
                    status3 = `<span class="fw-bold text-danger">${formatShortDate(dt3_start)} ~ ${formatShortDate(dt3_end)}</span>`;
                }
            }
 
-           // 🔥 加入醫療院所顯示
            refillInfoHtml = `
               <div class="bg-white border border-info rounded p-3 mb-3 shadow-sm position-relative overflow-hidden">
                  <div class="position-absolute top-0 start-0 w-100 bg-info" style="height:4px;"></div>
                  <div class="d-flex justify-content-between align-items-center mb-2 mt-1">
                      <span class="fw-bold text-dark"><i class="bi bi-file-medical text-info"></i> 慢箋領藥進度</span>
-                     <span class="badge bg-primary text-white shadow-sm" style="font-size:0.85rem;">目前進度: ${g.maxCurRefill}/${g.totRefill}</span>
+                     <span class="badge bg-info text-white shadow-sm" style="font-size:0.85rem;">目前進度: ${g.maxCurRefill}/${g.totRefill}</span>
                  </div>
                  <div class="small text-secondary mb-2 border-bottom pb-2">
                     🏥 醫療院所：<span class="fw-bold text-dark">${g.hospital}</span><br>
@@ -419,11 +421,10 @@
                returnDtStr = formatFullDate(rDt);
            }
            
-           // 🔥 加入醫療院所顯示
            refillInfoHtml = `
               <div class="bg-white border rounded p-3 mb-3 shadow-sm">
                  <div class="d-flex align-items-center mb-2">
-                     <div class="bg-success rounded text-white p-1 me-2 shadow-sm"><i class="bi bi-file-earmark-medical"></i></div>
+                     <div class="bg-${themeColor} rounded text-white p-1 me-2 shadow-sm"><i class="bi bi-file-earmark-medical"></i></div>
                      <span class="fw-bold text-dark">一般處方紀錄</span>
                  </div>
                  <div class="small text-secondary mb-1">🏥 醫療院所：<span class="fw-bold text-dark">${g.hospital}</span></div>
@@ -441,27 +442,27 @@
        let drugsHtml = drugsArray.map((d, idx) => `
           <div class="border-bottom border-light py-2 ${idx === drugsArray.length-1 ? 'border-0 pb-0' : ''}">
              <div class="fw-bold text-dark mb-1 d-flex align-items-start" style="font-size:0.95rem;">
-                <span class="badge bg-success me-2 shadow-sm mt-1" style="font-size:0.75rem; border-radius:50%; width:22px; height:22px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">${idx + 1}</span>
+                <span class="badge bg-${themeColor} me-2 shadow-sm mt-1" style="font-size:0.75rem; border-radius:50%; width:22px; height:22px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">${idx + 1}</span>
                 <span>${d.drug || '未知藥品'}</span>
              </div>
              <div class="d-flex flex-wrap text-secondary" style="font-size:0.85rem; gap: 8px; padding-left: 30px;">
                 <div><span class="badge bg-light text-secondary border me-1 shadow-sm">每次用量</span>${d.dosage || '-'} 粒</div>
                 <div><span class="badge bg-light text-secondary border me-1 shadow-sm">天數</span>${d.days || g.days || '-'} 天</div>
-                <div class="fw-bold text-success ms-auto">總量: ${d.total || '-'} 粒</div>
+                <div class="fw-bold text-${themeColor} ms-auto">總量: ${d.total || '-'} 粒</div>
              </div>
           </div>
        `).join('');
 
        html += `
-          <div class="card bg-white border border-success border-2 shadow-sm mb-4" style="border-radius:12px; overflow:hidden;">
-             <div class="card-header bg-success text-white py-2 px-3 d-flex justify-content-between align-items-center border-0">
+          <div class="card bg-white border border-${themeColor} border-2 shadow-sm mb-4" style="border-radius:12px; overflow:hidden;">
+             <div class="card-header bg-${themeColor} text-white py-2 px-3 d-flex justify-content-between align-items-center border-0">
                 <span class="fw-bold" style="font-size:1.05rem;"><i class="bi bi-calendar-check me-1"></i>${g.latestPickupDate} 領藥紀錄</span>
-                <span class="badge bg-white text-success shadow-sm" style="font-size:0.85rem;">${g.dept}</span>
+                <span class="badge bg-white text-${themeColor} shadow-sm" style="font-size:0.85rem;">${g.dept}</span>
              </div>
              <div class="card-body p-3" style="background-color:#fbfdfc;">
                 ${refillInfoHtml}
                 
-                <button class="btn btn-outline-success btn-sm w-100 fw-bold rounded-pill shadow-sm mt-1" type="button" data-bs-toggle="collapse" data-bs-target="#${safeId}">
+                <button class="btn btn-outline-${themeColor} btn-sm w-100 fw-bold rounded-pill shadow-sm mt-1" type="button" data-bs-toggle="collapse" data-bs-target="#${safeId}">
                   <i class="bi bi-journal-medical"></i> 展開藥品明細 (${drugsArray.length} 項) <i class="bi bi-chevron-down ms-1"></i>
                 </button>
                 
