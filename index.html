@@ -36,7 +36,7 @@
       display: grid; 
       grid-template-columns: repeat(2, 1fr); 
       gap: 12px; 
-      flex-grow: 1; /* 讓網格撐滿剩餘空間 */
+      flex-grow: 1; 
       padding: 5px 0; 
     }
     
@@ -52,7 +52,7 @@
       color: #495057; 
       transition: all 0.2s ease-in-out; 
       width: 100%;
-      height: 100%; /* 填滿格子高度 */
+      height: 100%; 
       outline: none; 
       cursor: pointer;
       text-decoration: none;
@@ -67,16 +67,16 @@
     }
     
     .menu-btn:active { 
-      background-color: #f0fdf4; /* 淡淡的品牌綠背景 */
+      background-color: #f0fdf4; 
       transform: scale(0.96); 
       box-shadow: 0 2px 8px rgba(6, 199, 85, 0.15); 
       border-color: #06C755; 
     }
     
-    /* 🔥 放大圖示尺寸 */
+    /* 🔥 圖示霸氣放大到 100px */
     .menu-icon { 
-      width: 75px; /* 圖示變大 */
-      height: 75px; 
+      width: 100px; 
+      height: 100px; 
       margin-bottom: 15px; 
       object-fit: contain; 
       transition: transform 0.3s; 
@@ -84,7 +84,8 @@
     .menu-btn:hover .menu-icon { transform: scale(1.08); }
     .menu-btn:active .menu-icon { transform: scale(0.95); }
     
-    .menu-btn span { font-size: 1.1rem; font-weight: 800; letter-spacing: 0.5px; color: #333; }
+    /* 🔥 文字也稍微加粗加大，撐起視覺平衡 */
+    .menu-btn span { font-size: 1.15rem; font-weight: 900; letter-spacing: 0.5px; color: #333; }
 
     .sub-view { flex-grow: 1; padding: 15px 15px 30px 15px; overflow-y: auto; height: 100%; }
 
