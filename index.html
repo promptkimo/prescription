@@ -277,7 +277,6 @@
     const container = document.getElementById('medHistoryResult');
     container.innerHTML = '';
     
-    // 過濾掉 MA1 (系統申報項目)
     data = data.filter(function(r) {
        var nhiCode = String(r.nhi).toUpperCase();
        var drugName = String(r.drug).toUpperCase();
@@ -317,6 +316,7 @@
                rxDateStr: rxDt || "未提供",
                rxDateObj: parseTwDate(rxDt),
                dept: deptStr,
+               hospital: r.hospital || "未知醫療院所", // 🔥 讀取醫療院所
                totRefill: totRefill,
                maxCurRefill: curRefill, 
                pickupLog: {}, 
@@ -347,11 +347,11 @@
     });
 
     let html = '';
-    let loopIdx = 0; // 用來產生唯一的收合 ID
+    let loopIdx = 0; 
 
     sortedKeys.forEach(k => {
        loopIdx++;
-       let safeId = 'collapse_meds_' + loopIdx; // 獨一無二的收合ID
+       let safeId = 'collapse_meds_' + loopIdx; 
        let g = groups[k];
        let refillInfoHtml = '';
 
@@ -385,6 +385,7 @@
                }
            }
 
+           // 🔥 加入醫療院所顯示
            refillInfoHtml = `
               <div class="bg-white border border-info rounded p-3 mb-3 shadow-sm position-relative overflow-hidden">
                  <div class="position-absolute top-0 start-0 w-100 bg-info" style="height:4px;"></div>
@@ -393,6 +394,7 @@
                      <span class="badge bg-primary text-white shadow-sm" style="font-size:0.85rem;">目前進度: ${g.maxCurRefill}/${g.totRefill}</span>
                  </div>
                  <div class="small text-secondary mb-2 border-bottom pb-2">
+                    🏥 醫療院所：<span class="fw-bold text-dark">${g.hospital}</span><br>
                     📅 處方開立：<span class="fw-bold text-dark">${formatFullDate(rxDt)}</span> (單次: ${g.days}天)
                  </div>
                  <div class="small text-secondary mb-2 d-flex justify-content-between align-items-center">
@@ -416,12 +418,15 @@
                let rDt = new Date(g.rxDateObj); rDt.setDate(rDt.getDate() + g.days);
                returnDtStr = formatFullDate(rDt);
            }
+           
+           // 🔥 加入醫療院所顯示
            refillInfoHtml = `
               <div class="bg-white border rounded p-3 mb-3 shadow-sm">
                  <div class="d-flex align-items-center mb-2">
                      <div class="bg-success rounded text-white p-1 me-2 shadow-sm"><i class="bi bi-file-earmark-medical"></i></div>
                      <span class="fw-bold text-dark">一般處方紀錄</span>
                  </div>
+                 <div class="small text-secondary mb-1">🏥 醫療院所：<span class="fw-bold text-dark">${g.hospital}</span></div>
                  <div class="small text-secondary mb-1">📅 處方開立日：<span class="fw-bold text-dark">${g.rxDateObj ? formatFullDate(g.rxDateObj) : g.rxDateStr}</span></div>
                  <div class="small text-secondary mt-2 pt-2 border-top d-flex justify-content-between bg-light p-2 rounded">
                     <span class="fw-bold">🏥 藥品用罄 (回診日)：</span> 
@@ -447,7 +452,6 @@
           </div>
        `).join('');
 
-       // 🔥 加入折疊 (Collapse) 按鈕與對應區塊
        html += `
           <div class="card bg-white border border-success border-2 shadow-sm mb-4" style="border-radius:12px; overflow:hidden;">
              <div class="card-header bg-success text-white py-2 px-3 d-flex justify-content-between align-items-center border-0">
