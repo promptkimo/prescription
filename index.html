@@ -10,13 +10,11 @@
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   
   <style>
-    /* 背景改為純淨白 */
     body { background-color: #ffffff; font-family: -apple-system, sans-serif; margin: 0; padding: 0; height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
     .container { max-width: 600px; padding: 0; flex-grow: 1; display: flex; flex-direction: column; margin: 0 auto; width: 100%; height: 100%; }
     
     .card { border-radius: 12px; border: none; box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-bottom: 20px; }
     
-    /* 登入資訊卡片 */
     .user-card { background: #f8f9fa; padding: 10px 15px; border-radius: 16px; margin-bottom: 5px; flex-shrink: 0; border: 1px solid #f0f2f5; }
     .user-avatar { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; margin-right: 15px; border: 2px solid #06C755; }
     
@@ -28,27 +26,23 @@
 
     #view-home { height: 100%; display: flex; flex-direction: column; overflow: hidden; }
     
-    /* 標題區塊 */
     .brand-header { background: #ffffff; padding: 30px 20px 10px; text-align: center; margin-bottom: 5px; flex-shrink: 0; }
     .brand-title { font-weight: 900; font-size: 1.8rem; letter-spacing: 2px; margin-bottom: 3px; color: #06C755; } 
     .brand-subtitle { font-size: 0.85rem; color: #6c757d; margin-bottom: 0; font-weight: 500; letter-spacing: 1px; }
 
     .home-content { display: flex; flex-direction: column; flex-grow: 1; padding: 0 20px 30px 20px; min-height: 0; }
     
-    /* 🔥 網格排版調整：固定與上方的距離，並把多餘空白推到最下面 */
     .home-btn-group { 
       display: grid; 
       grid-template-columns: repeat(2, 1fr); 
       gap: 20px 15px; 
       width: 100%;
       max-width: 450px; 
-      /* 🔥 關鍵修改：上面固定空出 35px，左右置中，下面自動推開 */
       margin: 35px auto auto auto; 
       justify-content: center;
       justify-items: center; 
     }
     
-    /* 完全移除外框與背景 */
     .menu-btn { 
       background: transparent !important; 
       border: none !important; 
@@ -65,11 +59,9 @@
       width: 100%; 
     }
     
-    /* 滑過與點擊動畫 */
     .menu-btn:hover { transform: translateY(-4px); }
     .menu-btn:active { transform: scale(0.92); opacity: 0.85; }
     
-    /* 圖示尺寸與陰影 */
     .menu-icon { 
       width: 110px; 
       height: 110px; 
@@ -79,7 +71,6 @@
       transition: transform 0.3s; 
     }
     
-    /* 文字排版 */
     .menu-btn span { 
       font-size: 1.1rem; 
       font-weight: 800; 
@@ -323,7 +314,8 @@
 
     fetch(GAS_URL, {
       method: "POST",
-      body: JSON.stringify({ action: "queryMed", name: name, id: idStr })
+      // 🔥 加入了 lineUserId 作為防爬蟲的安全憑證
+      body: JSON.stringify({ action: "queryMed", name: name, id: idStr, lineUserId: lineUserId })
     })
     .then(res => res.json())
     .then(res => {
