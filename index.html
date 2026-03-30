@@ -123,6 +123,8 @@
 
 </div>
 
+<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/cpexcel.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
   const GAS_URL = "https://script.google.com/macros/s/AKfycbyUXCejmkI52ZJVUN1K1t1j2ZvfdZMCgHsgB79okITgzn7to2sfte43R5I0GOQnFp1opQ/exec"; 
@@ -317,6 +319,7 @@
                rxDateObj: parseTwDate(rxDt),
                dept: deptStr,
                hospital: r.hospital || "未知醫療院所",
+               physician: r.physician || "", // 🔥 紀錄醫師資料
                totRefill: totRefill,
                maxCurRefill: curRefill, 
                pickupLog: {}, 
@@ -354,9 +357,14 @@
        let safeId = 'collapse_meds_' + loopIdx; 
        let g = groups[k];
        
-       // 🔥 智慧主題色：慢箋為 success(綠色)，一般箋為 primary(藍色)
        let themeColor = g.type === 'chronic' ? 'success' : 'primary';
        let refillInfoHtml = '';
+
+       // 🔥 處理看診醫師字串：如果存在，且不是純數字，才顯示
+       let phyStr = "";
+       if (g.physician && !/^\d+$/.test(g.physician.trim()) && g.physician.trim() !== "") {
+           phyStr = `👨‍⚕️ 看診醫師：<span class="fw-bold text-dark">${g.physician}</span><br>`;
+       }
 
        if (g.type === 'chronic' && g.rxDateObj) {
            let rxDt = g.rxDateObj;
@@ -397,6 +405,7 @@
                  </div>
                  <div class="small text-secondary mb-2 border-bottom pb-2">
                     🏥 醫療院所：<span class="fw-bold text-dark">${g.hospital}</span><br>
+                    ${phyStr}
                     📅 處方開立：<span class="fw-bold text-dark">${formatFullDate(rxDt)}</span> (單次: ${g.days}天)
                  </div>
                  <div class="small text-secondary mb-2 d-flex justify-content-between align-items-center">
@@ -428,6 +437,7 @@
                      <span class="fw-bold text-dark">一般處方紀錄</span>
                  </div>
                  <div class="small text-secondary mb-1">🏥 醫療院所：<span class="fw-bold text-dark">${g.hospital}</span></div>
+                 ${phyStr ? `<div class="small text-secondary mb-1">${phyStr.replace('<br>','')}</div>` : ''}
                  <div class="small text-secondary mb-1">📅 處方開立日：<span class="fw-bold text-dark">${g.rxDateObj ? formatFullDate(g.rxDateObj) : g.rxDateStr}</span></div>
                  <div class="small text-secondary mt-2 pt-2 border-top d-flex justify-content-between bg-light p-2 rounded">
                     <span class="fw-bold">🏥 藥品用罄 (回診日)：</span> 
