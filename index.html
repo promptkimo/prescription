@@ -10,15 +10,17 @@
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   
   <style>
-    body { background-color: #f0f2f5; font-family: -apple-system, sans-serif; margin: 0; padding: 0; height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
+    /* 🔥 背景改為純淨白，解決灰白不協調 */
+    body { background-color: #ffffff; font-family: -apple-system, sans-serif; margin: 0; padding: 0; height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
     .container { max-width: 600px; padding: 0; flex-grow: 1; display: flex; flex-direction: column; margin: 0 auto; width: 100%; height: 100%; }
     
-    /* 基礎卡片樣式維持，供子頁面使用 */
-    .card { border-radius: 12px; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; }
-    .user-card { background: white; padding: 10px 15px; border-radius: 12px; margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); flex-shrink: 0; }
+    .card { border-radius: 12px; border: none; box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-bottom: 20px; }
+    
+    /* 登入資訊卡片改為極淡的灰色，融入白底 */
+    .user-card { background: #f8f9fa; padding: 10px 15px; border-radius: 16px; margin-bottom: 12px; flex-shrink: 0; border: 1px solid #f0f2f5; }
     .user-avatar { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; margin-right: 15px; border: 2px solid #06C755; }
     
-    .preview-box { width: 100%; height: 200px; background: #e9ecef; border: 2px dashed #ced4da; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; position: relative; margin-bottom: 15px; }
+    .preview-box { width: 100%; height: 200px; background: #f8f9fa; border: 2px dashed #ced4da; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; position: relative; margin-bottom: 15px; }
     .preview-box img { width: 100%; height: 100%; object-fit: contain; display: none; }
     .placeholder-text { color: #6c757d; text-align: center; font-size: 0.9rem; }
     
@@ -26,94 +28,71 @@
 
     #view-home { height: 100%; display: flex; flex-direction: column; overflow: hidden; }
     
-    .brand-header { background: linear-gradient(135deg, #06C755 0%, #009933 100%); padding: 25px 20px 15px; border-radius: 0 0 20px 20px; text-align: center; margin-bottom: 12px; color: white; box-shadow: 0 4px 10px rgba(6, 199, 85, 0.15); flex-shrink: 0; }
-    .brand-title { font-weight: 900; font-size: 1.6rem; letter-spacing: 2px; margin-bottom: 3px; text-shadow: 0 2px 4px rgba(0,0,0,0.15); } 
-    .brand-subtitle { font-size: 0.85rem; opacity: 0.9; margin-bottom: 0; font-weight: 500; letter-spacing: 1px; }
+    /* 🔥 標題區塊改為乾淨的白底+品牌綠文字，與畫面一體成型 */
+    .brand-header { background: #ffffff; padding: 30px 20px 10px; text-align: center; margin-bottom: 5px; flex-shrink: 0; }
+    .brand-title { font-weight: 900; font-size: 1.8rem; letter-spacing: 2px; margin-bottom: 3px; color: #06C755; } 
+    .brand-subtitle { font-size: 0.85rem; color: #6c757d; margin-bottom: 0; font-weight: 500; letter-spacing: 1px; }
 
-    .home-content { 
-      display: flex; 
-      flex-direction: column; 
-      flex-grow: 1; 
-      padding: 0 15px 30px 15px; 
-      min-height: 0; 
-      justify-content: center; /* 🔥 讓圓形選單垂直置中在畫面裡 */
-    }
+    .home-content { display: flex; flex-direction: column; flex-grow: 1; padding: 0 20px 30px 20px; min-height: 0; justify-content: center; }
     
-    /* 🔥 全新 2x2 圓形 Icon 選單設計 (移除格線) */
+    /* 🔥 網格排版調整 */
     .home-btn-group { 
       display: grid; 
       grid-template-columns: repeat(2, 1fr); 
-      gap: 25px; /* 增大圓與圓之間的間距 */
+      gap: 20px 15px; 
       width: 100%;
-      max-width: 500px; /* tablet 上限制最大寬度，避免圓太遠 */
-      margin: 0 auto; /* 水平置中 */
+      max-width: 450px; 
+      margin: 0 auto; 
       justify-content: center;
-      justify-items: center; /* 讓內容物在格子裡置中 */
+      justify-items: center; 
     }
     
+    /* 🔥 完全移除外框與背景，讓您的圓形 Icon 成為主角 */
     .menu-btn { 
-      background: #ffffff; /* 圓形本身的背景色 */
-      border: 3px solid transparent; /* 預留厚度給變色邊框用 */
-      border-radius: 50%; /* 🔥 關鍵：完美的圓形 */
-      box-shadow: 0 10px 30px rgba(0,0,0,0.15); /* 強烈立體感的陰影 */
+      background: transparent !important; 
+      border: none !important; 
+      box-shadow: none !important; 
       display: flex; 
       flex-direction: column; 
       align-items: center; 
       justify-content: center; 
-      color: #495057; 
-      transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1); /* 柔和的回彈動畫 */
+      transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1); 
       outline: none; 
       cursor: pointer;
       text-decoration: none;
       padding: 0;
-      width: 90%; /* 依格子大小適應寬度 */
-      max-width: 180px; /* 限制大螢幕上的最大尺寸 */
-      aspect-ratio: 1 / 1; /* 確保不管寬度多少，高度永遠一樣，維持正圓 */
+      width: 100%; 
     }
     
-    /* 🔥 質感互動：滑過與按壓變色效果 */
-    .menu-btn:hover {
-      background-color: #f9fbf9;
-      transform: translateY(-4px);
-      box-shadow: 0 15px 40px rgba(6, 199, 85, 0.15);
-      border-color: rgba(6, 199, 85, 0.2);
-    }
+    /* 🔥 滑過與點擊時，直接對圖片做生動的縮放動畫 */
+    .menu-btn:hover { transform: translateY(-4px); }
+    .menu-btn:active { transform: scale(0.92); opacity: 0.85; }
     
-    .menu-btn:active { 
-      background-color: #f0fdf4; /* 淡淡的品牌綠 */
-      transform: scale(0.95); 
-      box-shadow: 0 5px 15px rgba(6, 199, 85, 0.2); 
-      border-color: #06C755; /* 按壓時亮起品牌綠邊框 */
-    }
-    
-    /* 🔥 圖示霸氣放大到 115px 依比例適應 */
+    /* 🔥 圖示霸氣尺寸，並加上專屬的柔和陰影增加立體感 */
     .menu-icon { 
-      width: 60%; /* 圖示占圓形的 60% 寬度，霸氣適配 */
-      height: 60%; 
-      margin-bottom: 8px; /* 文字與 Icon 縮小間距 */
+      width: 110px; 
+      height: 110px; 
+      margin-bottom: 12px; 
       object-fit: contain; 
-      transition: transform 0.4s ease-out; 
+      filter: drop-shadow(0 8px 16px rgba(0,0,0,0.08)); 
+      transition: transform 0.3s; 
     }
-    .menu-btn:hover .menu-icon { transform: scale(1.08); }
-    .menu-btn:active .menu-icon { transform: scale(0.95); }
     
-    /* 🔥 文字也稍微加大加粗，維持視覺平衡 */
+    /* 🔥 文字排版優化 */
     .menu-btn span { 
-      font-size: 1.15rem; 
-      font-weight: 900; 
+      font-size: 1.1rem; 
+      font-weight: 800; 
       letter-spacing: 0.5px; 
       color: #333; 
       text-align: center;
-      padding: 0 5px;
-      line-height: 1.2;
+      line-height: 1.35;
     }
 
-    /* 子頁面元件樣式微調 */
     .sub-view { flex-grow: 1; padding: 15px 15px 30px 15px; overflow-y: auto; height: 100%; }
 
-    .back-btn-container { margin-bottom: 15px; position: sticky; top: 0; z-index: 10; background: #f0f2f5; padding-top: 10px; padding-bottom: 5px; }
-    .back-btn { font-size: 1rem; font-weight: bold; color: #495057; padding: 8px 18px; background: white; border-radius: 50px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); display: inline-flex; align-items: center; border: none; transition: 0.2s; }
-    .back-btn:active { transform: scale(0.95); background: #f8f9fa; }
+    .back-btn-container { margin-bottom: 15px; position: sticky; top: 0; z-index: 10; background: #ffffff; padding-top: 10px; padding-bottom: 10px; border-bottom: 1px solid #f0f2f5; }
+    .back-btn { font-size: 1rem; font-weight: bold; color: #495057; padding: 8px 18px; background: #f8f9fa; border-radius: 50px; display: inline-flex; align-items: center; border: none; transition: 0.2s; }
+    .back-btn:active { transform: scale(0.95); background: #e9ecef; }
     .back-btn i { font-size: 1.2rem; margin-right: 5px; color: #06C755; }
 
     #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
@@ -139,7 +118,7 @@
         </button>
         <button class="menu-btn" onclick="openBindLine()">
           <img src="2.png" class="menu-icon" alt="LINE 綁定">
-          <span>LINE 綁定通知領藥</span>
+          <span>LINE 通知<br>綁定領藥</span>
         </button>
         <button class="menu-btn" onclick="openStatus()">
           <img src="3.png" class="menu-icon" alt="領藥狀態查詢">
@@ -156,7 +135,7 @@
 
   <div id="view-form" class="hidden-mode sub-view">
     <div class="back-btn-container"><button class="back-btn" onclick="goHome()"><i class="bi bi-chevron-left"></i> 返回主畫面</button></div>
-    <div class="card p-4 shadow-sm border-0">
+    <div class="card p-4 shadow-sm border-0 bg-light">
       <h5 class="fw-bold text-success mb-3" id="formTitle"><i class="bi bi-camera"></i> 上傳處方箋</h5>
       <div id="btnOptionalLogin" class="alert alert-warning small d-flex justify-content-between align-items-center hidden-mode p-2 mb-3"><span class="fw-bold text-dark">未綁定 LINE (僅選電話通知)</span><button class="btn btn-sm btn-success fw-bold rounded-pill px-3" onclick="doOptionalLogin()">登入 LINE</button></div>
       <div id="cameraSection"><div class="preview-box" onclick="document.getElementById('fileInput').click()"><div class="placeholder-text" id="placeholder"><span style="font-size: 2rem;">📷</span><br>點此拍照 / 選照片</div><img id="previewImg"></div><input type="file" id="fileInput" accept="image/*" style="display: none;" onchange="handleFile(this)"></div>
@@ -170,7 +149,7 @@
 
   <div id="view-bind" class="hidden-mode sub-view">
     <div class="back-btn-container"><button class="back-btn" onclick="goHome()"><i class="bi bi-chevron-left"></i> 返回主畫面</button></div>
-    <div class="card p-4 shadow-sm border-0 border-top border-primary border-4">
+    <div class="card p-4 shadow-sm border-0 border-top border-primary border-4 bg-light">
       <h5 class="fw-bold text-primary mb-3"><i class="bi bi-link-45deg"></i> LINE 綁定作業</h5>
       <p class="small text-muted mb-4">請填寫您的真實資料。綁定完成後，藥師就能直接透過 LINE 通知您來拿藥！</p>
       <div class="mb-3"><label class="form-label small fw-bold text-primary">您的真實姓名</label><input type="text" class="form-control" id="bName" placeholder="請輸入姓名"></div>
@@ -190,7 +169,7 @@
 
   <div id="view-meds" class="hidden-mode sub-view">
     <div class="back-btn-container"><button class="back-btn" onclick="goHome()"><i class="bi bi-chevron-left"></i> 返回主畫面</button></div>
-    <div class="card p-4 shadow-sm border-0 border-top border-dark border-4">
+    <div class="card p-4 shadow-sm border-0 border-top border-dark border-4 bg-light">
       <h5 class="fw-bold text-dark mb-3"><i class="bi bi-cloud-arrow-up"></i> 雲端藥歷查詢</h5>
       <p class="small text-muted mb-4">為保護個人隱私，請輸入【領藥人姓名】與【身分證字號】進行安全驗證，以查詢詳細用藥紀錄。</p>
       
@@ -225,8 +204,8 @@
     "AF": "血液科", "AG": "內分泌科", "AH": "感染科", "AI": "免疫科", "AJ": "胃腸內科", 
     "AK": "腫瘤內科", "AL": "老年醫學科", "AM": "新陳代謝科", "AN": "肝膽胃腸科",
     "BA": "一般外科", "BB": "小兒外科", "BC": "大腸直腸外科", "BD": "心臟血管外科", "BE": "胸腔外科", "BF": "消化外科", "BG": "腦神經外科",
-    "CA": "一般兒科", "CB": "小兒神經科", "CC": "心兒心臟科", "CD": "心兒胸腔科", "CE": "心兒腎臟科", "CF": "心兒血液科", 
-    "CG": "心兒內分泌科", "CH": "心兒過敏科", "CI": "心兒感染科", "CJ": "心兒胃腸科", "CK": "心兒風濕科", "CL": "心兒免疫科",
+    "CA": "一般兒科", "CB": "小兒神經科", "CC": "小兒心臟科", "CD": "小兒胸腔科", "CE": "小兒腎臟科", "CF": "小兒血液科", 
+    "CG": "小兒內分泌科", "CH": "小兒過敏科", "CI": "小兒感染科", "CJ": "小兒胃腸科", "CK": "小兒風濕科", "CL": "小兒免疫科",
     "DA": "一般牙科", "DB": "牙髓病科", "DC": "牙周病科", "DD": "補綴科", "DE": "齒顎矯正科", "DF": "兒童牙科", "DG": "口腔顎面外科",
     "EA": "中醫內科", "EB": "中醫外科", "EC": "中醫兒科", "ED": "中醫婦科", "EE": "中醫傷科", "EF": "中醫針灸科",
     "FA": "放射診斷科", "FB": "放射治療科", "FC": "放射線腫瘤科", "FD": "臨床病理科", "FE": "解剖病理科",
@@ -536,8 +515,8 @@
        let drugsHtml = drugsArray.map((d, idx) => `
           <div class="border-bottom border-light py-2 ${idx === drugsArray.length-1 ? 'border-0 pb-0' : ''}">
              <div class="fw-bold text-dark mb-1 d-flex align-items-start" style="font-size:0.95rem;">
-                <span class="badge bg-${themeColor} me-2 shadow-sm mt-1" style="font-size:0.75rem; border-radius:50%; width:22px; height:22px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">${idx + 1}</span>
-                <span>${d.drug || '未知藥品'}</span>
+                 <span class="badge bg-${themeColor} me-2 shadow-sm mt-1" style="font-size:0.75rem; border-radius:50%; width:22px; height:22px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">${idx + 1}</span>
+                 <span>${d.drug || '未知藥品'}</span>
              </div>
              <div class="d-flex flex-wrap text-secondary" style="font-size:0.85rem; gap: 8px; padding-left: 30px;">
                 <div><span class="badge bg-light text-secondary border me-1 shadow-sm">每次用量</span>${d.dosage || '-'} 粒</div>
