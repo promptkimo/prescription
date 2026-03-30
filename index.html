@@ -10,12 +10,12 @@
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   
   <style>
-    body { background-color: #f0f2f5; font-family: -apple-system, sans-serif; margin: 0; padding: 0; min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; }
-    .container { max-width: 600px; padding: 0; flex-grow: 1; display: flex; flex-direction: column; margin: 0 auto; width: 100%; }
+    body { background-color: #f0f2f5; font-family: -apple-system, sans-serif; margin: 0; padding: 0; height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
+    .container { max-width: 600px; padding: 0; flex-grow: 1; display: flex; flex-direction: column; margin: 0 auto; width: 100%; height: 100%; }
     
     .card { border-radius: 12px; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; }
-    .user-card { background: white; padding: 12px 15px; border-radius: 12px; margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); flex-shrink: 0; }
-    .user-avatar { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; margin-right: 15px; border: 2px solid #06C755; }
+    .user-card { background: white; padding: 10px 15px; border-radius: 12px; margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); flex-shrink: 0; }
+    .user-avatar { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; margin-right: 15px; border: 2px solid #06C755; }
     
     .preview-box { width: 100%; height: 200px; background: #e9ecef; border: 2px dashed #ced4da; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; position: relative; margin-bottom: 15px; }
     .preview-box img { width: 100%; height: 100%; object-fit: contain; display: none; }
@@ -23,33 +23,72 @@
     
     .hidden-mode { display: none !important; } 
 
-    #view-home { height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
+    #view-home { height: 100%; display: flex; flex-direction: column; overflow: hidden; }
     
-    .brand-header { background: linear-gradient(135deg, #06C755 0%, #009933 100%); padding: 30px 20px 20px; border-radius: 0 0 20px 20px; text-align: center; margin-bottom: 15px; color: white; box-shadow: 0 4px 10px rgba(6, 199, 85, 0.15); flex-shrink: 0; }
-    .brand-title { font-weight: 900; font-size: 1.8rem; letter-spacing: 2px; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.15); } 
-    .brand-subtitle { font-size: 0.9rem; opacity: 0.9; margin-bottom: 0; font-weight: 500; letter-spacing: 1px; }
+    .brand-header { background: linear-gradient(135deg, #06C755 0%, #009933 100%); padding: 25px 20px 15px; border-radius: 0 0 20px 20px; text-align: center; margin-bottom: 12px; color: white; box-shadow: 0 4px 10px rgba(6, 199, 85, 0.15); flex-shrink: 0; }
+    .brand-title { font-weight: 900; font-size: 1.6rem; letter-spacing: 2px; margin-bottom: 3px; text-shadow: 0 2px 4px rgba(0,0,0,0.15); } 
+    .brand-subtitle { font-size: 0.85rem; opacity: 0.9; margin-bottom: 0; font-weight: 500; letter-spacing: 1px; }
 
     .home-content { display: flex; flex-direction: column; flex-grow: 1; padding: 0 15px 20px 15px; min-height: 0; }
     
-    /* 🔥 全新 2x2 App 網格選單設計 */
-    .home-btn-group { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 5px; }
+    /* 🔥 滿版 2x2 App 網格選單設計 */
+    .home-btn-group { 
+      display: grid; 
+      grid-template-columns: repeat(2, 1fr); 
+      gap: 12px; 
+      flex-grow: 1; /* 讓網格撐滿剩餘空間 */
+      padding: 5px 0; 
+    }
     
     .menu-btn { 
-      background: #ffffff; border: 2px solid transparent; border-radius: 20px; 
-      box-shadow: 0 6px 16px rgba(0,0,0,0.06); display: flex; flex-direction: column; 
-      align-items: center; justify-content: center; padding: 25px 10px; color: #495057; 
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); min-height: 120px; outline: none; cursor: pointer;
+      background: #ffffff; 
+      border: 2px solid transparent; 
+      border-radius: 20px; 
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06); 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      justify-content: center; 
+      color: #495057; 
+      transition: all 0.2s ease-in-out; 
+      width: 100%;
+      height: 100%; /* 填滿格子高度 */
+      outline: none; 
+      cursor: pointer;
+      text-decoration: none;
     }
-    .menu-btn:active { transform: scale(0.92); box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-color: #06C755; }
     
-    .menu-icon { width: 55px; height: 55px; margin-bottom: 12px; object-fit: contain; transition: transform 0.3s; }
-    .menu-btn:active .menu-icon { transform: scale(1.05); }
+    /* 🔥 質感互動：滑過與點擊變色 */
+    .menu-btn:hover {
+      background-color: #f9fbf9;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(6, 199, 85, 0.1);
+      border-color: rgba(6, 199, 85, 0.2);
+    }
     
-    .menu-btn span { font-size: 1rem; font-weight: 800; letter-spacing: 0.5px; color: #333; }
+    .menu-btn:active { 
+      background-color: #f0fdf4; /* 淡淡的品牌綠背景 */
+      transform: scale(0.96); 
+      box-shadow: 0 2px 8px rgba(6, 199, 85, 0.15); 
+      border-color: #06C755; 
+    }
+    
+    /* 🔥 放大圖示尺寸 */
+    .menu-icon { 
+      width: 75px; /* 圖示變大 */
+      height: 75px; 
+      margin-bottom: 15px; 
+      object-fit: contain; 
+      transition: transform 0.3s; 
+    }
+    .menu-btn:hover .menu-icon { transform: scale(1.08); }
+    .menu-btn:active .menu-icon { transform: scale(0.95); }
+    
+    .menu-btn span { font-size: 1.1rem; font-weight: 800; letter-spacing: 0.5px; color: #333; }
 
-    .sub-view { flex-grow: 1; padding: 15px 15px 30px 15px; overflow-y: auto; }
+    .sub-view { flex-grow: 1; padding: 15px 15px 30px 15px; overflow-y: auto; height: 100%; }
 
-    .back-btn-container { margin-bottom: 15px; }
+    .back-btn-container { margin-bottom: 15px; position: sticky; top: 0; z-index: 10; background: #f0f2f5; padding-top: 10px; padding-bottom: 5px; }
     .back-btn { font-size: 1rem; font-weight: bold; color: #495057; padding: 8px 18px; background: white; border-radius: 50px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); display: inline-flex; align-items: center; border: none; transition: 0.2s; }
     .back-btn:active { transform: scale(0.95); background: #f8f9fa; }
     .back-btn i { font-size: 1.2rem; margin-right: 5px; color: #06C755; }
@@ -72,19 +111,19 @@
       
       <div class="home-btn-group">
         <button class="menu-btn" onclick="openUpload()">
-          <img src="1.PNG" class="menu-icon" alt="上傳處方箋">
+          <img src="1.png" class="menu-icon" alt="上傳處方箋">
           <span>上傳處方箋</span>
         </button>
         <button class="menu-btn" onclick="openBindLine()">
-          <img src="2.PNG" class="menu-icon" alt="LINE 綁定">
+          <img src="2.png" class="menu-icon" alt="LINE 綁定">
           <span>LINE 綁定</span>
         </button>
         <button class="menu-btn" onclick="openStatus()">
-          <img src="3.PNG" class="menu-icon" alt="領藥狀態查詢">
+          <img src="3.png" class="menu-icon" alt="領藥狀態查詢">
           <span>領藥狀態查詢</span>
         </button>
         <button class="menu-btn" onclick="openMedHistory()">
-          <img src="4.PNG" class="menu-icon" alt="雲端藥歷">
+          <img src="4.png" class="menu-icon" alt="雲端藥歷">
           <span>雲端藥歷查詢</span>
         </button>
       </div>
