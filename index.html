@@ -10,14 +10,13 @@
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   
   <style>
-    /* 🔥 背景改為純淨白，解決灰白不協調 */
     body { background-color: #ffffff; font-family: -apple-system, sans-serif; margin: 0; padding: 0; height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
     .container { max-width: 600px; padding: 0; flex-grow: 1; display: flex; flex-direction: column; margin: 0 auto; width: 100%; height: 100%; }
     
     .card { border-radius: 12px; border: none; box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-bottom: 20px; }
     
-    /* 登入資訊卡片改為極淡的灰色，融入白底 */
-    .user-card { background: #f8f9fa; padding: 10px 15px; border-radius: 16px; margin-bottom: 12px; flex-shrink: 0; border: 1px solid #f0f2f5; }
+    /* 登入資訊卡片 */
+    .user-card { background: #f8f9fa; padding: 10px 15px; border-radius: 16px; margin-bottom: 5px; flex-shrink: 0; border: 1px solid #f0f2f5; }
     .user-avatar { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; margin-right: 15px; border: 2px solid #06C755; }
     
     .preview-box { width: 100%; height: 200px; background: #f8f9fa; border: 2px dashed #ced4da; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; position: relative; margin-bottom: 15px; }
@@ -28,26 +27,25 @@
 
     #view-home { height: 100%; display: flex; flex-direction: column; overflow: hidden; }
     
-    /* 🔥 標題區塊改為乾淨的白底+品牌綠文字，與畫面一體成型 */
     .brand-header { background: #ffffff; padding: 30px 20px 10px; text-align: center; margin-bottom: 5px; flex-shrink: 0; }
     .brand-title { font-weight: 900; font-size: 1.8rem; letter-spacing: 2px; margin-bottom: 3px; color: #06C755; } 
     .brand-subtitle { font-size: 0.85rem; color: #6c757d; margin-bottom: 0; font-weight: 500; letter-spacing: 1px; }
 
-    .home-content { display: flex; flex-direction: column; flex-grow: 1; padding: 0 20px 30px 20px; min-height: 0; justify-content: center; }
+    /* 🔥 移除了 justify-content: center，讓上方的卡片乖乖置頂 */
+    .home-content { display: flex; flex-direction: column; flex-grow: 1; padding: 0 20px 30px 20px; min-height: 0; }
     
-    /* 🔥 網格排版調整 */
+    /* 🔥 利用 margin: auto 讓這四顆按鈕自動在剩餘的空間裡完美垂直置中 */
     .home-btn-group { 
       display: grid; 
       grid-template-columns: repeat(2, 1fr); 
       gap: 20px 15px; 
       width: 100%;
       max-width: 450px; 
-      margin: 0 auto; 
+      margin: auto; /* 這是關鍵：自動推開上下空間 */
       justify-content: center;
       justify-items: center; 
     }
     
-    /* 🔥 完全移除外框與背景，讓您的圓形 Icon 成為主角 */
     .menu-btn { 
       background: transparent !important; 
       border: none !important; 
@@ -64,11 +62,9 @@
       width: 100%; 
     }
     
-    /* 🔥 滑過與點擊時，直接對圖片做生動的縮放動畫 */
     .menu-btn:hover { transform: translateY(-4px); }
     .menu-btn:active { transform: scale(0.92); opacity: 0.85; }
     
-    /* 🔥 圖示霸氣尺寸，並加上專屬的柔和陰影增加立體感 */
     .menu-icon { 
       width: 110px; 
       height: 110px; 
@@ -78,7 +74,6 @@
       transition: transform 0.3s; 
     }
     
-    /* 🔥 文字排版優化 */
     .menu-btn span { 
       font-size: 1.1rem; 
       font-weight: 800; 
@@ -515,8 +510,8 @@
        let drugsHtml = drugsArray.map((d, idx) => `
           <div class="border-bottom border-light py-2 ${idx === drugsArray.length-1 ? 'border-0 pb-0' : ''}">
              <div class="fw-bold text-dark mb-1 d-flex align-items-start" style="font-size:0.95rem;">
-                 <span class="badge bg-${themeColor} me-2 shadow-sm mt-1" style="font-size:0.75rem; border-radius:50%; width:22px; height:22px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">${idx + 1}</span>
-                 <span>${d.drug || '未知藥品'}</span>
+                <span class="badge bg-${themeColor} me-2 shadow-sm mt-1" style="font-size:0.75rem; border-radius:50%; width:22px; height:22px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">${idx + 1}</span>
+                <span>${d.drug || '未知藥品'}</span>
              </div>
              <div class="d-flex flex-wrap text-secondary" style="font-size:0.85rem; gap: 8px; padding-left: 30px;">
                 <div><span class="badge bg-light text-secondary border me-1 shadow-sm">每次用量</span>${d.dosage || '-'} 粒</div>
