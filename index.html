@@ -61,7 +61,7 @@
       <div class="home-btn-group">
         <button class="btn btn-outline-success menu-btn" onclick="openUpload()"><i class="bi bi-camera"></i><span>1. 上傳處方箋</span></button>
         <button class="btn btn-outline-primary menu-btn" onclick="openBindLine()"><i class="bi bi-link-45deg"></i><span>2. LINE 綁定通知領藥</span></button>
-        <button class="btn btn-outline-info menu-btn" onclick="openStatus()"><i class="bi bi-card-checklist"></i><span>3. 查看處方狀態</span></button>
+        <button class="btn btn-outline-info menu-btn" onclick="openStatus()"><i class="bi bi-card-checklist"></i><span>3. 查看領藥狀態</span></button>
         <button class="btn btn-outline-dark menu-btn" onclick="openMedHistory()"><i class="bi bi-cloud-arrow-up"></i><span>4. 雲端藥歷查詢</span></button>
       </div>
     </div>
@@ -95,7 +95,7 @@
   <div id="view-status" class="hidden-mode sub-view">
     <div class="back-btn-container"><button class="back-btn" onclick="goHome()"><i class="bi bi-chevron-left"></i> 返回主畫面</button></div>
     <div class="card p-4 shadow-sm border-0">
-      <h5 class="fw-bold text-info mb-3"><i class="bi bi-card-checklist"></i> 處方狀態查詢</h5>
+      <h5 class="fw-bold text-info mb-3"><i class="bi bi-card-checklist"></i> 領藥狀態查詢</h5>
       <p class="small text-muted mb-3">以下是您曾經上傳過的處方箋紀錄與目前處理進度：</p>
       <div id="uploadHistoryList"></div>
     </div>
@@ -123,8 +123,6 @@
 
 </div>
 
-<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
-<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/cpexcel.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
   const GAS_URL = "https://script.google.com/macros/s/AKfycbyUXCejmkI52ZJVUN1K1t1j2ZvfdZMCgHsgB79okITgzn7to2sfte43R5I0GOQnFp1opQ/exec"; 
@@ -319,7 +317,7 @@
                rxDateObj: parseTwDate(rxDt),
                dept: deptStr,
                hospital: r.hospital || "未知醫療院所",
-               physician: r.physician || "", // 🔥 紀錄醫師資料
+               physician: r.physician || "",
                totRefill: totRefill,
                maxCurRefill: curRefill, 
                pickupLog: {}, 
@@ -360,7 +358,6 @@
        let themeColor = g.type === 'chronic' ? 'success' : 'primary';
        let refillInfoHtml = '';
 
-       // 🔥 處理看診醫師字串：如果存在，且不是純數字，才顯示
        let phyStr = "";
        if (g.physician && !/^\d+$/.test(g.physician.trim()) && g.physician.trim() !== "") {
            phyStr = `👨‍⚕️ 看診醫師：<span class="fw-bold text-dark">${g.physician}</span><br>`;
