@@ -30,11 +30,22 @@
     .brand-subtitle { font-size: 0.9rem; opacity: 0.9; margin-bottom: 0; font-weight: 500; letter-spacing: 1px; }
 
     .home-content { display: flex; flex-direction: column; flex-grow: 1; padding: 0 15px 20px 15px; min-height: 0; }
-    .home-btn-group { display: flex; flex-direction: column; flex-grow: 1; gap: 10px; }
     
-    .menu-btn { flex-grow: 1; border-radius: 14px; font-weight: bold; font-size: 1.05rem; display: flex; align-items: center; justify-content: center; flex-direction: column; text-align: center; transition: 0.2s; border: 2px solid; padding: 5px; min-height: 60px; }
-    .menu-btn i { font-size: 1.6rem; margin-bottom: 4px; }
-    .menu-btn:active:not(:disabled) { transform: scale(0.97); }
+    /* 🔥 全新 2x2 App 網格選單設計 */
+    .home-btn-group { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 5px; }
+    
+    .menu-btn { 
+      background: #ffffff; border: 2px solid transparent; border-radius: 20px; 
+      box-shadow: 0 6px 16px rgba(0,0,0,0.06); display: flex; flex-direction: column; 
+      align-items: center; justify-content: center; padding: 25px 10px; color: #495057; 
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); min-height: 120px; outline: none; cursor: pointer;
+    }
+    .menu-btn:active { transform: scale(0.92); box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-color: #06C755; }
+    
+    .menu-icon { width: 55px; height: 55px; margin-bottom: 12px; object-fit: contain; transition: transform 0.3s; }
+    .menu-btn:active .menu-icon { transform: scale(1.05); }
+    
+    .menu-btn span { font-size: 1rem; font-weight: 800; letter-spacing: 0.5px; color: #333; }
 
     .sub-view { flex-grow: 1; padding: 15px 15px 30px 15px; overflow-y: auto; }
 
@@ -58,12 +69,26 @@
         <div class="d-flex align-items-center"><img id="userThumb" src="https://placehold.co/50" class="user-avatar"><div><div class="small text-muted" style="font-size:0.75rem;">目前登入帳號</div><div class="fw-bold text-dark" id="userNameDisplay" style="font-size:0.95rem;">訪客</div></div></div>
         <button class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold" onclick="doLiffLogout()">登出</button>
       </div>
+      
       <div class="home-btn-group">
-        <button class="btn btn-outline-success menu-btn" onclick="openUpload()"><i class="bi bi-camera"></i><span>1. 上傳處方箋</span></button>
-        <button class="btn btn-outline-primary menu-btn" onclick="openBindLine()"><i class="bi bi-link-45deg"></i><span>2. LINE 綁定通知領藥</span></button>
-        <button class="btn btn-outline-info menu-btn" onclick="openStatus()"><i class="bi bi-card-checklist"></i><span>3. 查看領藥狀態</span></button>
-        <button class="btn btn-outline-dark menu-btn" onclick="openMedHistory()"><i class="bi bi-cloud-arrow-up"></i><span>4. 雲端藥歷查詢</span></button>
+        <button class="menu-btn" onclick="openUpload()">
+          <img src="1.PNG" class="menu-icon" alt="上傳處方箋">
+          <span>上傳處方箋</span>
+        </button>
+        <button class="menu-btn" onclick="openBindLine()">
+          <img src="2.PNG" class="menu-icon" alt="LINE 綁定">
+          <span>LINE 綁定</span>
+        </button>
+        <button class="menu-btn" onclick="openStatus()">
+          <img src="3.PNG" class="menu-icon" alt="領藥狀態查詢">
+          <span>領藥狀態查詢</span>
+        </button>
+        <button class="menu-btn" onclick="openMedHistory()">
+          <img src="4.PNG" class="menu-icon" alt="雲端藥歷">
+          <span>雲端藥歷查詢</span>
+        </button>
       </div>
+
     </div>
   </div>
 
