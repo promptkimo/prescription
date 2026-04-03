@@ -314,7 +314,6 @@
 
     fetch(GAS_URL, {
       method: "POST",
-      // 🔥 加入了 lineUserId 作為防爬蟲的安全憑證
       body: JSON.stringify({ action: "queryMed", name: name, id: idStr, lineUserId: lineUserId })
     })
     .then(res => res.json())
@@ -591,7 +590,11 @@
     const name = document.getElementById('uName').value; const phone = document.getElementById('uPhone').value; let dept = document.getElementById('uDept').value; let notify = document.getElementById('uNotify').value;
     if (notify === "LINE通知" && !liff.isLoggedIn()) return alert("⚠️ 您目前尚未綁定 LINE！\n請點擊上方的「登入 LINE」，或改選【電話通知】。");
     if (!base64Image) return alert("⚠️ 請拍攝處方箋！"); if (!name || !phone) return alert("⚠️ 請填寫完整資料！");
-    document.getElementById('loading').style.display = 'flex'; document.getElementById('loadingText').innerText = "資料傳送中...";
+    
+    document.getElementById('loading').style.display = 'flex'; 
+    // 🔥 改寫提示文字，安撫使用者的等待時間
+    document.getElementById('loadingText').innerText = "資料傳送與 AI 智慧辨識中，請稍候...";
+    
     fetch(GAS_URL, { method: "POST", body: JSON.stringify({ action: "upload", name: name, lineName: lineDisplayName, linePic: linePictureUrl, phone: phone, dept: dept, notify: notify, fileData: base64Image, fileName: fileName, lineUserId: lineUserId, isRegister: false }) })
     .then(res => res.json()).then(res => {
       document.getElementById('loading').style.display = 'none';
