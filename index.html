@@ -98,7 +98,6 @@
     <div class="card p-4 shadow-sm border-0 border-top border-dark border-4 bg-light">
       <h5 class="fw-bold text-dark mb-3"><i class="bi bi-cloud-arrow-up"></i> 雲端藥歷查詢</h5>
       <p class="small text-muted mb-4">為保護個人隱私，請輸入【領藥人姓名】與【身分證字號】進行安全驗證，以查詢詳細用藥紀錄。</p>
-      
       <div class="mb-3"><label class="form-label small fw-bold text-primary">領藥人真實姓名</label><input type="text" class="form-control" id="qName" placeholder="請輸入領藥人的姓名"></div>
       <div class="mb-4"><label class="form-label small fw-bold text-danger">領藥人身分證字號</label><input type="text" class="form-control text-uppercase" id="qId" placeholder="例如：A123456789"></div>
       <button class="btn btn-dark w-100 fw-bold py-2 mb-4 shadow-sm" onclick="queryMedHistory()"><i class="bi bi-search"></i> 安全查詢</button>
@@ -112,9 +111,7 @@
   const GAS_URL = "https://script.google.com/macros/s/AKfycbyUXCejmkI52ZJVUN1K1t1j2ZvfdZMCgHsgB79okITgzn7to2sfte43R5I0GOQnFp1opQ/exec"; 
   const LIFF_ID = "2008912977-DuJTm5u1"; 
 
-  // 省略 NHI_DEPT_MAP 節省空間，請確保您舊版的這段有保留或直接覆蓋不影響
-  const NHI_DEPT_MAP = { "00": "不分科", "01": "家醫科", "02": "內科" }; // ...以此類推
-
+  const NHI_DEPT_MAP = { "00": "不分科", "01": "家醫科", "02": "內科" }; 
   function translateDept(codeStr) {
       if (!codeStr) return "一般領藥";
       let c = String(codeStr).trim().toUpperCase();
@@ -219,25 +216,18 @@
     document.getElementById('loading').style.display = 'flex'; 
     document.getElementById('loadingText').innerText = "處方箋極速上傳中...";
     
-    // 🔥 非同步第一步：只負責上傳存檔，速度極快
+    // 🔥 終極秒速上傳：傳完直接放人，後端會自動接手 AI
     fetch(GAS_URL, { 
       method: "POST", 
       body: JSON.stringify({ action: "upload", name: name, lineName: lineDisplayName, linePic: linePictureUrl, phone: phone, dept: dept, notify: notify, fileData: base64Image, fileName: fileName, lineUserId: lineUserId, isRegister: false }) 
     })
     .then(res => res.json())
     .then(res => {
+      document.getElementById('loading').style.display = 'none';
       if(res.status === 'success') {
-        document.getElementById('loading').style.display = 'none';
-        alert("✅ 處方箋快速上傳成功！\nAI 助理正在背景為您建檔，稍後會傳送確認圖卡給您。");
-        goHome();
-        
-        // 🔥 非同步第二步：背景偷偷發送請求叫 AI 看圖算日期
-        fetch(GAS_URL, {
-          method: "POST",
-          body: JSON.stringify({ action: "processAI", rowIndex: res.rowIndex, fileData: base64Image })
-        });
+        alert("✅ 處方箋已成功送達雲端！\nAI 助理將在後台自動為您建檔，您可以安心關閉此畫面，稍後將在 LINE 收到確認通知。");
+        if(liff.isInClient()) liff.closeWindow(); else goHome();
       } else {
-        document.getElementById('loading').style.display = 'none';
         alert("❌ 失敗：" + res.message);
       }
     }).catch(err => { document.getElementById('loading').style.display = 'none'; goHome(); });
