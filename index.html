@@ -68,7 +68,15 @@
       <div class="mb-3"><label class="form-label small fw-bold">聯絡電話</label><input type="tel" class="form-control" id="uPhone" placeholder="請輸入聯絡電話"></div>
       <div class="mb-3" id="deptSection"><label class="form-label small fw-bold">科別 (選填)</label><input type="text" class="form-control" id="uDept" placeholder="例如：牙科、內科..."></div>
       <div class="mb-4" id="notifySection"><label class="form-label small fw-bold">希望通知方式</label><select class="form-select" id="uNotify"><option value="LINE通知" id="optLine" selected>LINE 通知 (推薦)</option><option value="電話通知" id="optPhone">電話通知</option></select></div>
-      <button class="btn btn-success w-100 fw-bold py-2" onclick="submitData()">確認極速上傳</button>
+      
+      <div class="form-check mb-4">
+        <input class="form-check-input" type="checkbox" id="privacyConsentUpload">
+        <label class="form-check-label text-muted" for="privacyConsentUpload" style="font-size: 0.85rem; line-height: 1.4;">
+          我已詳細閱讀並同意 <a href="#" onclick="showPrivacyModal(event)" class="text-success fw-bold text-decoration-none">隱私權保護與服務條款</a>，並授權樂森藥局以雲端 AI 輔助處理處方箋資訊。
+        </label>
+      </div>
+
+      <button class="btn btn-success w-100 fw-bold py-2 shadow-sm" onclick="submitData()">確認極速上傳</button>
     </div>
   </div>
 
@@ -79,7 +87,15 @@
       <p class="small text-muted mb-4">請填寫病人的真實資料。綁定完成後，藥師就能直接透過 LINE 通知您來拿藥！</p>
       <div class="mb-3"><label class="form-label small fw-bold text-primary">病人姓名</label><input type="text" class="form-control" id="bName" placeholder="請輸入姓名"></div>
       <div class="mb-4"><label class="form-label small fw-bold text-primary">聯絡電話</label><input type="tel" class="form-control" id="bPhone" placeholder="請輸入手機號碼"></div>
-      <button class="btn btn-primary w-100 fw-bold py-2" onclick="submitBind()">🔗 確認綁定 LINE</button>
+      
+      <div class="form-check mb-4">
+        <input class="form-check-input" type="checkbox" id="privacyConsentBind">
+        <label class="form-check-label text-muted" for="privacyConsentBind" style="font-size: 0.85rem; line-height: 1.4;">
+          我已詳細閱讀並同意 <a href="#" onclick="showPrivacyModal(event)" class="text-primary fw-bold text-decoration-none">隱私權保護與服務條款</a>。
+        </label>
+      </div>
+
+      <button class="btn btn-primary w-100 fw-bold py-2 shadow-sm" onclick="submitBind()">🔗 確認綁定 LINE</button>
     </div>
   </div>
 
@@ -105,18 +121,35 @@
   </div>
 </div>
 
+<div class="modal fade" id="privacyModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-light">
+        <h5 class="modal-title fw-bold text-dark"><i class="bi bi-shield-check text-success"></i> 隱私權保護與服務條款</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" style="font-size: 0.95rem; line-height: 1.6; color: #444;">
+        <p>歡迎您使用樂森藥局雲端服務。為保障您的隱私權與醫療資訊安全，請詳閱以下條款：</p>
+        <p class="fw-bold text-dark mb-1">1. 資料蒐集目的與範圍</p>
+        <p class="text-muted small">本系統僅為提供「處方箋調劑、領藥通知及藥事衛教服務」之目的，蒐集您上傳之處方箋影像、姓名、電話與 LINE 帳號資訊。所有資料皆依台灣《個人資料保護法》妥善保護。</p>
+        <p class="fw-bold text-dark mb-1 mt-3">2. 雲端 AI 輔助辨識授權</p>
+        <p class="text-muted small">為提升建檔效率，您同意本系統將上傳之處方箋影像傳送至 Google 雲端安全伺服器（Gemini AI）進行短暫的文字擷取與辨識。您的醫療影像與資料<b>絕對不會</b>被公開，且<b>不會</b>被用於任何 AI 模型的訓練。</p>
+        <p class="fw-bold text-dark mb-1 mt-3">3. 資料安全與自動銷毀機制</p>
+        <p class="text-muted small">本藥局已採取嚴格的存取限制。您上傳之處方箋影像僅供藥局專業藥師核對使用，且系統設有自動銷毀機制，於資料蒐集目的完成或保留期限（30日）屆滿後，將於雲端自動且永久刪除。</p>
+        <p class="fw-bold text-dark mb-1 mt-3">4. 當事人權利</p>
+        <p class="text-muted small">您隨時可向樂森藥局提出查詢、修改或刪除您個人資料之要求。</p>
+      </div>
+      <div class="modal-footer bg-light">
+        <button type="button" class="btn btn-success w-100 fw-bold" data-bs-dismiss="modal">我已了解並同意</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
   const GAS_URL = "https://script.google.com/macros/s/AKfycbyUXCejmkI52ZJVUN1K1t1j2ZvfdZMCgHsgB79okITgzn7to2sfte43R5I0GOQnFp1opQ/exec"; 
   const LIFF_ID = "2008912977-DuJTm5u1"; 
-
-  const NHI_DEPT_MAP = { "00": "不分科", "01": "家醫科", "02": "內科" }; 
-  function translateDept(codeStr) {
-      if (!codeStr) return "一般領藥";
-      let c = String(codeStr).trim().toUpperCase();
-      if (c.length === 1 && !isNaN(c)) c = "0" + c;
-      return NHI_DEPT_MAP[c] ? NHI_DEPT_MAP[c] : c; 
-  }
 
   let lineUserId = "", lineDisplayName = "", linePictureUrl = "", base64Image = "", fileName = "", isRegisterMode = false;
   const urlParams = new URLSearchParams(window.location.search);
@@ -188,6 +221,13 @@
     document.getElementById('medHistoryResult').innerHTML = ''; document.getElementById('qName').value = ''; document.getElementById('qId').value = ''; 
   }
 
+  // 🔥 顯示隱私權視窗
+  function showPrivacyModal(event) {
+    event.preventDefault();
+    var privacyModal = new bootstrap.Modal(document.getElementById('privacyModal'));
+    privacyModal.show();
+  }
+
   function fetchUploadHistory() {
     if (!lineUserId) return;
     document.getElementById('uploadHistoryList').innerHTML = `<div class="text-center text-muted small py-4"><div class="spinner-border spinner-border-sm text-info me-2"></div> 讀取紀錄中...</div>`;
@@ -225,10 +265,15 @@
 
   function submitData() {
     const name = document.getElementById('uName').value; const phone = document.getElementById('uPhone').value; let dept = document.getElementById('uDept').value; let notify = document.getElementById('uNotify').value;
-    if (!base64Image) return alert("⚠️ 請拍攝處方箋！"); if (!name || !phone) return alert("⚠️ 請填寫完整資料！");
+    const isConsent = document.getElementById('privacyConsentUpload').checked;
+
+    if (!base64Image) return alert("⚠️ 請拍攝處方箋！"); 
+    if (!name || !phone) return alert("⚠️ 請填寫完整資料！");
+    // 🔥 強制檢查是否有打勾同意隱私權
+    if (!isConsent) return alert("⚠️ 請先閱讀並勾選同意「隱私權與服務條款」才能上傳資料喔！");
     
     document.getElementById('loading').style.display = 'flex'; 
-    document.getElementById('loadingText').innerText = "處方箋極速上傳中...";
+    document.getElementById('loadingText').innerText = "處方箋加密上傳中...";
     
     fetch(GAS_URL, { 
       method: "POST", 
@@ -238,7 +283,7 @@
     .then(res => {
       document.getElementById('loading').style.display = 'none';
       if(res.status === 'success') {
-        alert("✅ 處方箋已成功送達雲端！\nAI 助理將在後台自動為您建檔，您可以安心關閉此畫面，稍後將在 LINE 收到確認通知。");
+        alert("✅ 處方箋已加密送達雲端！\nAI 助理將在後台自動為您建檔，您可以安心關閉此畫面，稍後將在 LINE 收到確認通知。");
         if(liff.isInClient()) liff.closeWindow(); else goHome();
       } else {
         alert("❌ 失敗：" + res.message);
@@ -248,7 +293,12 @@
 
   function submitBind() {
     const name = document.getElementById('bName').value; const phone = document.getElementById('bPhone').value;
+    const isConsent = document.getElementById('privacyConsentBind').checked;
+
     if (!name || phone.length < 9) return alert("⚠️ 請填寫完整真實姓名與電話！");
+    // 🔥 強制檢查是否有打勾同意隱私權
+    if (!isConsent) return alert("⚠️ 請先閱讀並勾選同意「隱私權與服務條款」才能完成綁定喔！");
+
     document.getElementById('loading').style.display = 'flex'; document.getElementById('loadingText').innerText = "綁定資料傳送中...";
     fetch(GAS_URL, { method: "POST", body: JSON.stringify({ action: "upload", name: name, lineName: lineDisplayName, linePic: linePictureUrl, phone: phone, dept: "LINE綁定", notify: "LINE通知", fileData: "", fileName: "", lineUserId: lineUserId, isRegister: true }) })
     .then(res => res.json()).then(res => {
