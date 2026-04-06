@@ -170,6 +170,13 @@
   const GAS_URL = "https://script.google.com/macros/s/AKfycbyUXCejmkI52ZJVUN1K1t1j2ZvfdZMCgHsgB79okITgzn7to2sfte43R5I0GOQnFp1opQ/exec"; 
   const LIFF_ID = "2008912977-DuJTm5u1"; 
 
+  const NHI_DEPT_MAP = {
+    "00":"不分科","01":"家醫科","02":"內科","03":"外科","04":"小兒科","05":"婦產科",
+    "06":"骨科","07":"泌尿科","08":"耳鼻喉科","09":"眼科","10":"皮膚科","11":"神經科",
+    "12":"精神科","13":"復健科","14":"整形外科","15":"職業醫學科","22":"急診醫學科",
+    "23":"牙醫一般科","39":"牙醫一般科","40":"牙醫一般科","60":"中醫一般科","81":"麻醉科"
+  };
+
   let lineUserId = "", lineDisplayName = "", linePictureUrl = "", base64Image = "", fileName = "", isRegisterMode = false;
   const urlParams = new URLSearchParams(window.location.search);
   const currentMode = urlParams.get('mode');
@@ -259,7 +266,7 @@
   }
 
   // ==========================================
-  // 🔥 藥歷查詢：智慧同源整併邏輯
+  // 🔥 藥歷查詢：智慧同源整併與日期推算
   // ==========================================
   
   function _parseDate(dStr) {
@@ -346,12 +353,11 @@
         
         document.getElementById('medQueryForm').style.display = 'none';
         
-        // 🔥 步驟 1: 智慧整併 - 依照「處方日 + 醫院 + 科別」分組
+        // 🔥 智慧整併：依照「處方日 + 醫院 + 科別」分組
         const groupedData = {};
         res.data.forEach(item => {
           let rxDate = item.rxDate ? item.rxDate.replace(/\//g, '-') : '';
           let dispDate = item.date.split(' ')[0].replace(/\//g, '-');
-          // 以處方日為優先群組鍵，若無則用領藥日
           let groupKey = (rxDate || dispDate) + '_' + (item.hospital || '未載明院所') + '_' + (item.dept || '一般');
           
           if (!groupedData[groupKey]) {
@@ -363,11 +369,10 @@
               maxCurrentRefill: 1,
               totalRefills: 1,
               days: parseInt(item.days) || 28,
-              items: [] // 用來放去重複後的藥品
+              items: [] 
             };
           }
           
-          // 計算最大領藥進度
           let curRefill = 1, totRefills = 1;
           if (item.refill && item.refill.includes('/')) {
             let parts = item.refill.split('/');
@@ -385,14 +390,12 @@
             groupedData[groupKey].totalRefills = totRefills;
           }
           
-          // 去重複藥品：如果這張單子已經有這個藥，就不再重複加入
           let isDuplicate = groupedData[groupKey].items.some(existingItem => existingItem.drug === item.drug);
           if (!isDuplicate) {
             groupedData[groupKey].items.push(item);
           }
         });
 
-        // 步驟 2: 依照處方日排序 (由新到舊)
         const sortedGroupKeys = Object.keys(groupedData).sort((a, b) => {
           let dateA = groupedData[a].rxDateStr;
           let dateB = groupedData[b].rxDateStr;
@@ -409,9 +412,8 @@
         let groupId = 0;
         sortedGroupKeys.forEach(key => {
           let meta = groupedData[key];
-          let isOpen = groupId === 0 ? 'open' : ''; // 預設展開最新一筆
+          let isOpen = groupId === 0 ? 'open' : ''; 
           
-          // 數學推算日期
           let rxDate = _parseDate(meta.rxDateStr);
           let date2Str = '-', date3Str = '-', returnDateStr = '-';
           let date2Obj = null, date3Obj = null;
@@ -426,7 +428,6 @@
              returnDateStr = _fmt(returnObj, 'YYYY-MM-DD');
           }
 
-          // 動態狀態徽章
           let refill2UI = `<span class="text-danger fw-bold">${date2Str}</span>`;
           if (meta.maxCurrentRefill >= 2) refill2UI = `<span class="text-success fw-bold me-2">${_fmt(date2Obj, 'MM/DD') || '-'}</span><span class="badge bg-success">✅ 已領取</span>`;
           if (meta.totalRefills < 2) refill2UI = `<span class="text-muted">-</span>`;
@@ -435,7 +436,6 @@
           if (meta.maxCurrentRefill >= 3) refill3UI = `<span class="text-success fw-bold me-2">${_fmt(date3Obj, 'MM/DD') || '-'}</span><span class="badge bg-success">✅ 已領取</span>`;
           if (meta.totalRefills < 3) refill3UI = `<span class="text-muted">-</span>`;
 
-          // 構建卡片
           html += `
           <div class="rx-card shadow-sm">
             <div class="rx-header" id="rx-header-${groupId}" onclick="toggleMedCard(${groupId})">
