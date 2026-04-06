@@ -63,7 +63,6 @@
     <div class="back-btn-container"><button class="back-btn" onclick="goHome()"><i class="bi bi-chevron-left"></i> 返回主畫面</button></div>
     <div class="card p-4 shadow-sm border-0 bg-light">
       <h5 class="fw-bold text-success mb-3" id="formTitle"><i class="bi bi-camera"></i> 上傳處方箋</h5>
-      <div id="btnOptionalLogin" class="alert alert-warning small d-flex justify-content-between align-items-center hidden-mode p-2 mb-3"><span class="fw-bold text-dark">未綁定 LINE (僅選電話通知)</span><button class="btn btn-sm btn-success fw-bold rounded-pill px-3" onclick="doOptionalLogin()">登入 LINE</button></div>
       <div id="cameraSection"><div class="preview-box" onclick="document.getElementById('fileInput').click()"><div class="placeholder-text" id="placeholder"><span style="font-size: 2rem;">📷</span><br>點此拍照 / 選照片</div><img id="previewImg"></div><input type="file" id="fileInput" accept="image/*" style="display: none;" onchange="handleFile(this)"></div>
       <div class="mb-3"><label class="form-label small fw-bold">領藥人姓名 (病人)</label><input type="text" class="form-control" id="uName"></div>
       <div class="mb-3"><label class="form-label small fw-bold">聯絡電話</label><input type="tel" class="form-control" id="uPhone" placeholder="請輸入聯絡電話"></div>
@@ -137,8 +136,8 @@
           
           if(profile.pictureUrl) document.getElementById('userThumb').src = profile.pictureUrl;
           document.getElementById('userInfo').classList.remove('hidden-mode');
-          document.getElementById('btnOptionalLogin').classList.add('hidden-mode');
           
+          // 如果網址帶有 mode 參數，自動開啟對應頁面
           if (currentMode === 'bind' || currentMode === 'register') openBindLine();
           else if (currentMode === 'upload') openUpload();
           else if (currentMode === 'status') openStatus();
@@ -146,17 +145,17 @@
           else goHome(); 
         });
       } else {
-        document.getElementById('btnOptionalLogin').classList.remove('hidden-mode');
-        if (currentMode === 'bind' || currentMode === 'register') openBindLine(); 
-        else if (currentMode === 'status') openStatus();
-        else if (currentMode === 'meds') openMedHistory();
-        else goHome();
+        // 🔥 如果沒登入，且網址有帶 mode，就直接踢去登入畫面
+        if (currentMode) {
+           liff.login({ redirectUri: window.location.href.split('?')[0] + "?mode=" + currentMode });
+        } else {
+           goHome(); // 停在首頁，等他們點擊按鈕
+        }
       }
     }).catch(err => { document.getElementById('loading').style.display = 'none'; goHome(); });
   }
 
   function doLiffLogout() { if (confirm("確定要登出嗎？")) { if (liff.isLoggedIn()) { liff.logout(); location.href = window.location.href.split('?')[0]; } } }
-  function doOptionalLogin() { liff.login({ redirectUri: window.location.href.split('?')[0] + "?mode=upload" }); }
 
   function goHome() {
     window.history.replaceState({}, document.title, window.location.pathname);
@@ -168,10 +167,29 @@
     isRegisterMode = false;
   }
 
-  function openUpload() { document.getElementById('view-home').classList.add('hidden-mode'); document.getElementById('view-bind').classList.add('hidden-mode'); document.getElementById('view-status').classList.add('hidden-mode'); document.getElementById('view-meds').classList.add('hidden-mode'); document.getElementById('view-form').classList.remove('hidden-mode'); if(!liff.isLoggedIn()) document.getElementById('uNotify').value = "電話通知"; }
-  function openBindLine() { if (!liff.isLoggedIn()) { liff.login({ redirectUri: window.location.href.split('?')[0] + "?mode=bind" }); return; } isRegisterMode = true; document.getElementById('view-home').classList.add('hidden-mode'); document.getElementById('view-form').classList.add('hidden-mode'); document.getElementById('view-status').classList.add('hidden-mode'); document.getElementById('view-meds').classList.add('hidden-mode'); document.getElementById('view-bind').classList.remove('hidden-mode'); }
-  function openStatus() { if (!liff.isLoggedIn()) { liff.login({ redirectUri: window.location.href.split('?')[0] + "?mode=status" }); return; } document.getElementById('view-home').classList.add('hidden-mode'); document.getElementById('view-form').classList.add('hidden-mode'); document.getElementById('view-bind').classList.add('hidden-mode'); document.getElementById('view-meds').classList.add('hidden-mode'); document.getElementById('view-status').classList.remove('hidden-mode'); fetchUploadHistory(); }
-  function openMedHistory() { if (!liff.isLoggedIn()) { liff.login({ redirectUri: window.location.href.split('?')[0] + "?mode=meds" }); return; } document.getElementById('view-home').classList.add('hidden-mode'); document.getElementById('view-form').classList.add('hidden-mode'); document.getElementById('view-bind').classList.add('hidden-mode'); document.getElementById('view-status').classList.add('hidden-mode'); document.getElementById('view-meds').classList.remove('hidden-mode'); document.getElementById('medHistoryResult').innerHTML = ''; document.getElementById('qName').value = ''; document.getElementById('qId').value = ''; }
+  // 🔥 四個按鈕全面強制檢查登入
+  function openUpload() { 
+    if (!liff.isLoggedIn()) { liff.login({ redirectUri: window.location.href.split('?')[0] + "?mode=upload" }); return; }
+    document.getElementById('view-home').classList.add('hidden-mode'); document.getElementById('view-bind').classList.add('hidden-mode'); document.getElementById('view-status').classList.add('hidden-mode'); document.getElementById('view-meds').classList.add('hidden-mode'); document.getElementById('view-form').classList.remove('hidden-mode'); 
+    document.getElementById('uNotify').value = "LINE通知"; // 強制預設為LINE通知
+  }
+  
+  function openBindLine() { 
+    if (!liff.isLoggedIn()) { liff.login({ redirectUri: window.location.href.split('?')[0] + "?mode=bind" }); return; } 
+    isRegisterMode = true; document.getElementById('view-home').classList.add('hidden-mode'); document.getElementById('view-form').classList.add('hidden-mode'); document.getElementById('view-status').classList.add('hidden-mode'); document.getElementById('view-meds').classList.add('hidden-mode'); document.getElementById('view-bind').classList.remove('hidden-mode'); 
+  }
+  
+  function openStatus() { 
+    if (!liff.isLoggedIn()) { liff.login({ redirectUri: window.location.href.split('?')[0] + "?mode=status" }); return; } 
+    document.getElementById('view-home').classList.add('hidden-mode'); document.getElementById('view-form').classList.add('hidden-mode'); document.getElementById('view-bind').classList.add('hidden-mode'); document.getElementById('view-meds').classList.add('hidden-mode'); document.getElementById('view-status').classList.remove('hidden-mode'); 
+    fetchUploadHistory(); 
+  }
+  
+  function openMedHistory() { 
+    if (!liff.isLoggedIn()) { liff.login({ redirectUri: window.location.href.split('?')[0] + "?mode=meds" }); return; } 
+    document.getElementById('view-home').classList.add('hidden-mode'); document.getElementById('view-form').classList.add('hidden-mode'); document.getElementById('view-bind').classList.add('hidden-mode'); document.getElementById('view-status').classList.add('hidden-mode'); document.getElementById('view-meds').classList.remove('hidden-mode'); 
+    document.getElementById('medHistoryResult').innerHTML = ''; document.getElementById('qName').value = ''; document.getElementById('qId').value = ''; 
+  }
 
   function fetchUploadHistory() {
     if (!lineUserId) return;
@@ -210,13 +228,11 @@
 
   function submitData() {
     const name = document.getElementById('uName').value; const phone = document.getElementById('uPhone').value; let dept = document.getElementById('uDept').value; let notify = document.getElementById('uNotify').value;
-    if (notify === "LINE通知" && !liff.isLoggedIn()) return alert("⚠️ 您目前尚未綁定 LINE！\n請點擊上方的「登入 LINE」，或改選【電話通知】。");
     if (!base64Image) return alert("⚠️ 請拍攝處方箋！"); if (!name || !phone) return alert("⚠️ 請填寫完整資料！");
     
     document.getElementById('loading').style.display = 'flex'; 
     document.getElementById('loadingText').innerText = "處方箋極速上傳中...";
     
-    // 🔥 終極秒速上傳：傳完直接放人，後端會自動接手 AI
     fetch(GAS_URL, { 
       method: "POST", 
       body: JSON.stringify({ action: "upload", name: name, lineName: lineDisplayName, linePic: linePictureUrl, phone: phone, dept: dept, notify: notify, fileData: base64Image, fileName: fileName, lineUserId: lineUserId, isRegister: false }) 
