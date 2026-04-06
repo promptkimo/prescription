@@ -68,14 +68,12 @@
       <div class="mb-3"><label class="form-label small fw-bold">聯絡電話</label><input type="tel" class="form-control" id="uPhone" placeholder="請輸入聯絡電話"></div>
       <div class="mb-3" id="deptSection"><label class="form-label small fw-bold">科別 (選填)</label><input type="text" class="form-control" id="uDept" placeholder="例如：牙科、內科..."></div>
       <div class="mb-4" id="notifySection"><label class="form-label small fw-bold">希望通知方式</label><select class="form-select" id="uNotify"><option value="LINE通知" id="optLine" selected>LINE 通知 (推薦)</option><option value="電話通知" id="optPhone">電話通知</option></select></div>
-      
       <div class="form-check mb-4">
         <input class="form-check-input" type="checkbox" id="privacyConsentUpload">
         <label class="form-check-label text-muted" for="privacyConsentUpload" style="font-size: 0.85rem; line-height: 1.4;">
           我已詳細閱讀並同意 <a href="#" onclick="showPrivacyModal(event)" class="text-success fw-bold text-decoration-none">隱私權保護與服務條款</a>，並授權樂森藥局以雲端 AI 輔助處理處方箋資訊。
         </label>
       </div>
-
       <button class="btn btn-success w-100 fw-bold py-2 shadow-sm" onclick="submitData()">確認極速上傳</button>
     </div>
   </div>
@@ -87,14 +85,12 @@
       <p class="small text-muted mb-4">請填寫病人的真實資料。綁定完成後，藥師就能直接透過 LINE 通知您來拿藥！</p>
       <div class="mb-3"><label class="form-label small fw-bold text-primary">病人姓名</label><input type="text" class="form-control" id="bName" placeholder="請輸入姓名"></div>
       <div class="mb-4"><label class="form-label small fw-bold text-primary">聯絡電話</label><input type="tel" class="form-control" id="bPhone" placeholder="請輸入手機號碼"></div>
-      
       <div class="form-check mb-4">
         <input class="form-check-input" type="checkbox" id="privacyConsentBind">
         <label class="form-check-label text-muted" for="privacyConsentBind" style="font-size: 0.85rem; line-height: 1.4;">
           我已詳細閱讀並同意 <a href="#" onclick="showPrivacyModal(event)" class="text-primary fw-bold text-decoration-none">隱私權保護與服務條款</a>。
         </label>
       </div>
-
       <button class="btn btn-primary w-100 fw-bold py-2 shadow-sm" onclick="submitBind()">🔗 確認綁定 LINE</button>
     </div>
   </div>
@@ -221,7 +217,6 @@
     document.getElementById('medHistoryResult').innerHTML = ''; document.getElementById('qName').value = ''; document.getElementById('qId').value = ''; 
   }
 
-  // 🔥 顯示隱私權視窗
   function showPrivacyModal(event) {
     event.preventDefault();
     var privacyModal = new bootstrap.Modal(document.getElementById('privacyModal'));
@@ -244,6 +239,61 @@
         });
       }
     }).catch(err => { document.getElementById('uploadHistoryList').innerHTML = '<div class="text-center text-danger small py-3">連線異常</div>'; });
+  }
+
+  // 🔥 補回消失的雲端藥歷查詢功能
+  function queryMedHistory() {
+    const name = document.getElementById('qName').value.trim();
+    const id = document.getElementById('qId').value.trim().toUpperCase();
+
+    if (!name || !id) {
+      return alert("⚠️ 請輸入完整的領藥人姓名與身分證字號！");
+    }
+
+    document.getElementById('loading').style.display = 'flex';
+    document.getElementById('loadingText').innerText = "安全連線查詢中...";
+    
+    const resultDiv = document.getElementById('medHistoryResult');
+    resultDiv.innerHTML = '';
+
+    fetch(GAS_URL, {
+      method: "POST",
+      body: JSON.stringify({ action: "queryMed", name: name, id: id, lineUserId: lineUserId })
+    })
+    .then(res => res.json())
+    .then(res => {
+      document.getElementById('loading').style.display = 'none';
+      if (res.status === 'success') {
+        if (!res.data || res.data.length === 0) {
+          resultDiv.innerHTML = '<div class="alert alert-warning text-center small fw-bold">查無相符的用藥紀錄，請確認資料是否正確，或向藥局詢問。</div>';
+          return;
+        }
+        
+        let html = '<div class="text-success fw-bold mb-2 small"><i class="bi bi-check-circle-fill"></i> 查詢成功，以下為您的雲端藥歷：</div>';
+        res.data.forEach(item => {
+          html += `
+          <div class="card p-3 mb-2 shadow-sm border-0 bg-white">
+            <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
+              <span class="badge bg-dark">${item.date.split(' ')[0]}</span>
+              <span class="text-muted small fw-bold">${item.hospital || '一般院所'} / ${item.dept || '一般'}</span>
+            </div>
+            <div class="fw-bold text-primary mb-1" style="font-size:0.95rem;">${item.drug}</div>
+            <div class="d-flex justify-content-between text-muted" style="font-size:0.8rem;">
+              <span>用法: ${item.dosage || '-'}</span>
+              <span>天數: ${item.days || '-'} 天</span>
+              <span class="text-danger fw-bold">總量: ${item.total || '-'}</span>
+            </div>
+          </div>`;
+        });
+        resultDiv.innerHTML = html;
+      } else {
+        resultDiv.innerHTML = `<div class="alert alert-danger text-center small fw-bold">❌ 查詢失敗：${res.message}</div>`;
+      }
+    })
+    .catch(err => {
+      document.getElementById('loading').style.display = 'none';
+      resultDiv.innerHTML = '<div class="alert alert-danger text-center small fw-bold">❌ 網路連線異常，請稍後再試。</div>';
+    });
   }
 
   function handleFile(input) {
@@ -269,7 +319,6 @@
 
     if (!base64Image) return alert("⚠️ 請拍攝處方箋！"); 
     if (!name || !phone) return alert("⚠️ 請填寫完整資料！");
-    // 🔥 強制檢查是否有打勾同意隱私權
     if (!isConsent) return alert("⚠️ 請先閱讀並勾選同意「隱私權與服務條款」才能上傳資料喔！");
     
     document.getElementById('loading').style.display = 'flex'; 
@@ -296,7 +345,6 @@
     const isConsent = document.getElementById('privacyConsentBind').checked;
 
     if (!name || phone.length < 9) return alert("⚠️ 請填寫完整真實姓名與電話！");
-    // 🔥 強制檢查是否有打勾同意隱私權
     if (!isConsent) return alert("⚠️ 請先閱讀並勾選同意「隱私權與服務條款」才能完成綁定喔！");
 
     document.getElementById('loading').style.display = 'flex'; document.getElementById('loadingText').innerText = "綁定資料傳送中...";
