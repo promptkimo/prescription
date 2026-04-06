@@ -36,7 +36,7 @@
     .back-btn i { font-size: 1.2rem; margin-right: 5px; color: #06C755; }
     #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
 
-    /* 🔥 藥歷群組折疊專用樣式 */
+    /* 藥歷群組折疊專用樣式 */
     .med-group { margin-bottom: 15px; border: 1px solid #e8f5e9; border-radius: 8px; overflow: hidden; background: #fff; }
     .med-header { background-color: #f1f8f1; padding: 15px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; color: #1e5631; font-weight: bold; font-size: 1.1rem; transition: background 0.2s; }
     .med-header:active { background-color: #e2f0e3; }
@@ -133,7 +133,6 @@
         <button class="btn btn-dark w-100 fw-bold py-2 mb-2 shadow-sm" onclick="queryMedHistory()"><i class="bi bi-search"></i> 安全查詢</button>
       </div>
     </div>
-    
     <div id="medHistoryResult"></div>
   </div>
 </div>
@@ -156,9 +155,7 @@
         <p class="fw-bold text-dark mb-1 mt-3">4. 當事人權利</p>
         <p class="text-muted small">您隨時可向樂森藥局提出查詢、修改或刪除您個人資料之要求。</p>
       </div>
-      <div class="modal-footer bg-light">
-        <button type="button" class="btn btn-success w-100 fw-bold" data-bs-dismiss="modal">我已了解並同意</button>
-      </div>
+      <div class="modal-footer bg-light"><button type="button" class="btn btn-success w-100 fw-bold" data-bs-dismiss="modal">我已了解並同意</button></div>
     </div>
   </div>
 </div>
@@ -167,14 +164,6 @@
 <script>
   const GAS_URL = "https://script.google.com/macros/s/AKfycbyUXCejmkI52ZJVUN1K1t1j2ZvfdZMCgHsgB79okITgzn7to2sfte43R5I0GOQnFp1opQ/exec"; 
   const LIFF_ID = "2008912977-DuJTm5u1"; 
-
-  const NHI_DEPT_MAP = { "00": "不分科", "01": "家醫科", "02": "內科" }; 
-  function translateDept(codeStr) {
-      if (!codeStr) return "一般領藥";
-      let c = String(codeStr).trim().toUpperCase();
-      if (c.length === 1 && !isNaN(c)) c = "0" + c;
-      return NHI_DEPT_MAP[c] ? NHI_DEPT_MAP[c] : c; 
-  }
 
   let lineUserId = "", lineDisplayName = "", linePictureUrl = "", base64Image = "", fileName = "", isRegisterMode = false;
   const urlParams = new URLSearchParams(window.location.search);
@@ -191,10 +180,8 @@
           document.getElementById('userNameDisplay').innerText = lineDisplayName;
           document.getElementById('uName').value = lineDisplayName; 
           document.getElementById('bName').value = lineDisplayName; 
-          
           if(profile.pictureUrl) document.getElementById('userThumb').src = profile.pictureUrl;
           document.getElementById('userInfo').classList.remove('hidden-mode');
-          
           if (currentMode === 'bind' || currentMode === 'register') openBindLine();
           else if (currentMode === 'upload') openUpload();
           else if (currentMode === 'status') openStatus();
@@ -202,11 +189,8 @@
           else goHome(); 
         });
       } else {
-        if (currentMode) {
-           liff.login({ redirectUri: window.location.href.split('?')[0] + "?mode=" + currentMode });
-        } else {
-           goHome(); 
-        }
+        if (currentMode) liff.login({ redirectUri: window.location.href.split('?')[0] + "?mode=" + currentMode });
+        else goHome(); 
       }
     }).catch(err => { document.getElementById('loading').style.display = 'none'; goHome(); });
   }
@@ -243,17 +227,11 @@
   function openMedHistory() { 
     if (!liff.isLoggedIn()) { liff.login({ redirectUri: window.location.href.split('?')[0] + "?mode=meds" }); return; } 
     document.getElementById('view-home').classList.add('hidden-mode'); document.getElementById('view-form').classList.add('hidden-mode'); document.getElementById('view-bind').classList.add('hidden-mode'); document.getElementById('view-status').classList.add('hidden-mode'); document.getElementById('view-meds').classList.remove('hidden-mode'); 
-    document.getElementById('medHistoryResult').innerHTML = ''; 
-    document.getElementById('qName').value = ''; 
-    document.getElementById('qId').value = ''; 
-    document.getElementById('medQueryForm').style.display = 'block'; // 恢復顯示搜尋框
+    document.getElementById('medHistoryResult').innerHTML = ''; document.getElementById('qName').value = ''; document.getElementById('qId').value = ''; 
+    document.getElementById('medQueryForm').style.display = 'block'; 
   }
 
-  function showPrivacyModal(event) {
-    event.preventDefault();
-    var privacyModal = new bootstrap.Modal(document.getElementById('privacyModal'));
-    privacyModal.show();
-  }
+  function showPrivacyModal(event) { event.preventDefault(); new bootstrap.Modal(document.getElementById('privacyModal')).show(); }
 
   function fetchUploadHistory() {
     if (!lineUserId) return;
@@ -273,139 +251,57 @@
     }).catch(err => { document.getElementById('uploadHistoryList').innerHTML = '<div class="text-center text-danger small py-3">連線異常</div>'; });
   }
 
-  // 🔥 藥歷手風琴折疊展開功能
   function toggleMedGroup(groupId) {
     const body = document.getElementById('med-body-' + groupId);
     const header = document.getElementById('med-header-' + groupId);
-    if (body.classList.contains('open')) {
-      body.classList.remove('open');
-      header.classList.remove('open');
-    } else {
-      body.classList.add('open');
-      header.classList.add('open');
-    }
+    if (body.classList.contains('open')) { body.classList.remove('open'); header.classList.remove('open'); } 
+    else { body.classList.add('open'); header.classList.add('open'); }
   }
 
-  // 🔥 重新查詢功能
   function resetMedQuery() {
     document.getElementById('medHistoryResult').innerHTML = '';
     document.getElementById('medQueryForm').style.display = 'block';
   }
 
-  // 🔥 群組化與渲染藥歷功能
   function queryMedHistory() {
     const name = document.getElementById('qName').value.trim();
     const id = document.getElementById('qId').value.trim().toUpperCase();
-
-    if (!name || !id) {
-      return alert("⚠️ 請輸入完整的領藥人姓名與身分證字號！");
-    }
-
+    if (!name || !id) return alert("⚠️ 請輸入完整的領藥人姓名與身分證字號！");
+    
     document.getElementById('loading').style.display = 'flex';
     document.getElementById('loadingText').innerText = "安全連線查詢中...";
-    
-    const resultDiv = document.getElementById('medHistoryResult');
-    resultDiv.innerHTML = '';
+    const resultDiv = document.getElementById('medHistoryResult'); resultDiv.innerHTML = '';
 
-    fetch(GAS_URL, {
-      method: "POST",
-      body: JSON.stringify({ action: "queryMed", name: name, id: id, lineUserId: lineUserId })
-    })
-    .then(res => res.json())
-    .then(res => {
+    fetch(GAS_URL, { method: "POST", body: JSON.stringify({ action: "queryMed", name: name, id: id, lineUserId: lineUserId }) })
+    .then(res => res.json()).then(res => {
       document.getElementById('loading').style.display = 'none';
       if (res.status === 'success') {
-        if (!res.data || res.data.length === 0) {
-          resultDiv.innerHTML = '<div class="alert alert-warning text-center small fw-bold">查無相符的用藥紀錄，請確認資料是否正確，或向藥局詢問。</div>';
-          return;
-        }
+        if (!res.data || res.data.length === 0) { resultDiv.innerHTML = '<div class="alert alert-warning text-center small fw-bold">查無相符的用藥紀錄，請確認資料是否正確，或向藥局詢問。</div>'; return; }
         
-        // 隱藏查詢表單
         document.getElementById('medQueryForm').style.display = 'none';
-        
-        // 步驟 1: 將資料以日期 (item.date) 進行分組
         const groupedData = {};
         res.data.forEach(item => {
-          let dateKey = item.date.split(' ')[0]; // 確保只取 YYYY/MM/DD
-          if (!groupedData[dateKey]) {
-            groupedData[dateKey] = [];
-          }
+          let dateKey = item.date.split(' ')[0]; 
+          if (!groupedData[dateKey]) groupedData[dateKey] = [];
           groupedData[dateKey].push(item);
         });
-
-        // 步驟 2: 確保日期是由新到舊排序
         const sortedDates = Object.keys(groupedData).sort((a, b) => b.localeCompare(a));
-
-        // 步驟 3: 渲染頂部標題與重新查詢按鈕
-        let html = `
-          <div class="d-flex justify-content-between align-items-center mb-3 mt-2 px-1">
-            <div class="text-success fw-bold fs-5"><i class="bi bi-person-lines-fill"></i> ${name} 的藥歷</div>
-            <button class="btn btn-sm btn-outline-secondary px-3" onclick="resetMedQuery()">重新查詢</button>
-          </div>
-        `;
-
-        // 步驟 4: 渲染折疊式群組
+        
+        let html = `<div class="d-flex justify-content-between align-items-center mb-3 mt-2 px-1"><div class="text-success fw-bold fs-5"><i class="bi bi-person-lines-fill"></i> ${name} 的藥歷</div><button class="btn btn-sm btn-outline-secondary px-3" onclick="resetMedQuery()">重新查詢</button></div>`;
         let groupId = 0;
         sortedDates.forEach(dateKey => {
           let items = groupedData[dateKey];
-          // 只有第一個 (最新日期) 預設為展開 open
           let isOpen = groupId === 0 ? 'open' : '';
-          
-          html += `
-            <div class="med-group shadow-sm">
-              <div class="med-header ${isOpen}" id="med-header-${groupId}" onclick="toggleMedGroup(${groupId})">
-                <div>
-                  <i class="bi bi-calendar2-check"></i> ${dateKey}
-                  <span class="badge">${items.length} 項</span>
-                </div>
-                <i class="bi bi-chevron-down chevron-icon"></i>
-              </div>
-              <div class="med-body ${isOpen}" id="med-body-${groupId}">
-                <div class="table-responsive">
-                  <table class="med-table">
-                    <thead>
-                      <tr>
-                        <th>健保碼</th>
-                        <th>藥品名稱</th>
-                        <th>用量</th>
-                        <th>天數</th>
-                        <th>總量</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-          `;
-          
+          html += `<div class="med-group shadow-sm"><div class="med-header ${isOpen}" id="med-header-${groupId}" onclick="toggleMedGroup(${groupId})"><div><i class="bi bi-calendar2-check"></i> ${dateKey}<span class="badge">${items.length} 項</span></div><i class="bi bi-chevron-down chevron-icon"></i></div><div class="med-body ${isOpen}" id="med-body-${groupId}"><div class="table-responsive"><table class="med-table"><thead><tr><th>健保碼</th><th>藥品名稱</th><th>用量</th><th>天數</th><th>總量</th></tr></thead><tbody>`;
           items.forEach(med => {
-            html += `
-              <tr>
-                <td class="med-nhi">${med.nhi || '-'}</td>
-                <td class="med-drug-name">${med.drug || '-'}</td>
-                <td>${med.dosage || '-'}</td>
-                <td>${med.days || '-'}</td>
-                <td class="text-success fw-bold">${med.total || '-'}</td>
-              </tr>
-            `;
+            html += `<tr><td class="med-nhi">${med.nhi || '-'}</td><td class="med-drug-name">${med.drug || '-'}</td><td>${med.dosage || '-'}</td><td>${med.days || '-'}</td><td class="text-success fw-bold">${med.total || '-'}</td></tr>`;
           });
-          
-          html += `
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          `;
+          html += `</tbody></table></div></div></div>`;
           groupId++;
         });
-
         resultDiv.innerHTML = html;
-      } else {
-        resultDiv.innerHTML = `<div class="alert alert-danger text-center small fw-bold">❌ 查詢失敗：${res.message}</div>`;
-      }
-    })
-    .catch(err => {
-      document.getElementById('loading').style.display = 'none';
-      resultDiv.innerHTML = '<div class="alert alert-danger text-center small fw-bold">❌ 網路連線異常，請稍後再試。</div>';
-    });
+      } else { resultDiv.innerHTML = `<div class="alert alert-danger text-center small fw-bold">❌ 查詢失敗：${res.message}</div>`; }
+    }).catch(err => { document.getElementById('loading').style.display = 'none'; resultDiv.innerHTML = '<div class="alert alert-danger text-center small fw-bold">❌ 網路連線異常，請稍後再試。</div>'; });
   }
 
   function handleFile(input) {
@@ -428,34 +324,22 @@
   function submitData() {
     const name = document.getElementById('uName').value; const phone = document.getElementById('uPhone').value; let dept = document.getElementById('uDept').value; let notify = document.getElementById('uNotify').value;
     const isConsent = document.getElementById('privacyConsentUpload').checked;
-
     if (!base64Image) return alert("⚠️ 請拍攝處方箋！"); 
     if (!name || !phone) return alert("⚠️ 請填寫完整資料！");
     if (!isConsent) return alert("⚠️ 請先閱讀並勾選同意「隱私權與服務條款」才能上傳資料喔！");
     
-    document.getElementById('loading').style.display = 'flex'; 
-    document.getElementById('loadingText').innerText = "處方箋加密上傳中...";
-    
-    fetch(GAS_URL, { 
-      method: "POST", 
-      body: JSON.stringify({ action: "upload", name: name, lineName: lineDisplayName, linePic: linePictureUrl, phone: phone, dept: dept, notify: notify, fileData: base64Image, fileName: fileName, lineUserId: lineUserId, isRegister: false }) 
-    })
-    .then(res => res.json())
-    .then(res => {
+    document.getElementById('loading').style.display = 'flex'; document.getElementById('loadingText').innerText = "處方箋加密上傳中...";
+    fetch(GAS_URL, { method: "POST", body: JSON.stringify({ action: "upload", name: name, lineName: lineDisplayName, linePic: linePictureUrl, phone: phone, dept: dept, notify: notify, fileData: base64Image, fileName: fileName, lineUserId: lineUserId, isRegister: false }) })
+    .then(res => res.json()).then(res => {
       document.getElementById('loading').style.display = 'none';
-      if(res.status === 'success') {
-        alert("✅ 處方箋已加密送達雲端！\nAI 助理將在後台自動為您建檔，您可以安心關閉此畫面，稍後將在 LINE 收到確認通知。");
-        if(liff.isInClient()) liff.closeWindow(); else goHome();
-      } else {
-        alert("❌ 失敗：" + res.message);
-      }
+      if(res.status === 'success') { alert("✅ 處方箋已加密送達雲端！\nAI 助理將在後台自動為您建檔，您可以安心關閉此畫面，稍後將在 LINE 收到確認通知。"); if(liff.isInClient()) liff.closeWindow(); else goHome(); } 
+      else { alert("❌ 失敗：" + res.message); }
     }).catch(err => { document.getElementById('loading').style.display = 'none'; goHome(); });
   }
 
   function submitBind() {
     const name = document.getElementById('bName').value; const phone = document.getElementById('bPhone').value;
     const isConsent = document.getElementById('privacyConsentBind').checked;
-
     if (!name || phone.length < 9) return alert("⚠️ 請填寫完整真實姓名與電話！");
     if (!isConsent) return alert("⚠️ 請先閱讀並勾選同意「隱私權與服務條款」才能完成綁定喔！");
 
