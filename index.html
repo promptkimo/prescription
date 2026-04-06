@@ -76,8 +76,8 @@
     <div class="back-btn-container"><button class="back-btn" onclick="goHome()"><i class="bi bi-chevron-left"></i> 返回主畫面</button></div>
     <div class="card p-4 shadow-sm border-0 border-top border-primary border-4 bg-light">
       <h5 class="fw-bold text-primary mb-3"><i class="bi bi-link-45deg"></i> LINE 綁定作業</h5>
-      <p class="small text-muted mb-4">請填寫您的真實資料。綁定完成後，藥師就能直接透過 LINE 通知您來拿藥！</p>
-      <div class="mb-3"><label class="form-label small fw-bold text-primary">您的真實姓名</label><input type="text" class="form-control" id="bName" placeholder="請輸入姓名"></div>
+      <p class="small text-muted mb-4">請填寫病人的真實資料。綁定完成後，藥師就能直接透過 LINE 通知您來拿藥！</p>
+      <div class="mb-3"><label class="form-label small fw-bold text-primary">病人姓名</label><input type="text" class="form-control" id="bName" placeholder="請輸入姓名"></div>
       <div class="mb-4"><label class="form-label small fw-bold text-primary">聯絡電話</label><input type="tel" class="form-control" id="bPhone" placeholder="請輸入手機號碼"></div>
       <button class="btn btn-primary w-100 fw-bold py-2" onclick="submitBind()">🔗 確認綁定 LINE</button>
     </div>
@@ -137,7 +137,6 @@
           if(profile.pictureUrl) document.getElementById('userThumb').src = profile.pictureUrl;
           document.getElementById('userInfo').classList.remove('hidden-mode');
           
-          // 如果網址帶有 mode 參數，自動開啟對應頁面
           if (currentMode === 'bind' || currentMode === 'register') openBindLine();
           else if (currentMode === 'upload') openUpload();
           else if (currentMode === 'status') openStatus();
@@ -145,11 +144,10 @@
           else goHome(); 
         });
       } else {
-        // 🔥 如果沒登入，且網址有帶 mode，就直接踢去登入畫面
         if (currentMode) {
            liff.login({ redirectUri: window.location.href.split('?')[0] + "?mode=" + currentMode });
         } else {
-           goHome(); // 停在首頁，等他們點擊按鈕
+           goHome(); 
         }
       }
     }).catch(err => { document.getElementById('loading').style.display = 'none'; goHome(); });
@@ -167,11 +165,10 @@
     isRegisterMode = false;
   }
 
-  // 🔥 四個按鈕全面強制檢查登入
   function openUpload() { 
     if (!liff.isLoggedIn()) { liff.login({ redirectUri: window.location.href.split('?')[0] + "?mode=upload" }); return; }
     document.getElementById('view-home').classList.add('hidden-mode'); document.getElementById('view-bind').classList.add('hidden-mode'); document.getElementById('view-status').classList.add('hidden-mode'); document.getElementById('view-meds').classList.add('hidden-mode'); document.getElementById('view-form').classList.remove('hidden-mode'); 
-    document.getElementById('uNotify').value = "LINE通知"; // 強制預設為LINE通知
+    document.getElementById('uNotify').value = "LINE通知"; 
   }
   
   function openBindLine() { 
