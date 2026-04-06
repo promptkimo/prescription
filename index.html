@@ -170,12 +170,23 @@
   const GAS_URL = "https://script.google.com/macros/s/AKfycbyUXCejmkI52ZJVUN1K1t1j2ZvfdZMCgHsgB79okITgzn7to2sfte43R5I0GOQnFp1opQ/exec"; 
   const LIFF_ID = "2008912977-DuJTm5u1"; 
 
+  // 🔥 健保局標準科別對照表
   const NHI_DEPT_MAP = {
     "00":"不分科","01":"家醫科","02":"內科","03":"外科","04":"小兒科","05":"婦產科",
     "06":"骨科","07":"泌尿科","08":"耳鼻喉科","09":"眼科","10":"皮膚科","11":"神經科",
     "12":"精神科","13":"復健科","14":"整形外科","15":"職業醫學科","22":"急診醫學科",
-    "23":"牙醫一般科","39":"牙醫一般科","40":"牙醫一般科","60":"中醫一般科","81":"麻醉科"
+    "23":"牙醫一般科","39":"牙醫一般科","40":"牙醫一般科","60":"中醫科","81":"麻醉科"
   };
+
+  function translateDept(codeStr) {
+    if (!codeStr) return "一般科";
+    let c = String(codeStr).trim().toUpperCase();
+    let num = parseInt(c, 10);
+    if (!isNaN(num) && num.toString() === c.replace(/^0+/, '')) {
+       c = num < 10 ? "0" + num : String(num);
+    }
+    return NHI_DEPT_MAP[c] ? NHI_DEPT_MAP[c] : c; 
+  }
 
   let lineUserId = "", lineDisplayName = "", linePictureUrl = "", base64Image = "", fileName = "", isRegisterMode = false;
   const urlParams = new URLSearchParams(window.location.search);
@@ -266,7 +277,7 @@
   }
 
   // ==========================================
-  // 🔥 藥歷查詢：智慧同源整併與日期推算
+  // 🔥 藥歷查詢：智慧同源整併與動態隱藏
   // ==========================================
   
   function _parseDate(dStr) {
@@ -353,7 +364,6 @@
         
         document.getElementById('medQueryForm').style.display = 'none';
         
-        // 🔥 智慧整併：依照「處方日 + 醫院 + 科別」分組
         const groupedData = {};
         res.data.forEach(item => {
           let rxDate = item.rxDate ? item.rxDate.replace(/\//g, '-') : '';
@@ -428,20 +438,39 @@
              returnDateStr = _fmt(returnObj, 'YYYY-MM-DD');
           }
 
-          let refill2UI = `<span class="text-danger fw-bold">${date2Str}</span>`;
-          if (meta.maxCurrentRefill >= 2) refill2UI = `<span class="text-success fw-bold me-2">${_fmt(date2Obj, 'MM/DD') || '-'}</span><span class="badge bg-success">✅ 已領取</span>`;
-          if (meta.totalRefills < 2) refill2UI = `<span class="text-muted">-</span>`;
+          // 🔥 動態生成第二次領藥的 HTML (如果總次數大於等於 2 才顯示)
+          let refill2UI = '';
+          if (meta.totalRefills >= 2) {
+            let r2Status = `<span class="text-danger fw-bold">${date2Str}</span>`;
+            if (meta.maxCurrentRefill >= 2) r2Status = `<span class="text-success fw-bold me-2">${_fmt(date2Obj, 'MM/DD') || '-'}</span><span class="badge bg-success">✅ 已領取</span>`;
+            refill2UI = `
+            <div class="rx-date-row">
+              <span class="text-muted">👉 第二次領藥：</span>
+              <div>${r2Status}</div>
+            </div>`;
+          }
 
-          let refill3UI = `<span class="text-danger fw-bold">${date3Str}</span>`;
-          if (meta.maxCurrentRefill >= 3) refill3UI = `<span class="text-success fw-bold me-2">${_fmt(date3Obj, 'MM/DD') || '-'}</span><span class="badge bg-success">✅ 已領取</span>`;
-          if (meta.totalRefills < 3) refill3UI = `<span class="text-muted">-</span>`;
+          // 🔥 動態生成第三次領藥的 HTML (如果總次數大於等於 3 才顯示)
+          let refill3UI = '';
+          if (meta.totalRefills >= 3) {
+            let r3Status = `<span class="text-danger fw-bold">${date3Str}</span>`;
+            if (meta.maxCurrentRefill >= 3) r3Status = `<span class="text-success fw-bold me-2">${_fmt(date3Obj, 'MM/DD') || '-'}</span><span class="badge bg-success">✅ 已領取</span>`;
+            refill3UI = `
+            <div class="rx-date-row">
+              <span class="text-muted">👉 第三次領藥：</span>
+              <div>${r3Status}</div>
+            </div>`;
+          }
+
+          // 🔥 套用中文科別翻譯
+          let displayDept = translateDept(meta.dept);
 
           html += `
           <div class="rx-card shadow-sm">
             <div class="rx-header" id="rx-header-${groupId}" onclick="toggleMedCard(${groupId})">
                <span><i class="bi bi-folder2-open"></i> 處方日：${meta.rxDateStr}</span>
                <div>
-                  <span class="badge px-2 py-1">${meta.dept}</span>
+                  <span class="badge px-2 py-1">${displayDept}</span>
                </div>
             </div>
             
@@ -456,14 +485,8 @@
                  <div class="rx-meta"><i class="bi bi-person-badge"></i> 看診醫師：<strong>${meta.physician}</strong></div>
                  <div class="rx-meta mb-3"><i class="bi bi-calendar-event"></i> 處方開立：<strong>${meta.rxDateStr}</strong> <span class="text-muted" style="font-size:0.8rem;">(單次: ${meta.days}天)</span></div>
                  
-                 <div class="rx-date-row">
-                   <span class="text-muted">👉 第二次領藥：</span>
-                   <div>${refill2UI}</div>
-                 </div>
-                 <div class="rx-date-row">
-                   <span class="text-muted">👉 第三次領藥：</span>
-                   <div>${refill3UI}</div>
-                 </div>
+                 ${refill2UI}
+                 ${refill3UI}
                  
                  <div class="rx-return-box">
                    <span class="text-dark fw-bold"><i class="bi bi-hospital"></i> 藥品用罄(預約回診日)</span>
