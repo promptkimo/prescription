@@ -36,9 +36,10 @@
     .back-btn i { font-size: 1.2rem; margin-right: 5px; color: #06C755; }
     #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
 
-    /* 🔥 新增：旗艦版藥歷卡片專屬樣式 */
+    /* 藥歷群組專屬樣式 */
     .rx-card { border: 1px solid #20935A; border-radius: 12px; overflow: hidden; margin-bottom: 20px; background: #fff; }
-    .rx-header { background-color: #20935A; color: white; padding: 10px 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+    .rx-header { background-color: #20935A; color: white; padding: 10px 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+    .rx-header:active { background-color: #1a7849; }
     .rx-header .badge { background-color: #fff; color: #20935A; font-weight: bold; }
     .rx-progress-box { border: 2px solid #17A2B8; border-radius: 8px; padding: 15px; margin-bottom: 15px; }
     .rx-progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
@@ -54,6 +55,9 @@
     .med-name { font-weight: bold; font-size: 0.95rem; color: #333; margin-bottom: 6px; }
     .med-tags { display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; }
     .tag-box { border: 1px solid #ddd; border-radius: 4px; padding: 2px 6px; color: #666; margin-right: 5px; }
+    .rx-body-collapse { display: none; padding: 15px; }
+    .rx-body-collapse.open { display: block; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
   </style>
 </head>
 <body>
@@ -255,7 +259,7 @@
   }
 
   // ==========================================
-  // 🔥 藥歷查詢與旗艦版卡片渲染邏輯
+  // 🔥 藥歷查詢：智慧同源整併邏輯
   // ==========================================
   
   function _parseDate(dStr) {
@@ -287,6 +291,16 @@
       let m = String(date.getMonth() + 1).padStart(2, '0');
       let d = String(date.getDate()).padStart(2, '0');
       return format === 'MM/DD' ? `${m}/${d}` : `${y}-${m}-${d}`;
+  }
+
+  function toggleMedCard(groupId) {
+    let body = document.getElementById('rx-body-' + groupId);
+    let header = document.getElementById('rx-header-' + groupId);
+    if(body.classList.contains('open')) {
+      body.classList.remove('open');
+    } else {
+      body.classList.add('open');
+    }
   }
 
   function toggleMedList(id) {
@@ -332,15 +346,58 @@
         
         document.getElementById('medQueryForm').style.display = 'none';
         
-        // 依照日期分組
+        // 🔥 步驟 1: 智慧整併 - 依照「處方日 + 醫院 + 科別」分組
         const groupedData = {};
         res.data.forEach(item => {
-          let dateKey = item.date.split(' ')[0]; 
-          if (!groupedData[dateKey]) groupedData[dateKey] = [];
-          groupedData[dateKey].push(item);
+          let rxDate = item.rxDate ? item.rxDate.replace(/\//g, '-') : '';
+          let dispDate = item.date.split(' ')[0].replace(/\//g, '-');
+          // 以處方日為優先群組鍵，若無則用領藥日
+          let groupKey = (rxDate || dispDate) + '_' + (item.hospital || '未載明院所') + '_' + (item.dept || '一般');
+          
+          if (!groupedData[groupKey]) {
+            groupedData[groupKey] = {
+              rxDateStr: rxDate || dispDate,
+              hospital: item.hospital || '未載明院所',
+              dept: item.dept || '一般',
+              physician: item.physician || '未載明醫師',
+              maxCurrentRefill: 1,
+              totalRefills: 1,
+              days: parseInt(item.days) || 28,
+              items: [] // 用來放去重複後的藥品
+            };
+          }
+          
+          // 計算最大領藥進度
+          let curRefill = 1, totRefills = 1;
+          if (item.refill && item.refill.includes('/')) {
+            let parts = item.refill.split('/');
+            curRefill = parseInt(parts[0]) || 1;
+            totRefills = parseInt(parts[1]) || 1;
+          } else if (item.refill) {
+            totRefills = parseInt(item.refill) || 1;
+            curRefill = totRefills;
+          }
+          
+          if (curRefill > groupedData[groupKey].maxCurrentRefill) {
+            groupedData[groupKey].maxCurrentRefill = curRefill;
+          }
+          if (totRefills > groupedData[groupKey].totalRefills) {
+            groupedData[groupKey].totalRefills = totRefills;
+          }
+          
+          // 去重複藥品：如果這張單子已經有這個藥，就不再重複加入
+          let isDuplicate = groupedData[groupKey].items.some(existingItem => existingItem.drug === item.drug);
+          if (!isDuplicate) {
+            groupedData[groupKey].items.push(item);
+          }
         });
 
-        const sortedDates = Object.keys(groupedData).sort((a, b) => b.localeCompare(a));
+        // 步驟 2: 依照處方日排序 (由新到舊)
+        const sortedGroupKeys = Object.keys(groupedData).sort((a, b) => {
+          let dateA = groupedData[a].rxDateStr;
+          let dateB = groupedData[b].rxDateStr;
+          return dateB.localeCompare(dateA);
+        });
 
         let html = `
           <div class="d-flex justify-content-between align-items-center mb-3 mt-2 px-1">
@@ -350,36 +407,19 @@
         `;
 
         let groupId = 0;
-        sortedDates.forEach(dateKey => {
-          let items = groupedData[dateKey];
-          let meta = items[0]; // 提取共用資訊
+        sortedGroupKeys.forEach(key => {
+          let meta = groupedData[key];
+          let isOpen = groupId === 0 ? 'open' : ''; // 預設展開最新一筆
           
-          let dept = meta.dept || '一般';
-          let hospital = meta.hospital || '未載明院所';
-          let physician = meta.physician || '未載明醫師';
-          let rxDateStr = meta.rxDate || '';
-          let days = parseInt(meta.days) || 28;
-          
-          // 解析進度 (例如 "2/3" 或 "3")
-          let currentRefill = 1, totalRefills = 1;
-          if (meta.refill && meta.refill.includes('/')) {
-            let parts = meta.refill.split('/');
-            currentRefill = parseInt(parts[0]) || 1;
-            totalRefills = parseInt(parts[1]) || 1;
-          } else if (meta.refill) {
-            totalRefills = parseInt(meta.refill) || 1;
-            currentRefill = totalRefills; // 若無進度格式，預設已完成
-          }
-
           // 數學推算日期
-          let rxDate = _parseDate(rxDateStr);
+          let rxDate = _parseDate(meta.rxDateStr);
           let date2Str = '-', date3Str = '-', returnDateStr = '-';
           let date2Obj = null, date3Obj = null;
           
           if (rxDate) {
-             date2Obj = _addDays(rxDate, days);
-             date3Obj = _addDays(rxDate, days * 2);
-             let returnObj = _addDays(rxDate, days * totalRefills);
+             date2Obj = _addDays(rxDate, meta.days);
+             date3Obj = _addDays(rxDate, meta.days * 2);
+             let returnObj = _addDays(rxDate, meta.days * meta.totalRefills);
              
              date2Str = _fmt(_addDays(date2Obj, -10), 'MM/DD') + ' ~ ' + _fmt(date2Obj, 'MM/DD');
              date3Str = _fmt(_addDays(date3Obj, -10), 'MM/DD') + ' ~ ' + _fmt(date3Obj, 'MM/DD');
@@ -388,31 +428,33 @@
 
           // 動態狀態徽章
           let refill2UI = `<span class="text-danger fw-bold">${date2Str}</span>`;
-          if (currentRefill >= 2) refill2UI = `<span class="text-success fw-bold me-2">${_fmt(date2Obj, 'MM/DD') || '-'}</span><span class="badge bg-success">✅ 已領取</span>`;
-          if (totalRefills < 2) refill2UI = `<span class="text-muted">-</span>`;
+          if (meta.maxCurrentRefill >= 2) refill2UI = `<span class="text-success fw-bold me-2">${_fmt(date2Obj, 'MM/DD') || '-'}</span><span class="badge bg-success">✅ 已領取</span>`;
+          if (meta.totalRefills < 2) refill2UI = `<span class="text-muted">-</span>`;
 
           let refill3UI = `<span class="text-danger fw-bold">${date3Str}</span>`;
-          if (currentRefill >= 3) refill3UI = `<span class="text-success fw-bold me-2">${_fmt(date3Obj, 'MM/DD') || '-'}</span><span class="badge bg-success">✅ 已領取</span>`;
-          if (totalRefills < 3) refill3UI = `<span class="text-muted">-</span>`;
+          if (meta.maxCurrentRefill >= 3) refill3UI = `<span class="text-success fw-bold me-2">${_fmt(date3Obj, 'MM/DD') || '-'}</span><span class="badge bg-success">✅ 已領取</span>`;
+          if (meta.totalRefills < 3) refill3UI = `<span class="text-muted">-</span>`;
 
           // 構建卡片
           html += `
           <div class="rx-card shadow-sm">
-            <div class="rx-header">
-               <span><i class="bi bi-calendar2-check"></i> ${dateKey} 領藥紀錄</span>
-               <span class="badge px-2 py-1">${dept}</span>
+            <div class="rx-header" id="rx-header-${groupId}" onclick="toggleMedCard(${groupId})">
+               <span><i class="bi bi-folder2-open"></i> 處方日：${meta.rxDateStr}</span>
+               <div>
+                  <span class="badge px-2 py-1">${meta.dept}</span>
+               </div>
             </div>
             
-            <div class="p-3">
+            <div class="rx-body-collapse ${isOpen}" id="rx-body-${groupId}">
                <div class="rx-progress-box">
                  <div class="rx-progress-header">
                    <span class="fw-bold text-dark"><i class="bi bi-file-earmark-medical text-info"></i> 慢箋領藥進度</span>
-                   <span class="badge bg-info text-white px-2 py-1">目前進度: ${currentRefill}/${totalRefills}</span>
+                   <span class="badge bg-info text-white px-2 py-1">目前進度: ${meta.maxCurrentRefill}/${meta.totalRefills}</span>
                  </div>
                  
-                 <div class="rx-meta"><i class="bi bi-building"></i> 醫療院所：<strong>${hospital}</strong></div>
-                 <div class="rx-meta"><i class="bi bi-person-badge"></i> 看診醫師：<strong>${physician}</strong></div>
-                 <div class="rx-meta mb-3"><i class="bi bi-calendar-event"></i> 處方開立：<strong>${rxDateStr}</strong> <span class="text-muted" style="font-size:0.8rem;">(單次: ${days}天)</span></div>
+                 <div class="rx-meta"><i class="bi bi-building"></i> 醫療院所：<strong>${meta.hospital}</strong></div>
+                 <div class="rx-meta"><i class="bi bi-person-badge"></i> 看診醫師：<strong>${meta.physician}</strong></div>
+                 <div class="rx-meta mb-3"><i class="bi bi-calendar-event"></i> 處方開立：<strong>${meta.rxDateStr}</strong> <span class="text-muted" style="font-size:0.8rem;">(單次: ${meta.days}天)</span></div>
                  
                  <div class="rx-date-row">
                    <span class="text-muted">👉 第二次領藥：</span>
@@ -430,13 +472,13 @@
                </div>
 
                <button class="btn btn-outline-success w-100 fw-bold btn-sm mb-1 rounded-pill" onclick="toggleMedList('medList_${groupId}')">
-                 <i class="bi bi-list-ul"></i> 展開藥品明細 (${items.length} 項) <i class="bi bi-chevron-down"></i>
+                 <i class="bi bi-list-ul"></i> 展開藥品明細 (${meta.items.length} 項) <i class="bi bi-chevron-down"></i>
                </button>
 
                <div id="medList_${groupId}" style="display: none; padding-top: 15px;">
           `;
           
-          items.forEach((med, idx) => {
+          meta.items.forEach((med, idx) => {
             html += `
               <div class="med-item">
                  <div class="med-num">${idx + 1}</div>
