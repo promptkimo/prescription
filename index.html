@@ -35,6 +35,24 @@
     .back-btn:active { transform: scale(0.95); background: #e9ecef; }
     .back-btn i { font-size: 1.2rem; margin-right: 5px; color: #06C755; }
     #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+
+    /* 🔥 藥歷群組折疊專用樣式 */
+    .med-group { margin-bottom: 15px; border: 1px solid #e8f5e9; border-radius: 8px; overflow: hidden; background: #fff; }
+    .med-header { background-color: #f1f8f1; padding: 15px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; color: #1e5631; font-weight: bold; font-size: 1.1rem; transition: background 0.2s; }
+    .med-header:active { background-color: #e2f0e3; }
+    .med-header .badge { background-color: #198754; border-radius: 12px; padding: 5px 10px; font-size: 0.85rem; margin-left: 10px; vertical-align: middle; }
+    .med-body { display: none; padding: 0; overflow-x: auto; }
+    .med-body.open { display: block; animation: fadeIn 0.3s ease; }
+    .med-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; min-width: 400px; }
+    .med-table th, .med-table td { padding: 12px 10px; border-bottom: 1px solid #f0f0f0; text-align: center; vertical-align: middle; }
+    .med-table th { color: #666; font-weight: normal; background: #fafafa; white-space: nowrap; font-size: 0.85rem; }
+    .med-table th:nth-child(2), .med-table td:nth-child(2) { text-align: left; }
+    .med-table tr:last-child td { border-bottom: none; }
+    .med-drug-name { font-weight: bold; color: #333; }
+    .med-nhi { color: #888; font-size: 0.8rem; letter-spacing: 0.5px; font-family: monospace; }
+    .chevron-icon { transition: transform 0.3s; color: #1e5631; font-size: 1.2rem; }
+    .med-header.open .chevron-icon { transform: rotate(180deg); }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
   </style>
 </head>
 <body>
@@ -106,14 +124,17 @@
 
   <div id="view-meds" class="hidden-mode sub-view">
     <div class="back-btn-container"><button class="back-btn" onclick="goHome()"><i class="bi bi-chevron-left"></i> 返回主畫面</button></div>
-    <div class="card p-4 shadow-sm border-0 border-top border-dark border-4 bg-light">
-      <h5 class="fw-bold text-dark mb-3"><i class="bi bi-cloud-arrow-up"></i> 雲端藥歷查詢</h5>
-      <p class="small text-muted mb-4">為保護個人隱私，請輸入【領藥人姓名】與【身分證字號】進行安全驗證，以查詢詳細用藥紀錄。</p>
-      <div class="mb-3"><label class="form-label small fw-bold text-primary">領藥人真實姓名</label><input type="text" class="form-control" id="qName" placeholder="請輸入領藥人的姓名"></div>
-      <div class="mb-4"><label class="form-label small fw-bold text-danger">領藥人身分證字號</label><input type="text" class="form-control text-uppercase" id="qId" placeholder="例如：A123456789"></div>
-      <button class="btn btn-dark w-100 fw-bold py-2 mb-4 shadow-sm" onclick="queryMedHistory()"><i class="bi bi-search"></i> 安全查詢</button>
-      <div id="medHistoryResult"></div>
+    <div id="medQueryForm">
+      <div class="card p-4 shadow-sm border-0 border-top border-dark border-4 bg-light">
+        <h5 class="fw-bold text-dark mb-3"><i class="bi bi-cloud-arrow-up"></i> 雲端藥歷查詢</h5>
+        <p class="small text-muted mb-4">為保護個人隱私，請輸入【領藥人姓名】與【身分證字號】進行安全驗證，以查詢詳細用藥紀錄。</p>
+        <div class="mb-3"><label class="form-label small fw-bold text-primary">領藥人真實姓名</label><input type="text" class="form-control" id="qName" placeholder="請輸入領藥人的姓名"></div>
+        <div class="mb-4"><label class="form-label small fw-bold text-danger">領藥人身分證字號</label><input type="text" class="form-control text-uppercase" id="qId" placeholder="例如：A123456789"></div>
+        <button class="btn btn-dark w-100 fw-bold py-2 mb-2 shadow-sm" onclick="queryMedHistory()"><i class="bi bi-search"></i> 安全查詢</button>
+      </div>
     </div>
+    
+    <div id="medHistoryResult"></div>
   </div>
 </div>
 
@@ -146,6 +167,14 @@
 <script>
   const GAS_URL = "https://script.google.com/macros/s/AKfycbyUXCejmkI52ZJVUN1K1t1j2ZvfdZMCgHsgB79okITgzn7to2sfte43R5I0GOQnFp1opQ/exec"; 
   const LIFF_ID = "2008912977-DuJTm5u1"; 
+
+  const NHI_DEPT_MAP = { "00": "不分科", "01": "家醫科", "02": "內科" }; 
+  function translateDept(codeStr) {
+      if (!codeStr) return "一般領藥";
+      let c = String(codeStr).trim().toUpperCase();
+      if (c.length === 1 && !isNaN(c)) c = "0" + c;
+      return NHI_DEPT_MAP[c] ? NHI_DEPT_MAP[c] : c; 
+  }
 
   let lineUserId = "", lineDisplayName = "", linePictureUrl = "", base64Image = "", fileName = "", isRegisterMode = false;
   const urlParams = new URLSearchParams(window.location.search);
@@ -214,7 +243,10 @@
   function openMedHistory() { 
     if (!liff.isLoggedIn()) { liff.login({ redirectUri: window.location.href.split('?')[0] + "?mode=meds" }); return; } 
     document.getElementById('view-home').classList.add('hidden-mode'); document.getElementById('view-form').classList.add('hidden-mode'); document.getElementById('view-bind').classList.add('hidden-mode'); document.getElementById('view-status').classList.add('hidden-mode'); document.getElementById('view-meds').classList.remove('hidden-mode'); 
-    document.getElementById('medHistoryResult').innerHTML = ''; document.getElementById('qName').value = ''; document.getElementById('qId').value = ''; 
+    document.getElementById('medHistoryResult').innerHTML = ''; 
+    document.getElementById('qName').value = ''; 
+    document.getElementById('qId').value = ''; 
+    document.getElementById('medQueryForm').style.display = 'block'; // 恢復顯示搜尋框
   }
 
   function showPrivacyModal(event) {
@@ -241,7 +273,26 @@
     }).catch(err => { document.getElementById('uploadHistoryList').innerHTML = '<div class="text-center text-danger small py-3">連線異常</div>'; });
   }
 
-  // 🔥 補回消失的雲端藥歷查詢功能
+  // 🔥 藥歷手風琴折疊展開功能
+  function toggleMedGroup(groupId) {
+    const body = document.getElementById('med-body-' + groupId);
+    const header = document.getElementById('med-header-' + groupId);
+    if (body.classList.contains('open')) {
+      body.classList.remove('open');
+      header.classList.remove('open');
+    } else {
+      body.classList.add('open');
+      header.classList.add('open');
+    }
+  }
+
+  // 🔥 重新查詢功能
+  function resetMedQuery() {
+    document.getElementById('medHistoryResult').innerHTML = '';
+    document.getElementById('medQueryForm').style.display = 'block';
+  }
+
+  // 🔥 群組化與渲染藥歷功能
   function queryMedHistory() {
     const name = document.getElementById('qName').value.trim();
     const id = document.getElementById('qId').value.trim().toUpperCase();
@@ -269,22 +320,83 @@
           return;
         }
         
-        let html = '<div class="text-success fw-bold mb-2 small"><i class="bi bi-check-circle-fill"></i> 查詢成功，以下為您的雲端藥歷：</div>';
+        // 隱藏查詢表單
+        document.getElementById('medQueryForm').style.display = 'none';
+        
+        // 步驟 1: 將資料以日期 (item.date) 進行分組
+        const groupedData = {};
         res.data.forEach(item => {
-          html += `
-          <div class="card p-3 mb-2 shadow-sm border-0 bg-white">
-            <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
-              <span class="badge bg-dark">${item.date.split(' ')[0]}</span>
-              <span class="text-muted small fw-bold">${item.hospital || '一般院所'} / ${item.dept || '一般'}</span>
-            </div>
-            <div class="fw-bold text-primary mb-1" style="font-size:0.95rem;">${item.drug}</div>
-            <div class="d-flex justify-content-between text-muted" style="font-size:0.8rem;">
-              <span>用法: ${item.dosage || '-'}</span>
-              <span>天數: ${item.days || '-'} 天</span>
-              <span class="text-danger fw-bold">總量: ${item.total || '-'}</span>
-            </div>
-          </div>`;
+          let dateKey = item.date.split(' ')[0]; // 確保只取 YYYY/MM/DD
+          if (!groupedData[dateKey]) {
+            groupedData[dateKey] = [];
+          }
+          groupedData[dateKey].push(item);
         });
+
+        // 步驟 2: 確保日期是由新到舊排序
+        const sortedDates = Object.keys(groupedData).sort((a, b) => b.localeCompare(a));
+
+        // 步驟 3: 渲染頂部標題與重新查詢按鈕
+        let html = `
+          <div class="d-flex justify-content-between align-items-center mb-3 mt-2 px-1">
+            <div class="text-success fw-bold fs-5"><i class="bi bi-person-lines-fill"></i> ${name} 的藥歷</div>
+            <button class="btn btn-sm btn-outline-secondary px-3" onclick="resetMedQuery()">重新查詢</button>
+          </div>
+        `;
+
+        // 步驟 4: 渲染折疊式群組
+        let groupId = 0;
+        sortedDates.forEach(dateKey => {
+          let items = groupedData[dateKey];
+          // 只有第一個 (最新日期) 預設為展開 open
+          let isOpen = groupId === 0 ? 'open' : '';
+          
+          html += `
+            <div class="med-group shadow-sm">
+              <div class="med-header ${isOpen}" id="med-header-${groupId}" onclick="toggleMedGroup(${groupId})">
+                <div>
+                  <i class="bi bi-calendar2-check"></i> ${dateKey}
+                  <span class="badge">${items.length} 項</span>
+                </div>
+                <i class="bi bi-chevron-down chevron-icon"></i>
+              </div>
+              <div class="med-body ${isOpen}" id="med-body-${groupId}">
+                <div class="table-responsive">
+                  <table class="med-table">
+                    <thead>
+                      <tr>
+                        <th>健保碼</th>
+                        <th>藥品名稱</th>
+                        <th>用量</th>
+                        <th>天數</th>
+                        <th>總量</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+          `;
+          
+          items.forEach(med => {
+            html += `
+              <tr>
+                <td class="med-nhi">${med.nhi || '-'}</td>
+                <td class="med-drug-name">${med.drug || '-'}</td>
+                <td>${med.dosage || '-'}</td>
+                <td>${med.days || '-'}</td>
+                <td class="text-success fw-bold">${med.total || '-'}</td>
+              </tr>
+            `;
+          });
+          
+          html += `
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+          groupId++;
+        });
+
         resultDiv.innerHTML = html;
       } else {
         resultDiv.innerHTML = `<div class="alert alert-danger text-center small fw-bold">❌ 查詢失敗：${res.message}</div>`;
