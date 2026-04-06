@@ -36,23 +36,24 @@
     .back-btn i { font-size: 1.2rem; margin-right: 5px; color: #06C755; }
     #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
 
-    /* 藥歷群組折疊專用樣式 */
-    .med-group { margin-bottom: 15px; border: 1px solid #e8f5e9; border-radius: 8px; overflow: hidden; background: #fff; }
-    .med-header { background-color: #f1f8f1; padding: 15px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; color: #1e5631; font-weight: bold; font-size: 1.1rem; transition: background 0.2s; }
-    .med-header:active { background-color: #e2f0e3; }
-    .med-header .badge { background-color: #198754; border-radius: 12px; padding: 5px 10px; font-size: 0.85rem; margin-left: 10px; vertical-align: middle; }
-    .med-body { display: none; padding: 0; overflow-x: auto; }
-    .med-body.open { display: block; animation: fadeIn 0.3s ease; }
-    .med-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; min-width: 400px; }
-    .med-table th, .med-table td { padding: 12px 10px; border-bottom: 1px solid #f0f0f0; text-align: center; vertical-align: middle; }
-    .med-table th { color: #666; font-weight: normal; background: #fafafa; white-space: nowrap; font-size: 0.85rem; }
-    .med-table th:nth-child(2), .med-table td:nth-child(2) { text-align: left; }
-    .med-table tr:last-child td { border-bottom: none; }
-    .med-drug-name { font-weight: bold; color: #333; }
-    .med-nhi { color: #888; font-size: 0.8rem; letter-spacing: 0.5px; font-family: monospace; }
-    .chevron-icon { transition: transform 0.3s; color: #1e5631; font-size: 1.2rem; }
-    .med-header.open .chevron-icon { transform: rotate(180deg); }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    /* 🔥 新增：旗艦版藥歷卡片專屬樣式 */
+    .rx-card { border: 1px solid #20935A; border-radius: 12px; overflow: hidden; margin-bottom: 20px; background: #fff; }
+    .rx-header { background-color: #20935A; color: white; padding: 10px 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+    .rx-header .badge { background-color: #fff; color: #20935A; font-weight: bold; }
+    .rx-progress-box { border: 2px solid #17A2B8; border-radius: 8px; padding: 15px; margin-bottom: 15px; }
+    .rx-progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+    .rx-meta { font-size: 0.9rem; color: #555; margin-bottom: 4px; }
+    .rx-meta strong { color: #333; }
+    .rx-date-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; margin-top: 10px; }
+    .rx-return-box { background-color: #f8f9fa; padding: 8px 12px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; margin-top: 12px; }
+    
+    .med-item { display: flex; align-items: flex-start; border-bottom: 1px dashed #eee; padding-bottom: 12px; margin-bottom: 12px; }
+    .med-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    .med-num { background-color: #20935A; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold; margin-right: 12px; flex-shrink: 0; }
+    .med-info { flex-grow: 1; }
+    .med-name { font-weight: bold; font-size: 0.95rem; color: #333; margin-bottom: 6px; }
+    .med-tags { display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; }
+    .tag-box { border: 1px solid #ddd; border-radius: 4px; padding: 2px 6px; color: #666; margin-right: 5px; }
   </style>
 </head>
 <body>
@@ -180,8 +181,10 @@
           document.getElementById('userNameDisplay').innerText = lineDisplayName;
           document.getElementById('uName').value = lineDisplayName; 
           document.getElementById('bName').value = lineDisplayName; 
+          
           if(profile.pictureUrl) document.getElementById('userThumb').src = profile.pictureUrl;
           document.getElementById('userInfo').classList.remove('hidden-mode');
+          
           if (currentMode === 'bind' || currentMode === 'register') openBindLine();
           else if (currentMode === 'upload') openUpload();
           else if (currentMode === 'status') openStatus();
@@ -189,8 +192,8 @@
           else goHome(); 
         });
       } else {
-        if (currentMode) liff.login({ redirectUri: window.location.href.split('?')[0] + "?mode=" + currentMode });
-        else goHome(); 
+        if (currentMode) { liff.login({ redirectUri: window.location.href.split('?')[0] + "?mode=" + currentMode }); } 
+        else { goHome(); }
       }
     }).catch(err => { document.getElementById('loading').style.display = 'none'; goHome(); });
   }
@@ -251,11 +254,48 @@
     }).catch(err => { document.getElementById('uploadHistoryList').innerHTML = '<div class="text-center text-danger small py-3">連線異常</div>'; });
   }
 
-  function toggleMedGroup(groupId) {
-    const body = document.getElementById('med-body-' + groupId);
-    const header = document.getElementById('med-header-' + groupId);
-    if (body.classList.contains('open')) { body.classList.remove('open'); header.classList.remove('open'); } 
-    else { body.classList.add('open'); header.classList.add('open'); }
+  // ==========================================
+  // 🔥 藥歷查詢與旗艦版卡片渲染邏輯
+  // ==========================================
+  
+  function _parseDate(dStr) {
+      if(!dStr) return null;
+      let s = dStr.replace(/-/g, '/');
+      let parts = s.split('/');
+      if(parts.length === 3) {
+          let y = parseInt(parts[0]);
+          if(y < 200) y += 1911; // 處理民國年
+          return new Date(y, parseInt(parts[1])-1, parseInt(parts[2]));
+      } else if(s.length === 8) { // 處理 20260225
+          let y = parseInt(s.substring(0,4));
+          let m = parseInt(s.substring(4,6))-1;
+          let d = parseInt(s.substring(6,8));
+          return new Date(y, m, d);
+      }
+      return new Date(s);
+  }
+
+  function _addDays(date, days) {
+      let result = new Date(date);
+      result.setDate(result.getDate() + days);
+      return result;
+  }
+
+  function _fmt(date, format) {
+      if(!date || isNaN(date.getTime())) return '-';
+      let y = date.getFullYear();
+      let m = String(date.getMonth() + 1).padStart(2, '0');
+      let d = String(date.getDate()).padStart(2, '0');
+      return format === 'MM/DD' ? `${m}/${d}` : `${y}-${m}-${d}`;
+  }
+
+  function toggleMedList(id) {
+    let el = document.getElementById(id);
+    if(el.style.display === 'none') {
+      el.style.display = 'block';
+    } else {
+      el.style.display = 'none';
+    }
   }
 
   function resetMedQuery() {
@@ -266,42 +306,171 @@
   function queryMedHistory() {
     const name = document.getElementById('qName').value.trim();
     const id = document.getElementById('qId').value.trim().toUpperCase();
-    if (!name || !id) return alert("⚠️ 請輸入完整的領藥人姓名與身分證字號！");
-    
+
+    if (!name || !id) {
+      return alert("⚠️ 請輸入完整的領藥人姓名與身分證字號！");
+    }
+
     document.getElementById('loading').style.display = 'flex';
     document.getElementById('loadingText').innerText = "安全連線查詢中...";
-    const resultDiv = document.getElementById('medHistoryResult'); resultDiv.innerHTML = '';
+    
+    const resultDiv = document.getElementById('medHistoryResult');
+    resultDiv.innerHTML = '';
 
-    fetch(GAS_URL, { method: "POST", body: JSON.stringify({ action: "queryMed", name: name, id: id, lineUserId: lineUserId }) })
-    .then(res => res.json()).then(res => {
+    fetch(GAS_URL, {
+      method: "POST",
+      body: JSON.stringify({ action: "queryMed", name: name, id: id, lineUserId: lineUserId })
+    })
+    .then(res => res.json())
+    .then(res => {
       document.getElementById('loading').style.display = 'none';
       if (res.status === 'success') {
-        if (!res.data || res.data.length === 0) { resultDiv.innerHTML = '<div class="alert alert-warning text-center small fw-bold">查無相符的用藥紀錄，請確認資料是否正確，或向藥局詢問。</div>'; return; }
+        if (!res.data || res.data.length === 0) {
+          resultDiv.innerHTML = '<div class="alert alert-warning text-center small fw-bold">查無相符的用藥紀錄，請確認資料是否正確，或向藥局詢問。</div>';
+          return;
+        }
         
         document.getElementById('medQueryForm').style.display = 'none';
+        
+        // 依照日期分組
         const groupedData = {};
         res.data.forEach(item => {
           let dateKey = item.date.split(' ')[0]; 
           if (!groupedData[dateKey]) groupedData[dateKey] = [];
           groupedData[dateKey].push(item);
         });
+
         const sortedDates = Object.keys(groupedData).sort((a, b) => b.localeCompare(a));
-        
-        let html = `<div class="d-flex justify-content-between align-items-center mb-3 mt-2 px-1"><div class="text-success fw-bold fs-5"><i class="bi bi-person-lines-fill"></i> ${name} 的藥歷</div><button class="btn btn-sm btn-outline-secondary px-3" onclick="resetMedQuery()">重新查詢</button></div>`;
+
+        let html = `
+          <div class="d-flex justify-content-between align-items-center mb-3 mt-2 px-1">
+            <div class="text-success fw-bold fs-5"><i class="bi bi-person-lines-fill"></i> ${name} 的藥歷</div>
+            <button class="btn btn-sm btn-outline-secondary px-3" onclick="resetMedQuery()">重新查詢</button>
+          </div>
+        `;
+
         let groupId = 0;
         sortedDates.forEach(dateKey => {
           let items = groupedData[dateKey];
-          let isOpen = groupId === 0 ? 'open' : '';
-          html += `<div class="med-group shadow-sm"><div class="med-header ${isOpen}" id="med-header-${groupId}" onclick="toggleMedGroup(${groupId})"><div><i class="bi bi-calendar2-check"></i> ${dateKey}<span class="badge">${items.length} 項</span></div><i class="bi bi-chevron-down chevron-icon"></i></div><div class="med-body ${isOpen}" id="med-body-${groupId}"><div class="table-responsive"><table class="med-table"><thead><tr><th>健保碼</th><th>藥品名稱</th><th>用量</th><th>天數</th><th>總量</th></tr></thead><tbody>`;
-          items.forEach(med => {
-            html += `<tr><td class="med-nhi">${med.nhi || '-'}</td><td class="med-drug-name">${med.drug || '-'}</td><td>${med.dosage || '-'}</td><td>${med.days || '-'}</td><td class="text-success fw-bold">${med.total || '-'}</td></tr>`;
+          let meta = items[0]; // 提取共用資訊
+          
+          let dept = meta.dept || '一般';
+          let hospital = meta.hospital || '未載明院所';
+          let physician = meta.physician || '未載明醫師';
+          let rxDateStr = meta.rxDate || '';
+          let days = parseInt(meta.days) || 28;
+          
+          // 解析進度 (例如 "2/3" 或 "3")
+          let currentRefill = 1, totalRefills = 1;
+          if (meta.refill && meta.refill.includes('/')) {
+            let parts = meta.refill.split('/');
+            currentRefill = parseInt(parts[0]) || 1;
+            totalRefills = parseInt(parts[1]) || 1;
+          } else if (meta.refill) {
+            totalRefills = parseInt(meta.refill) || 1;
+            currentRefill = totalRefills; // 若無進度格式，預設已完成
+          }
+
+          // 數學推算日期
+          let rxDate = _parseDate(rxDateStr);
+          let date2Str = '-', date3Str = '-', returnDateStr = '-';
+          let date2Obj = null, date3Obj = null;
+          
+          if (rxDate) {
+             date2Obj = _addDays(rxDate, days);
+             date3Obj = _addDays(rxDate, days * 2);
+             let returnObj = _addDays(rxDate, days * totalRefills);
+             
+             date2Str = _fmt(_addDays(date2Obj, -10), 'MM/DD') + ' ~ ' + _fmt(date2Obj, 'MM/DD');
+             date3Str = _fmt(_addDays(date3Obj, -10), 'MM/DD') + ' ~ ' + _fmt(date3Obj, 'MM/DD');
+             returnDateStr = _fmt(returnObj, 'YYYY-MM-DD');
+          }
+
+          // 動態狀態徽章
+          let refill2UI = `<span class="text-danger fw-bold">${date2Str}</span>`;
+          if (currentRefill >= 2) refill2UI = `<span class="text-success fw-bold me-2">${_fmt(date2Obj, 'MM/DD') || '-'}</span><span class="badge bg-success">✅ 已領取</span>`;
+          if (totalRefills < 2) refill2UI = `<span class="text-muted">-</span>`;
+
+          let refill3UI = `<span class="text-danger fw-bold">${date3Str}</span>`;
+          if (currentRefill >= 3) refill3UI = `<span class="text-success fw-bold me-2">${_fmt(date3Obj, 'MM/DD') || '-'}</span><span class="badge bg-success">✅ 已領取</span>`;
+          if (totalRefills < 3) refill3UI = `<span class="text-muted">-</span>`;
+
+          // 構建卡片
+          html += `
+          <div class="rx-card shadow-sm">
+            <div class="rx-header">
+               <span><i class="bi bi-calendar2-check"></i> ${dateKey} 領藥紀錄</span>
+               <span class="badge px-2 py-1">${dept}</span>
+            </div>
+            
+            <div class="p-3">
+               <div class="rx-progress-box">
+                 <div class="rx-progress-header">
+                   <span class="fw-bold text-dark"><i class="bi bi-file-earmark-medical text-info"></i> 慢箋領藥進度</span>
+                   <span class="badge bg-info text-white px-2 py-1">目前進度: ${currentRefill}/${totalRefills}</span>
+                 </div>
+                 
+                 <div class="rx-meta"><i class="bi bi-building"></i> 醫療院所：<strong>${hospital}</strong></div>
+                 <div class="rx-meta"><i class="bi bi-person-badge"></i> 看診醫師：<strong>${physician}</strong></div>
+                 <div class="rx-meta mb-3"><i class="bi bi-calendar-event"></i> 處方開立：<strong>${rxDateStr}</strong> <span class="text-muted" style="font-size:0.8rem;">(單次: ${days}天)</span></div>
+                 
+                 <div class="rx-date-row">
+                   <span class="text-muted">👉 第二次領藥：</span>
+                   <div>${refill2UI}</div>
+                 </div>
+                 <div class="rx-date-row">
+                   <span class="text-muted">👉 第三次領藥：</span>
+                   <div>${refill3UI}</div>
+                 </div>
+                 
+                 <div class="rx-return-box">
+                   <span class="text-dark fw-bold"><i class="bi bi-hospital"></i> 藥品用罄(預約回診日)</span>
+                   <span class="text-danger fw-bold fs-6">${returnDateStr}</span>
+                 </div>
+               </div>
+
+               <button class="btn btn-outline-success w-100 fw-bold btn-sm mb-1 rounded-pill" onclick="toggleMedList('medList_${groupId}')">
+                 <i class="bi bi-list-ul"></i> 展開藥品明細 (${items.length} 項) <i class="bi bi-chevron-down"></i>
+               </button>
+
+               <div id="medList_${groupId}" style="display: none; padding-top: 15px;">
+          `;
+          
+          items.forEach((med, idx) => {
+            html += `
+              <div class="med-item">
+                 <div class="med-num">${idx + 1}</div>
+                 <div class="med-info">
+                   <div class="med-name">${med.drug || '-'}</div>
+                   <div class="med-tags">
+                     <div>
+                       <span class="tag-box">每次用量 <strong class="text-dark">${med.dosage || '-'}</strong></span>
+                       <span class="tag-box">天數 <strong class="text-dark">${med.days || '-'}</strong></span>
+                     </div>
+                     <div class="text-success fw-bold">總量: ${med.total || '-'}</div>
+                   </div>
+                 </div>
+              </div>
+            `;
           });
-          html += `</tbody></table></div></div></div>`;
+          
+          html += `
+               </div>
+            </div>
+          </div>
+          `;
           groupId++;
         });
+
         resultDiv.innerHTML = html;
-      } else { resultDiv.innerHTML = `<div class="alert alert-danger text-center small fw-bold">❌ 查詢失敗：${res.message}</div>`; }
-    }).catch(err => { document.getElementById('loading').style.display = 'none'; resultDiv.innerHTML = '<div class="alert alert-danger text-center small fw-bold">❌ 網路連線異常，請稍後再試。</div>'; });
+      } else {
+        resultDiv.innerHTML = `<div class="alert alert-danger text-center small fw-bold">❌ 查詢失敗：${res.message}</div>`;
+      }
+    })
+    .catch(err => {
+      document.getElementById('loading').style.display = 'none';
+      resultDiv.innerHTML = '<div class="alert alert-danger text-center small fw-bold">❌ 網路連線異常，請稍後再試。</div>';
+    });
   }
 
   function handleFile(input) {
