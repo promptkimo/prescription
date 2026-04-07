@@ -27,15 +27,20 @@
     .brand-subtitle { font-size: 0.85rem; color: #6c757d; margin-bottom: 0; font-weight: 500; letter-spacing: 1px; }
     .home-content { display: flex; flex-direction: column; flex-grow: 1; padding: 0 20px 30px 20px; min-height: 0; }
     
-    /* 🔥 首頁按鈕排版優化：第一顆按鈕橫跨兩欄 */
-    .home-btn-group { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px 15px; width: 100%; max-width: 450px; margin: 35px auto auto auto; justify-content: center; justify-items: center; }
+    /* 🔥 首頁按鈕排版優化 */
+    .home-btn-group { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px 15px; width: 100%; max-width: 450px; margin: 30px auto auto auto; justify-content: center; justify-items: center; }
     .menu-btn { background: transparent !important; border: none !important; box-shadow: none !important; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1); outline: none; cursor: pointer; text-decoration: none; padding: 0; width: 100%; }
     .menu-btn:hover { transform: translateY(-4px); }
-    .menu-btn:active { transform: scale(0.92); opacity: 0.85; }
+    .menu-btn:active { transform: scale(0.96); opacity: 0.9; }
     .menu-icon { width: 110px; height: 110px; margin-bottom: 12px; object-fit: contain; filter: drop-shadow(0 8px 16px rgba(0,0,0,0.08)); transition: transform 0.3s; }
     .menu-btn span { font-size: 1.1rem; font-weight: 800; letter-spacing: 0.5px; color: #333; text-align: center; line-height: 1.35; }
     
-    .main-btn { grid-column: 1 / -1; width: 100%; max-width: 320px; background-color: #f4fcf6 !important; border: 2px dashed #06C755 !important; border-radius: 16px; padding: 20px 10px; }
+    /* 🔥 橫幅主按鈕專屬美化 */
+    .main-btn { grid-column: 1 / -1; width: 100%; max-width: 100%; background: #ffffff !important; border: none !important; border-radius: 16px; padding: 12px; box-shadow: 0 6px 18px rgba(6, 199, 85, 0.15) !important; display: flex; flex-direction: column; align-items: center; transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1); }
+    .main-btn:hover { box-shadow: 0 8px 24px rgba(6, 199, 85, 0.2) !important; transform: translateY(-3px); }
+    .main-btn:active { transform: scale(0.97); }
+    .menu-banner { width: 100%; height: auto; max-height: 140px; object-fit: contain; border-radius: 10px; margin-bottom: 10px; }
+    .main-btn-text { font-size: 1.25rem; font-weight: 900; color: #06C755; letter-spacing: 0.5px; }
     
     .sub-view { flex-grow: 1; padding: 15px 15px 30px 15px; overflow-y: auto; height: 100%; }
     .back-btn-container { margin-bottom: 15px; position: sticky; top: 0; z-index: 10; background: #ffffff; padding-top: 10px; padding-bottom: 10px; border-bottom: 1px solid #f0f2f5; }
@@ -82,8 +87,8 @@
       
       <div class="home-btn-group">
         <button class="menu-btn main-btn" onclick="openUpload()">
-          <img src="1.png" class="menu-icon" alt="處方上傳與綁定">
-          <span>處方箋上傳 / LINE綁定<br><small style="font-size:0.8rem; color:#666; font-weight:normal;">有處方傳單子，無處方直接綁定</small></span>
+          <img src="5.png" class="menu-banner" alt="處方上傳與綁定">
+          <span class="main-btn-text">處方上傳 / Line綁定領藥通知</span>
         </button>
         <button class="menu-btn" onclick="openStatus()">
           <img src="3.png" class="menu-icon" alt="領藥狀態查詢">
@@ -111,7 +116,7 @@
         <input type="file" id="fileInput" accept="image/*" style="display: none;" onchange="handleFile(this)">
       </div>
       
-      <div class="mb-3 mt-2"><label class="form-label small fw-bold">領藥人真實姓名</label><input type="text" class="form-control" id="uName" placeholder="請輸入姓名"></div>
+      <div class="mb-3 mt-2"><label class="form-label small fw-bold">領藥人姓名</label><input type="text" class="form-control" id="uName" placeholder="請輸入姓名"></div>
       <div class="mb-3"><label class="form-label small fw-bold">聯絡電話</label><input type="tel" class="form-control" id="uPhone" placeholder="請輸入手機號碼"></div>
       
       <div class="mb-4" id="notifySection" style="display: none;">
@@ -144,7 +149,7 @@
       <div class="card p-4 shadow-sm border-0 border-top border-dark border-4 bg-light">
         <h5 class="fw-bold text-dark mb-3"><i class="bi bi-cloud-arrow-up"></i> 雲端藥歷查詢</h5>
         <p class="small text-muted mb-4">為保護個人隱私，請輸入【領藥人姓名】與【身分證字號】進行安全驗證，以查詢詳細用藥紀錄。</p>
-        <div class="mb-3"><label class="form-label small fw-bold text-primary">領藥人真實姓名</label><input type="text" class="form-control" id="qName" placeholder="請輸入領藥人的姓名"></div>
+        <div class="mb-3"><label class="form-label small fw-bold text-primary">領藥人姓名</label><input type="text" class="form-control" id="qName" placeholder="請輸入領藥人的姓名"></div>
         <div class="mb-4"><label class="form-label small fw-bold text-danger">領藥人身分證字號</label><input type="text" class="form-control text-uppercase" id="qId" placeholder="例如：A123456789"></div>
         <button class="btn btn-dark w-100 fw-bold py-2 mb-2 shadow-sm" onclick="queryMedHistory()"><i class="bi bi-search"></i> 安全查詢</button>
       </div>
@@ -196,7 +201,7 @@
     return NHI_DEPT_MAP[c] ? NHI_DEPT_MAP[c] : c; 
   }
 
-  let lineUserId = "", lineDisplayName = "", linePictureUrl = "", base64Image = "", fileName = "";
+  let lineUserId = "", lineDisplayName = "", linePictureUrl = "", base64Image = "", fileName = "", isRegisterMode = false;
   const urlParams = new URLSearchParams(window.location.search);
   const currentMode = urlParams.get('mode');
 
@@ -464,7 +469,7 @@
     const phone = document.getElementById('uPhone').value.trim(); 
     const isConsent = document.getElementById('privacyConsentUpload').checked;
 
-    if (!name || phone.length < 9) return alert("⚠️ 請填寫完整真實姓名與正確的手機號碼！");
+    if (!name || phone.length < 9) return alert("⚠️ 請填寫完整姓名與正確的手機號碼！");
     if (!isConsent) return alert("⚠️ 請先閱讀並勾選同意「隱私權與服務條款」才能送出資料喔！");
     
     // 🔥 核心邏輯：判斷病患是否有上傳照片。有照片=上傳處方；沒照片=純綁定
