@@ -275,6 +275,7 @@
 
   function showPrivacyModal(event) { event.preventDefault(); new bootstrap.Modal(document.getElementById('privacyModal')).show(); }
 
+  // 🔥 狀態查詢連動：待處理 vs 已收單處理
   function fetchUploadHistory() {
     if (!lineUserId) return;
     document.getElementById('uploadHistoryList').innerHTML = `<div class="text-center text-muted small py-4"><div class="spinner-border spinner-border-sm text-info me-2"></div> 讀取紀錄中...</div>`;
@@ -284,7 +285,7 @@
         const container = document.getElementById('uploadHistoryList'); container.innerHTML = '';
         if (!res.history || res.history.length === 0) { container.innerHTML = '<div class="text-center text-muted small py-4 bg-white rounded-3 shadow-sm border border-light">您目前尚無處方箋上傳紀錄</div>'; return; }
         res.history.forEach(item => {
-          let statusColor = item.status === '已受理' ? 'bg-success' : (item.status === '待處理' ? 'bg-warning text-dark' : 'bg-primary');
+          let statusColor = item.status === '已收單處理' ? 'bg-success' : (item.status === '待處理' ? 'bg-warning text-dark' : 'bg-primary');
           let imgSrc = item.img || 'https://placehold.co/60?text=No+Img';
           let cleanDate = String(item.date).split('T')[0].split(' ')[0];
           let highResImg = imgSrc.replace('w200','w1600'); 
@@ -454,7 +455,6 @@
     }).catch(err => { document.getElementById('loading').style.display = 'none'; resultDiv.innerHTML = '<div class="alert alert-danger text-center small fw-bold">❌ 網路連線異常，請稍後再試。</div>'; });
   }
 
-  // 🔥 新增：體感加速，使用 setTimeout 放開主執行緒
   function handleFile(input) {
     if (input.files && input.files[0]) {
       const file = input.files[0]; 
@@ -515,7 +515,7 @@
       document.getElementById('loading').style.display = 'none';
       if(res.status === 'success') {
         if (isRegisterMode) { alert("✅ 綁定成功！\n藥局未來將能透過 LINE 通知您領藥。"); } 
-        else { alert("✅ 處方箋已加密送達雲端！\nAI 助理將在後台自動為您建檔，您可以安心關閉此畫面，稍後將在 LINE 收到確認通知。"); }
+        else { alert("✅ 處方箋已加密送達雲端！\n藥局處理完成後，您可於「領藥狀態查詢」中追蹤進度。"); }
         if(liff.isInClient()) liff.closeWindow(); else goHome();
       } else if(res.status === 'duplicate') { alert("⚠️ " + res.message); goHome(); } 
       else { alert("❌ 失敗：" + res.message); }
