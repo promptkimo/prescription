@@ -12,6 +12,9 @@
     body { background-color: #ffffff; font-family: -apple-system, sans-serif; margin: 0; padding: 0; height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
     .container { max-width: 600px; padding: 0; flex-grow: 1; display: flex; flex-direction: column; margin: 0 auto; width: 100%; height: 100%; }
     .card { border-radius: 12px; border: none; box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-bottom: 20px; }
+    
+    /* 🔥 修復 #userInfo 的寬度與留白 */
+    #userInfo { max-width: 450px; margin-left: auto; margin-right: auto; }
     .user-card { background: #f8f9fa; padding: 10px 15px; border-radius: 16px; margin-bottom: 5px; flex-shrink: 0; border: 1px solid #f0f2f5; }
     .user-avatar { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; margin-right: 15px; border: 2px solid #06C755; }
     
@@ -27,7 +30,7 @@
     .brand-subtitle { font-size: 0.85rem; color: #6c757d; margin-bottom: 0; font-weight: 500; letter-spacing: 1px; }
     .home-content { display: flex; flex-direction: column; flex-grow: 1; padding: 0 20px 30px 20px; min-height: 0; }
     
-    /* 🔥 首頁按鈕排版優化 */
+    /* 首頁按鈕排版優化 */
     .home-btn-group { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px 15px; width: 100%; max-width: 450px; margin: 30px auto auto auto; justify-content: center; justify-items: center; }
     .menu-btn { background: transparent !important; border: none !important; box-shadow: none !important; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1); outline: none; cursor: pointer; text-decoration: none; padding: 0; width: 100%; }
     .menu-btn:hover { transform: translateY(-4px); }
@@ -35,12 +38,12 @@
     .menu-icon { width: 110px; height: 110px; margin-bottom: 12px; object-fit: contain; filter: drop-shadow(0 8px 16px rgba(0,0,0,0.08)); transition: transform 0.3s; }
     .menu-btn span { font-size: 1.1rem; font-weight: 800; letter-spacing: 0.5px; color: #333; text-align: center; line-height: 1.35; }
     
-    /* 🔥 橫幅主按鈕專屬美化 */
-    .main-btn { grid-column: 1 / -1; width: 100%; max-width: 100%; background: #ffffff !important; border: none !important; border-radius: 16px; padding: 12px; box-shadow: 0 6px 18px rgba(6, 199, 85, 0.15) !important; display: flex; flex-direction: column; align-items: center; transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1); }
+    /* 🔥 橫幅主按鈕專屬美化：減少 padding，調整 margin */
+    .main-btn { grid-column: 1 / -1; width: 100%; max-width: 100%; background: #ffffff !important; border: none !important; border-radius: 16px; padding: 4px; box-shadow: 0 6px 18px rgba(6, 199, 85, 0.15) !important; display: flex; flex-direction: column; align-items: center; transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1); }
     .main-btn:hover { box-shadow: 0 8px 24px rgba(6, 199, 85, 0.2) !important; transform: translateY(-3px); }
     .main-btn:active { transform: scale(0.97); }
-    .menu-banner { width: 100%; height: auto; max-height: 140px; object-fit: contain; border-radius: 10px; margin-bottom: 10px; }
-    .main-btn-text { font-size: 1.25rem; font-weight: 900; color: #06C755; letter-spacing: 0.5px; }
+    .menu-banner { width: 100%; height: auto; max-height: 140px; object-fit: contain; border-radius: 12px; margin-bottom: 2px; }
+    .main-btn-text { font-size: 1.25rem; font-weight: 900; color: #06C755; letter-spacing: 0.5px; margin-bottom: 6px; }
     
     .sub-view { flex-grow: 1; padding: 15px 15px 30px 15px; overflow-y: auto; height: 100%; }
     .back-btn-container { margin-bottom: 15px; position: sticky; top: 0; z-index: 10; background: #ffffff; padding-top: 10px; padding-bottom: 10px; border-bottom: 1px solid #f0f2f5; }
@@ -138,7 +141,7 @@
     <div class="back-btn-container"><button class="back-btn" onclick="goHome()"><i class="bi bi-chevron-left"></i> 返回主畫面</button></div>
     <div class="card p-4 shadow-sm border-0">
       <h5 class="fw-bold text-info mb-3"><i class="bi bi-card-checklist"></i> 領藥狀態查詢</h5>
-      <p class="small text-muted mb-3">以下是您曾經上傳過的處方箋紀錄與目前處理進度：</p>
+      <p class="small text-muted mb-3">點擊卡片可放大查看您上傳的處方箋：</p>
       <div id="uploadHistoryList"></div>
     </div>
   </div>
@@ -201,7 +204,7 @@
     return NHI_DEPT_MAP[c] ? NHI_DEPT_MAP[c] : c; 
   }
 
-  let lineUserId = "", lineDisplayName = "", linePictureUrl = "", base64Image = "", fileName = "", isRegisterMode = false;
+  let lineUserId = "", lineDisplayName = "", linePictureUrl = "", base64Image = "", fileName = "";
   const urlParams = new URLSearchParams(window.location.search);
   const currentMode = urlParams.get('mode');
 
@@ -247,6 +250,7 @@
     document.getElementById('view-status').classList.add('hidden-mode'); 
     document.getElementById('view-meds').classList.add('hidden-mode'); 
     document.getElementById('view-form').classList.remove('hidden-mode'); 
+    document.getElementById('uNotify').value = "LINE通知"; 
   }
   
   function openStatus() { 
@@ -270,6 +274,7 @@
 
   function showPrivacyModal(event) { event.preventDefault(); new bootstrap.Modal(document.getElementById('privacyModal')).show(); }
 
+  // 🔥 新增：讓病患點擊歷史卡片時可以直接打開照片查看
   function fetchUploadHistory() {
     if (!lineUserId) return;
     document.getElementById('uploadHistoryList').innerHTML = `<div class="text-center text-muted small py-4"><div class="spinner-border spinner-border-sm text-info me-2"></div> 讀取紀錄中...</div>`;
@@ -282,16 +287,22 @@
           let statusColor = item.status === '可領藥' ? 'bg-success' : (item.status === '待處理' ? 'bg-warning text-dark' : 'bg-primary');
           let imgSrc = item.img || 'https://placehold.co/60?text=No+Img';
           let cleanDate = String(item.date).split('T')[0].split(' ')[0];
-          container.innerHTML += `<div class="card p-2 mb-2 shadow-sm border-0 flex-row align-items-center bg-light"><img src="${imgSrc}" style="width: 55px; height: 55px; object-fit: cover; border-radius: 8px; margin-right: 15px; border:1px solid #ddd;" onclick="window.open('${imgSrc.replace('w200','w1600')}', '_blank')"><div class="flex-grow-1"><div class="fw-bold" style="font-size:0.95rem; color:#333;">${cleanDate}</div><div class="small text-muted">${item.dept || '一般領藥'}</div></div><div><span class="badge ${statusColor} px-2 py-1 shadow-sm">${item.status}</span></div></div>`;
+          let highResImg = imgSrc.replace('w200','w1600'); // 放大圖片
+          
+          container.innerHTML += `
+            <div class="card p-2 mb-2 shadow-sm border-0 flex-row align-items-center bg-light" style="cursor:pointer;" onclick="window.open('${highResImg}', '_blank')">
+              <img src="${imgSrc}" style="width: 55px; height: 55px; object-fit: cover; border-radius: 8px; margin-right: 15px; border:1px solid #ddd;">
+              <div class="flex-grow-1">
+                <div class="fw-bold" style="font-size:0.95rem; color:#333;">${cleanDate} <i class="bi bi-search text-muted ms-1" style="font-size: 0.8rem;"></i></div>
+                <div class="small text-muted">${item.dept || '一般領藥'}</div>
+              </div>
+              <div><span class="badge ${statusColor} px-2 py-1 shadow-sm">${item.status}</span></div>
+            </div>`;
         });
       }
     }).catch(err => { document.getElementById('uploadHistoryList').innerHTML = '<div class="text-center text-danger small py-3">連線異常</div>'; });
   }
 
-  // ==========================================
-  // 🔥 藥歷查詢邏輯
-  // ==========================================
-  
   function _parseDate(dStr) {
       if(!dStr) return null;
       let s = dStr.replace(/-/g, '/');
@@ -443,10 +454,6 @@
     }).catch(err => { document.getElementById('loading').style.display = 'none'; resultDiv.innerHTML = '<div class="alert alert-danger text-center small fw-bold">❌ 網路連線異常，請稍後再試。</div>'; });
   }
 
-  // ==========================================
-  // 🔥 融合的智能上傳邏輯
-  // ==========================================
-
   function handleFile(input) {
     if (input.files && input.files[0]) {
       const file = input.files[0]; fileName = file.name; const reader = new FileReader();
@@ -472,7 +479,6 @@
     if (!name || phone.length < 9) return alert("⚠️ 請填寫完整姓名與正確的手機號碼！");
     if (!isConsent) return alert("⚠️ 請先閱讀並勾選同意「隱私權與服務條款」才能送出資料喔！");
     
-    // 🔥 核心邏輯：判斷病患是否有上傳照片。有照片=上傳處方；沒照片=純綁定
     const isRegisterMode = base64Image ? false : true;
     const finalDept = isRegisterMode ? "LINE綁定" : "一般"; 
     const loadingMsg = isRegisterMode ? "綁定資料加密傳送中..." : "處方箋加密上傳中...";
@@ -483,34 +489,18 @@
     fetch(GAS_URL, { 
       method: "POST", 
       body: JSON.stringify({ 
-        action: "upload", 
-        name: name, 
-        lineName: lineDisplayName, 
-        linePic: linePictureUrl, 
-        phone: phone, 
-        dept: finalDept, 
-        notify: "LINE通知", 
-        fileData: base64Image || "", 
-        fileName: fileName || "", 
-        lineUserId: lineUserId, 
-        isRegister: isRegisterMode 
+        action: "upload", name: name, lineName: lineDisplayName, linePic: linePictureUrl, phone: phone, dept: finalDept, notify: "LINE通知", fileData: base64Image || "", fileName: fileName || "", lineUserId: lineUserId, isRegister: isRegisterMode 
       }) 
     })
     .then(res => res.json())
     .then(res => {
       document.getElementById('loading').style.display = 'none';
       if(res.status === 'success') {
-        if (isRegisterMode) {
-           alert("✅ 綁定成功！\n藥局未來將能透過 LINE 通知您領藥。");
-        } else {
-           alert("✅ 處方箋已加密送達雲端！\nAI 助理將在後台自動為您建檔，您可以安心關閉此畫面，稍後將在 LINE 收到確認通知。");
-        }
+        if (isRegisterMode) { alert("✅ 綁定成功！\n藥局未來將能透過 LINE 通知您領藥。"); } 
+        else { alert("✅ 處方箋已加密送達雲端！\nAI 助理將在後台自動為您建檔，您可以安心關閉此畫面，稍後將在 LINE 收到確認通知。"); }
         if(liff.isInClient()) liff.closeWindow(); else goHome();
-      } else if(res.status === 'duplicate') { 
-        alert("⚠️ " + res.message); goHome(); 
-      } else {
-        alert("❌ 失敗：" + res.message);
-      }
+      } else if(res.status === 'duplicate') { alert("⚠️ " + res.message); goHome(); } 
+      else { alert("❌ 失敗：" + res.message); }
     }).catch(err => { document.getElementById('loading').style.display = 'none'; goHome(); });
   }
 </script>
