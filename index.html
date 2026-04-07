@@ -9,53 +9,49 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
-    body { background-color: #ffffff; font-family: -apple-system, sans-serif; margin: 0; padding: 0; height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
-    .container { max-width: 600px; padding: 0; flex-grow: 1; display: flex; flex-direction: column; margin: 0 auto; width: 100%; height: 100%; }
-    .card { border-radius: 12px; border: none; box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-bottom: 20px; }
-    
-    /* 🔥 修復 #userInfo 的寬度與留白 */
-    #userInfo { max-width: 450px; margin-left: auto; margin-right: auto; }
-    .user-card { background: #f8f9fa; padding: 10px 15px; border-radius: 16px; margin-bottom: 5px; flex-shrink: 0; border: 1px solid #f0f2f5; }
-    .user-avatar { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; margin-right: 15px; border: 2px solid #06C755; }
-    
-    .preview-box { width: 100%; height: 200px; background: #f8f9fa; border: 2px dashed #06C755; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; position: relative; margin-bottom: 15px; transition: all 0.2s; }
-    .preview-box:active { background: #e9ecef; transform: scale(0.98); }
-    .preview-box img { width: 100%; height: 100%; object-fit: contain; display: none; }
-    .placeholder-text { color: #06C755; text-align: center; font-size: 0.95rem; font-weight: bold; }
+    body { background-color: #fcfcfc; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; margin: 0; padding: 0; height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
+    .container { max-width: 600px; padding: 0; flex-grow: 1; display: flex; flex-direction: column; margin: 0 auto; width: 100%; height: 100%; background: #ffffff; box-shadow: 0 0 20px rgba(0,0,0,0.02); }
     
     .hidden-mode { display: none !important; } 
     #view-home { height: 100%; display: flex; flex-direction: column; overflow: hidden; }
     .brand-header { background: #ffffff; padding: 30px 20px 10px; text-align: center; margin-bottom: 5px; flex-shrink: 0; }
     .brand-title { font-weight: 900; font-size: 1.8rem; letter-spacing: 2px; margin-bottom: 3px; color: #06C755; } 
     .brand-subtitle { font-size: 0.85rem; color: #6c757d; margin-bottom: 0; font-weight: 500; letter-spacing: 1px; }
-    .home-content { display: flex; flex-direction: column; flex-grow: 1; padding: 0 20px 30px 20px; min-height: 0; }
     
-    /* 首頁按鈕排版優化 */
-    .home-btn-group { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px 15px; width: 100%; max-width: 450px; margin: 30px auto auto auto; justify-content: center; justify-items: center; }
-    .menu-btn { background: transparent !important; border: none !important; box-shadow: none !important; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1); outline: none; cursor: pointer; text-decoration: none; padding: 0; width: 100%; }
-    .menu-btn:hover { transform: translateY(-4px); }
+    /* 🔥 核心修正：建立統一寬度的 Wrapper，讓上下元素完美對齊 */
+    .home-content { display: flex; flex-direction: column; flex-grow: 1; padding: 0 0 30px 0; min-height: 0; }
+    .home-content-wrapper { max-width: 360px; width: 100%; margin: 0 auto; padding: 0 15px; box-sizing: border-box; }
+    
+    /* 登入卡片：對齊 Wrapper 寬度 */
+    .user-card { background: #f8f9fa; padding: 10px 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #f0f2f5; display: flex; justify-content: space-between; align-items: center; width: 100%; box-sizing: border-box; }
+    .user-avatar { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; margin-right: 12px; border: 2px solid #06C755; }
+    .user-info-text { display: flex; flex-direction: column; }
+    
+    /* 首頁按鈕群組：對齊 Wrapper 寬度 */
+    .home-btn-group { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; width: 100%; justify-items: center; }
+    .menu-btn { background: transparent !important; border: none !important; box-shadow: none !important; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1); outline: none; cursor: pointer; padding: 0; width: 100%; }
     .menu-btn:active { transform: scale(0.96); opacity: 0.9; }
-    .menu-icon { width: 110px; height: 110px; margin-bottom: 12px; object-fit: contain; filter: drop-shadow(0 8px 16px rgba(0,0,0,0.08)); transition: transform 0.3s; }
-    .menu-btn span { font-size: 1.1rem; font-weight: 800; letter-spacing: 0.5px; color: #333; text-align: center; line-height: 1.35; }
+    .menu-icon { width: 105px; height: 105px; margin-bottom: 8px; object-fit: contain; filter: drop-shadow(0 6px 12px rgba(0,0,0,0.06)); }
+    .menu-btn span { font-size: 1.05rem; font-weight: 800; letter-spacing: 0.5px; color: #444; text-align: center; line-height: 1.3; }
     
-    /* 🔥 橫幅主按鈕專屬美化：減少 padding，調整 margin */
-    .main-btn { grid-column: 1 / -1; width: 100%; max-width: 100%; background: #ffffff !important; border: none !important; border-radius: 16px; padding: 4px; box-shadow: 0 6px 18px rgba(6, 199, 85, 0.15) !important; display: flex; flex-direction: column; align-items: center; transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1); }
-    .main-btn:hover { box-shadow: 0 8px 24px rgba(6, 199, 85, 0.2) !important; transform: translateY(-3px); }
-    .main-btn:active { transform: scale(0.97); }
-    .menu-banner { width: 100%; height: auto; max-height: 140px; object-fit: contain; border-radius: 12px; margin-bottom: 2px; }
-    .main-btn-text { font-size: 1.25rem; font-weight: 900; color: #06C755; letter-spacing: 0.5px; margin-bottom: 6px; }
-    
+    /* 🔥 橫幅主按鈕：消除多餘留白，圖片放滿 */
+    .main-btn { grid-column: 1 / -1; width: 100%; background: #ffffff !important; border: 1px solid #eef0f2 !important; border-radius: 16px; padding: 12px 10px 15px 10px; box-shadow: 0 6px 20px rgba(6, 199, 85, 0.08) !important; display: flex; flex-direction: column; align-items: center; box-sizing: border-box; }
+    .menu-banner { width: 100%; height: auto; object-fit: contain; margin-bottom: 8px; }
+    .main-btn-text { font-size: 1.2rem; font-weight: 900; color: #333; letter-spacing: 0.5px; }
+
+    /* 其他共用與表單樣式 */
     .sub-view { flex-grow: 1; padding: 15px 15px 30px 15px; overflow-y: auto; height: 100%; }
     .back-btn-container { margin-bottom: 15px; position: sticky; top: 0; z-index: 10; background: #ffffff; padding-top: 10px; padding-bottom: 10px; border-bottom: 1px solid #f0f2f5; }
     .back-btn { font-size: 1rem; font-weight: bold; color: #495057; padding: 8px 18px; background: #f8f9fa; border-radius: 50px; display: inline-flex; align-items: center; border: none; transition: 0.2s; }
-    .back-btn:active { transform: scale(0.95); background: #e9ecef; }
     .back-btn i { font-size: 1.2rem; margin-right: 5px; color: #06C755; }
     #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-
+    .preview-box { width: 100%; height: 200px; background: #f8f9fa; border: 2px dashed #06C755; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; position: relative; margin-bottom: 15px; }
+    .preview-box img { width: 100%; height: 100%; object-fit: contain; display: none; }
+    .placeholder-text { color: #06C755; text-align: center; font-size: 0.95rem; font-weight: bold; }
+    
     /* 藥歷群組專屬樣式 */
     .rx-card { border: 1px solid #20935A; border-radius: 12px; overflow: hidden; margin-bottom: 20px; background: #fff; }
     .rx-header { background-color: #20935A; color: white; padding: 10px 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-    .rx-header:active { background-color: #1a7849; }
     .rx-header .badge { background-color: #fff; color: #20935A; font-weight: bold; }
     .rx-progress-box { border: 2px solid #17A2B8; border-radius: 8px; padding: 15px; margin-bottom: 15px; }
     .rx-progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
@@ -82,25 +78,37 @@
 <div class="container"> 
   <div id="view-home">
     <div class="brand-header"><h1 class="brand-title">樂森藥局</h1><p class="brand-subtitle">Lawson Pharmacy Cloud</p></div>
+    
     <div class="home-content">
-      <div class="user-card d-flex justify-content-between align-items-center hidden-mode" id="userInfo">
-        <div class="d-flex align-items-center"><img id="userThumb" src="https://placehold.co/50" class="user-avatar"><div><div class="small text-muted" style="font-size:0.75rem;">目前登入帳號</div><div class="fw-bold text-dark" id="userNameDisplay" style="font-size:0.95rem;">訪客</div></div></div>
-        <button class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold" onclick="doLiffLogout()">登出</button>
-      </div>
-      
-      <div class="home-btn-group">
-        <button class="menu-btn main-btn" onclick="openUpload()">
-          <img src="5.png" class="menu-banner" alt="處方上傳與綁定">
-          <span class="main-btn-text">處方上傳 / Line綁定領藥通知</span>
-        </button>
-        <button class="menu-btn" onclick="openStatus()">
-          <img src="3.png" class="menu-icon" alt="領藥狀態查詢">
-          <span>領藥狀態查詢</span>
-        </button>
-        <button class="menu-btn" onclick="openMedHistory()">
-          <img src="4.png" class="menu-icon" alt="雲端藥歷">
-          <span>雲端藥歷查詢</span>
-        </button>
+      <div class="home-content-wrapper">
+        
+        <div class="user-card hidden-mode" id="userInfo">
+          <div class="d-flex align-items-center">
+            <img id="userThumb" src="https://placehold.co/50" class="user-avatar">
+            <div class="user-info-text">
+              <div class="small text-muted" style="font-size:0.75rem;">目前登入帳號</div>
+              <div class="fw-bold text-dark" id="userNameDisplay" style="font-size:0.95rem;">訪客</div>
+            </div>
+          </div>
+          <button class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold" onclick="doLiffLogout()">登出</button>
+        </div>
+        
+        <div class="home-btn-group">
+          <button class="menu-btn main-btn" onclick="openUpload()">
+            <img src="5.png" class="menu-banner" alt="處方上傳與綁定">
+            <span class="main-btn-text">處方上傳 / Line綁定領藥通知</span>
+          </button>
+          
+          <button class="menu-btn" onclick="openStatus()">
+            <img src="3.png" class="menu-icon" alt="領藥狀態查詢">
+            <span>領藥狀態查詢</span>
+          </button>
+          <button class="menu-btn" onclick="openMedHistory()">
+            <img src="4.png" class="menu-icon" alt="雲端藥歷">
+            <span>雲端藥歷查詢</span>
+          </button>
+        </div>
+
       </div>
     </div>
   </div>
@@ -274,7 +282,7 @@
 
   function showPrivacyModal(event) { event.preventDefault(); new bootstrap.Modal(document.getElementById('privacyModal')).show(); }
 
-  // 🔥 新增：讓病患點擊歷史卡片時可以直接打開照片查看
+  // 🔥 狀態查詢：點擊放大看處方箋
   function fetchUploadHistory() {
     if (!lineUserId) return;
     document.getElementById('uploadHistoryList').innerHTML = `<div class="text-center text-muted small py-4"><div class="spinner-border spinner-border-sm text-info me-2"></div> 讀取紀錄中...</div>`;
@@ -287,13 +295,13 @@
           let statusColor = item.status === '可領藥' ? 'bg-success' : (item.status === '待處理' ? 'bg-warning text-dark' : 'bg-primary');
           let imgSrc = item.img || 'https://placehold.co/60?text=No+Img';
           let cleanDate = String(item.date).split('T')[0].split(' ')[0];
-          let highResImg = imgSrc.replace('w200','w1600'); // 放大圖片
+          let highResImg = imgSrc.replace('w200','w1600'); // 產生高畫質連結
           
           container.innerHTML += `
-            <div class="card p-2 mb-2 shadow-sm border-0 flex-row align-items-center bg-light" style="cursor:pointer;" onclick="window.open('${highResImg}', '_blank')">
+            <div class="card p-2 mb-2 shadow-sm border-0 flex-row align-items-center bg-light" style="cursor:pointer; transition: transform 0.2s;" onclick="window.open('${highResImg}', '_blank')" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">
               <img src="${imgSrc}" style="width: 55px; height: 55px; object-fit: cover; border-radius: 8px; margin-right: 15px; border:1px solid #ddd;">
               <div class="flex-grow-1">
-                <div class="fw-bold" style="font-size:0.95rem; color:#333;">${cleanDate} <i class="bi bi-search text-muted ms-1" style="font-size: 0.8rem;"></i></div>
+                <div class="fw-bold" style="font-size:0.95rem; color:#333;">${cleanDate} <i class="bi bi-zoom-in text-muted ms-1" style="font-size: 0.8rem;"></i></div>
                 <div class="small text-muted">${item.dept || '一般領藥'}</div>
               </div>
               <div><span class="badge ${statusColor} px-2 py-1 shadow-sm">${item.status}</span></div>
@@ -303,6 +311,9 @@
     }).catch(err => { document.getElementById('uploadHistoryList').innerHTML = '<div class="text-center text-danger small py-3">連線異常</div>'; });
   }
 
+  // ==========================================
+  // 藥歷查詢邏輯
+  // ==========================================
   function _parseDate(dStr) {
       if(!dStr) return null;
       let s = dStr.replace(/-/g, '/');
@@ -453,6 +464,10 @@
       } else { resultDiv.innerHTML = `<div class="alert alert-danger text-center small fw-bold">❌ 查詢失敗：${res.message}</div>`; }
     }).catch(err => { document.getElementById('loading').style.display = 'none'; resultDiv.innerHTML = '<div class="alert alert-danger text-center small fw-bold">❌ 網路連線異常，請稍後再試。</div>'; });
   }
+
+  // ==========================================
+  // 🔥 智能融合上傳邏輯
+  // ==========================================
 
   function handleFile(input) {
     if (input.files && input.files[0]) {
