@@ -11,68 +11,40 @@
     /* 🔥 終極一屏到底設定：強制垂直置中，關閉所有滾動條 */
     body { background-color: #f4fcf6; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; margin: 0; padding: 0 15px; height: 100vh; height: 100dvh; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; box-sizing: border-box; }
     
-    .container { max-width: 420px; width: 100%; padding: 0; display: flex; flex-direction: column; justify-content: center; height: 100%; max-height: 850px; }
+    .container { max-width: 420px; width: 100%; padding: 0; display: flex; flex-direction: column; justify-content: center; }
     
     /* 頂部 LOGO 區塊 */
-    .brand-header { text-align: center; margin-bottom: 2vh; flex-shrink: 0; }
-    .brand-title { font-weight: 900; font-size: 2rem; letter-spacing: 2px; color: #06C755; margin-bottom: 3px; display: flex; align-items: center; justify-content: center; text-shadow: 0 2px 8px rgba(6,199,85,0.15); } 
-    .brand-subtitle { font-size: 0.95rem; color: #6c757d; font-weight: bold; letter-spacing: 1.5px; margin: 0; }
+    .brand-header { text-align: center; margin-bottom: 4vh; flex-shrink: 0; }
+    .brand-title { font-weight: 900; font-size: 2.2rem; letter-spacing: 2px; color: #06C755; margin-bottom: 6px; display: flex; align-items: center; justify-content: center; gap: 10px; text-shadow: 0 2px 8px rgba(6,199,85,0.15); } 
+    .brand-subtitle { font-size: 1rem; color: #6c757d; font-weight: bold; letter-spacing: 1.5px; margin: 0; }
 
-    /* 主卡片容器 */
-    .main-card { background: #ffffff; border-radius: 24px; box-shadow: 0 12px 35px rgba(6, 199, 85, 0.08); border: 1px solid rgba(0,0,0,0.04); display: flex; flex-direction: column; width: 100%; flex-grow: 1; min-height: 0; overflow: hidden; }
+    /* 主卡片容器：取消拉伸，讓它自然包覆內容並置中 */
+    .main-card { background: #ffffff; border-radius: 24px; box-shadow: 0 12px 35px rgba(6, 199, 85, 0.08); border: 1px solid rgba(0,0,0,0.04); display: flex; flex-direction: column; width: 100%; }
     
-    /* 🔥 純 CSS 質感漸層特效區塊 (完全取代圖片) */
-    .css-hero-banner { 
-      background: linear-gradient(135deg, #06C755 0%, #128e41 100%); 
-      padding: 3vh 20px; 
-      text-align: center; 
-      color: white; 
-      flex-shrink: 0; 
-      display: flex; 
-      flex-direction: column; 
-      align-items: center; 
-      justify-content: center; 
-      position: relative;
-      overflow: hidden;
-    }
-    /* 光暈特效 */
-    .css-hero-banner::after {
-      content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-      background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 60%);
-      pointer-events: none;
-    }
-    
-    /* 懸浮動畫 Icon */
-    .hero-icon { font-size: 3.5rem; margin-bottom: 1vh; text-shadow: 0 4px 12px rgba(0,0,0,0.15); animation: float 3s ease-in-out infinite; }
-    @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-8px); } 100% { transform: translateY(0px); } }
-    
-    .hero-title { font-weight: 900; font-size: 1.5rem; letter-spacing: 1px; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    .hero-subtitle { font-size: 0.9rem; opacity: 0.95; margin-top: 5px; margin-bottom: 0; font-weight: 500; letter-spacing: 0.5px; }
-
-    /* 卡片內文區塊 */
-    .card-body { padding: 20px 22px; display: flex; flex-direction: column; flex-grow: 1; overflow-y: auto; }
+    /* 卡片內文區塊：加大留白，提升呼吸感 */
+    .card-body { padding: 35px 25px; display: flex; flex-direction: column; }
     
     /* LINE 帳號顯示區塊 */
-    .user-profile { background: #f8f9fa; padding: 12px 15px; border-radius: 14px; margin-bottom: 20px; display: flex; align-items: center; border: 1px solid #eee; flex-shrink: 0; }
-    .user-avatar { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; margin-right: 15px; border: 2px solid #06C755; background-color: #fff; }
+    .user-profile { background: #f8f9fa; padding: 12px 15px; border-radius: 14px; margin-bottom: 25px; display: flex; align-items: center; border: 1px solid #eee; }
+    .user-avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; margin-right: 15px; border: 2px solid #06C755; background-color: #fff; }
     .user-info-text { display: flex; flex-direction: column; }
     .user-label { font-size: 0.75rem; color: #888; margin-bottom: 2px; }
     .user-name { font-weight: bold; color: #333; font-size: 1.05rem; }
 
-    /* 表單輸入框 (加大好點擊) */
-    .input-group-wrapper { margin-bottom: 18px; flex-shrink: 0; }
+    /* 表單輸入框 */
+    .input-group-wrapper { margin-bottom: 20px; }
     .form-label { font-size: 0.95rem; font-weight: 800; color: #179946; margin-bottom: 8px; display: inline-block; }
-    .form-control { border-radius: 12px; padding: 14px 15px; border: 1px solid #e0e0e0; font-size: 1.1rem; background-color: #fafafa; transition: all 0.2s; }
+    .form-control { border-radius: 12px; padding: 14px 15px; border: 1px solid #e0e0e0; font-size: 1.1rem; background-color: #fafafa; transition: all 0.2s; width: 100%; box-sizing: border-box; }
     .form-control:focus { background-color: #fff; border-color: #06C755; box-shadow: 0 0 0 3px rgba(6, 199, 85, 0.15); outline: none; }
     
     /* 隱私權打勾區塊 */
-    .form-check { margin-top: 5px; margin-bottom: 20px; display: flex; align-items: flex-start; flex-shrink: 0; }
+    .form-check { margin-top: 5px; margin-bottom: 30px; display: flex; align-items: flex-start; }
     .form-check-input { width: 1.25rem; height: 1.25rem; margin-top: 0.15rem; cursor: pointer; flex-shrink: 0; }
     .form-check-input:checked { background-color: #06C755; border-color: #06C755; }
     .form-check-label { font-size: 0.85rem; color: #666; line-height: 1.5; padding-left: 8px; cursor: pointer; }
     
     /* 底部送出大按鈕 */
-    .btn-submit { background-color: #06C755; color: white; border: none; border-radius: 14px; padding: 16px; font-size: 1.2rem; font-weight: bold; width: 100%; box-shadow: 0 6px 18px rgba(6, 199, 85, 0.25); transition: all 0.2s; display: flex; justify-content: center; align-items: center; gap: 8px; outline: none; margin-top: auto; flex-shrink: 0; }
+    .btn-submit { background-color: #06C755; color: white; border: none; border-radius: 14px; padding: 16px; font-size: 1.2rem; font-weight: bold; width: 100%; box-shadow: 0 6px 18px rgba(6, 199, 85, 0.25); transition: all 0.2s; display: flex; justify-content: center; align-items: center; gap: 8px; outline: none; }
     .btn-submit:active { transform: scale(0.96); box-shadow: 0 2px 8px rgba(6, 199, 85, 0.2); }
 
     #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
@@ -87,18 +59,11 @@
 
 <div class="container">
   <div class="brand-header">
-    <h1 class="brand-title">樂森藥局</h1>
+    <h1 class="brand-title"><i class="bi bi-shield-check"></i> 樂森藥局</h1>
     <p class="brand-subtitle">專屬領藥通知綁定</p>
   </div>
 
   <div class="main-card" id="formContent" style="display: none;">
-    
-    <div class="css-hero-banner">
-      <i class="bi bi-person-check-fill hero-icon"></i>
-      <h2 class="hero-title">建立專屬藥歷檔案</h2>
-      <p class="hero-subtitle">綁定後即可接收 LINE 領藥通知</p>
-    </div>
-    
     <div class="card-body">
       
       <div class="user-profile">
