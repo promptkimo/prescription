@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>樂森藥局 - 專屬 LINE 綁定</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    body { background-color: #f4fcf6; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; margin: 0; padding: 0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .container { max-width: 450px; width: 100%; padding: 20px; box-sizing: border-box; }
+    
+    .brand-header { text-align: center; margin-bottom: 15px; }
+    .brand-title { font-weight: 900; font-size: 2rem; letter-spacing: 2px; color: #06C755; margin-bottom: 0; } 
+    .brand-subtitle { font-size: 0.9rem; color: #6c757d; font-weight: 500; letter-spacing: 1px; }
+
+    .main-card { background: #ffffff; border-radius: 20px; box-shadow: 0 8px 24px rgba(6, 199, 85, 0.1); overflow: hidden; border: 1px solid #eef0f2; }
+    
+    /* 🔥 頂部橫幅圖片設定 */
+    .hero-banner { width: 100%; height: auto; max-height: 220px; object-fit: cover; display: block; border-bottom: 1px solid #f0f0f0; }
+
+    .card-body { padding: 25px 20px; }
+    
+    .user-profile { background: #f8f9fa; padding: 12px 15px; border-radius: 12px; margin-bottom: 20px; display: flex; align-items: center; border: 1px solid #e9ecef; }
+    .user-avatar { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; margin-right: 15px; border: 2px solid #06C755; }
+    .user-info-text { display: flex; flex-direction: column; }
+    .user-label { font-size: 0.75rem; color: #6c757d; margin-bottom: 2px; }
+    .user-name { font-weight: bold; color: #333; font-size: 1rem; }
+
+    .form-label { font-size: 0.9rem; font-weight: 700; color: #444; margin-bottom: 6px; }
+    .form-control { border-radius: 10px; padding: 10px 15px; border: 1px solid #ced4da; font-size: 1rem; }
+    .form-control:focus { border-color: #06C755; box-shadow: 0 0 0 0.2rem rgba(6, 199, 85, 0.25); }
+    
+    .btn-submit { background-color: #06C755; color: white; border: none; border-radius: 12px; padding: 12px; font-size: 1.1rem; font-weight: bold; width: 100%; box-shadow: 0 4px 12px rgba(6, 199, 85, 0.3); transition: all 0.2s; }
+    .btn-submit:active { transform: scale(0.96); box-shadow: 0 2px 6px rgba(6, 199, 85, 0.2); }
+
+    #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+  </style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="spinner-border text-success" role="status" style="width: 3rem; height: 3rem;"></div>
+  <p class="mt-3 text-secondary fw-bold fs-5" id="loadingText">LINE 安全登入中...</p>
+</div>
+
+<div class="container">
+  <div class="brand-header">
+    <h1 class="brand-title">樂森藥局</h1>
+    <p class="brand-subtitle">專屬領藥通知綁定</p>
+  </div>
+
+  <div class="main-card" id="formContent" style="display: none;">
+    <img src="10.png" class="hero-banner" alt="LINE 綁定通知" onerror="this.style.display='none'">
+    
+    <div class="card-body">
+      <div class="text-center mb-4">
+        <h5 class="fw-bold text-dark mb-2">建立您的專屬藥歷檔案</h5>
+        <p class="text-muted small mb-0">綁定後，藥師就能直接透過 LINE 通知您來拿藥囉！</p>
+      </div>
+
+      <div class="user-profile">
+        <img id="userThumb" src="https://placehold.co/50" class="user-avatar">
+        <div class="user-info-text">
+          <span class="user-label">當前綁定 LINE 帳號</span>
+          <span class="user-name" id="userNameDisplay">載入中...</span>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label text-success"><i class="bi bi-person-fill"></i> 領藥人姓名</label>
+        <input type="text" class="form-control" id="bName" placeholder="請輸入領藥人的真實姓名">
+      </div>
+      
+      <div class="mb-4">
+        <label class="form-label text-success"><i class="bi bi-telephone-fill"></i> 聯絡電話</label>
+        <input type="tel" class="form-control" id="bPhone" placeholder="請輸入手機號碼">
+      </div>
+
+      <div class="form-check mb-4">
+        <input class="form-check-input" type="checkbox" id="privacyConsentBind">
+        <label class="form-check-label text-muted" for="privacyConsentBind" style="font-size: 0.85rem; line-height: 1.4;">
+          我已詳細閱讀並同意 <a href="#" onclick="showPrivacyModal(event)" class="text-success fw-bold text-decoration-none">隱私權保護與服務條款</a>。
+        </label>
+      </div>
+
+      <button class="btn-submit" onclick="submitBind()">
+        <i class="bi bi-link-45deg"></i> 確認綁定 LINE 通知
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="privacyModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-light">
+        <h5 class="modal-title fw-bold text-dark"><i class="bi bi-shield-check text-success"></i> 隱私權保護與服務條款</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" style="font-size: 0.95rem; line-height: 1.6; color: #444;">
+        <p>歡迎您使用樂森藥局雲端服務。為保障您的隱私權與醫療資訊安全，請詳閱以下條款：</p>
+        <p class="fw-bold text-dark mb-1">1. 資料蒐集目的與範圍</p>
+        <p class="text-muted small">本系統僅為提供「處方箋調劑、領藥通知及藥事衛教服務」之目的，蒐集您填寫之姓名、電話與 LINE 帳號資訊。所有資料皆依台灣《個人資料保護法》妥善保護。</p>
+        <p class="fw-bold text-dark mb-1 mt-3">2. 當事人權利</p>
+        <p class="text-muted small">您隨時可向樂森藥局提出查詢、修改或刪除您個人資料之要求。</p>
+      </div>
+      <div class="modal-footer bg-light">
+        <button type="button" class="btn btn-success w-100 fw-bold" data-bs-dismiss="modal">我已了解並同意</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // ⚠️ 請確保這兩行與您 index.html 中的設定完全一致！
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbyUXCejmkI52ZJVUN1K1t1j2ZvfdZMCgHsgB79okITgzn7to2sfte43R5I0GOQnFp1opQ/exec"; 
+  const LIFF_ID = "2008912977-DuJTm5u1"; 
+
+  let lineUserId = "", lineDisplayName = "", linePictureUrl = "";
+
+  window.onload = function() { 
+    initLiff(); 
+  };
+
+  function initLiff() {
+    liff.init({ liffId: LIFF_ID }).then(() => {
+      if (liff.isLoggedIn()) {
+        liff.getProfile().then(profile => {
+          lineUserId = profile.userId; 
+          lineDisplayName = profile.displayName; 
+          linePictureUrl = profile.pictureUrl || "";
+          
+          document.getElementById('userNameDisplay').innerText = lineDisplayName;
+          document.getElementById('bName').value = lineDisplayName; 
+          if(profile.pictureUrl) document.getElementById('userThumb').src = profile.pictureUrl;
+          
+          // 隱藏 Loading，顯示表單
+          document.getElementById('loading').style.display = 'none';
+          document.getElementById('formContent').style.display = 'block';
+        });
+      } else {
+        // 如果沒有登入，強迫登入並導向回這個獨立綁定頁面 (bind.html)
+        liff.login({ redirectUri: window.location.href });
+      }
+    }).catch(err => { 
+      alert("系統初始化失敗，請稍後再試。");
+      document.getElementById('loading').style.display = 'none'; 
+    });
+  }
+
+  function showPrivacyModal(event) { 
+    event.preventDefault(); 
+    new bootstrap.Modal(document.getElementById('privacyModal')).show(); 
+  }
+
+  function submitBind() {
+    const name = document.getElementById('bName').value.trim(); 
+    const phone = document.getElementById('bPhone').value.trim();
+    const isConsent = document.getElementById('privacyConsentBind').checked;
+
+    if (!name || phone.length < 9) return alert("⚠️ 請填寫完整的領藥人姓名與正確的手機號碼！");
+    if (!isConsent) return alert("⚠️ 請先閱讀並勾選同意「隱私權與服務條款」才能完成綁定喔！");
+
+    document.getElementById('loadingText').innerText = "安全連線綁定中...";
+    document.getElementById('loading').style.display = 'flex'; 
+    
+    // 呼叫後端 API 進行純綁定 (isRegister: true, dept: "LINE綁定")
+    fetch(GAS_URL, { 
+      method: "POST", 
+      body: JSON.stringify({ 
+        action: "upload", 
+        name: name, 
+        lineName: lineDisplayName, 
+        linePic: linePictureUrl, 
+        phone: phone, 
+        dept: "LINE綁定", 
+        notify: "LINE通知", 
+        fileData: "", 
+        fileName: "", 
+        lineUserId: lineUserId, 
+        isRegister: true 
+      }) 
+    })
+    .then(res => res.json())
+    .then(res => {
+      document.getElementById('loading').style.display = 'none';
+      if(res.status === 'success') { 
+        alert("🎉 綁定成功！\n藥局未來將能透過 LINE 即時通知您領藥時間。"); 
+        if(liff.isInClient()) liff.closeWindow(); 
+      } 
+      else if(res.status === 'duplicate') { 
+        alert("💡 您已經成功綁定過了喔！不需重複綁定。"); 
+        if(liff.isInClient()) liff.closeWindow(); 
+      } 
+      else { 
+        alert("❌ 綁定失敗：" + res.message); 
+      }
+    }).catch(err => { 
+      document.getElementById('loading').style.display = 'none'; 
+      alert("網路連線異常，請確認網路狀態後再試一次。");
+    });
+  }
+</script>
+</body>
+</html>
