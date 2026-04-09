@@ -8,48 +8,51 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
-    /* 整體背景與排版 */
-    body { background-color: #f4fcf6; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; margin: 0; padding: 20px 15px; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; }
-    .container { max-width: 460px; width: 100%; padding: 0; }
+    /* 🔥 核心優化：使用 100dvh 強制網頁高度等於手機螢幕，並關閉滾動 */
+    body { background-color: #f4fcf6; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; margin: 0; padding: 2vh 15px; height: 100dvh; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; box-sizing: border-box; }
     
-    /* 頂部 LOGO 區塊 */
-    .brand-header { text-align: center; margin-bottom: 20px; margin-top: 10px; }
-    .brand-title { font-weight: 900; font-size: 2.2rem; letter-spacing: 2px; color: #06C755; margin-bottom: 5px; } 
-    .brand-subtitle { font-size: 0.95rem; color: #6c757d; font-weight: bold; letter-spacing: 1px; margin: 0; }
+    .container { max-width: 420px; width: 100%; padding: 0; height: 100%; display: flex; flex-direction: column; }
+    
+    /* 頂部 LOGO 區塊壓縮 */
+    .brand-header { text-align: center; margin-bottom: 1.5vh; flex-shrink: 0; }
+    .brand-title { font-weight: 900; font-size: 1.8rem; letter-spacing: 2px; color: #06C755; margin-bottom: 2px; } 
+    .brand-subtitle { font-size: 0.85rem; color: #6c757d; font-weight: bold; letter-spacing: 1px; margin: 0; }
 
-    /* 主卡片容器 */
-    .main-card { background: #ffffff; border-radius: 24px; box-shadow: 0 10px 30px rgba(6, 199, 85, 0.08); overflow: hidden; border: 1px solid rgba(0,0,0,0.05); }
+    /* 主卡片容器：佔滿剩餘高度 */
+    .main-card { background: #ffffff; border-radius: 20px; box-shadow: 0 8px 24px rgba(6, 199, 85, 0.08); overflow: hidden; border: 1px solid rgba(0,0,0,0.05); display: flex; flex-direction: column; flex-grow: 1; min-height: 0; }
     
-    /* 🔥 圖片修復：移除 max-height，讓圖片依原比例自然顯示 */
-    .hero-banner { width: 100%; height: auto; display: block; border-bottom: 1px solid #f0f0f0; object-fit: contain; background-color: #fff; }
+    /* 🔥 圖片修復：限制最大高度比例，確保不會把內容擠出去 */
+    .hero-banner { width: 100%; height: 22vh; min-height: 120px; max-height: 160px; object-fit: cover; object-position: center top; display: block; border-bottom: 1px solid #f0f0f0; flex-shrink: 0; }
 
-    .card-body { padding: 30px 20px; }
+    /* 卡片內文區塊：若手機真的超級小，只有這塊內部可以微微滑動 */
+    .card-body { padding: 15px 20px; display: flex; flex-direction: column; flex-grow: 1; overflow-y: auto; }
     
-    /* 標題與說明 */
-    .section-title { font-weight: 900; color: #222; font-size: 1.35rem; text-align: center; margin-bottom: 8px; }
-    .section-desc { text-align: center; color: #666; font-size: 0.9rem; margin-bottom: 25px; line-height: 1.5; }
+    /* 標題與說明壓縮 */
+    .section-title { font-weight: 900; color: #222; font-size: 1.15rem; text-align: center; margin-bottom: 4px; flex-shrink: 0; }
+    .section-desc { text-align: center; color: #666; font-size: 0.8rem; margin-bottom: 12px; line-height: 1.3; flex-shrink: 0; }
     
-    /* LINE 帳號顯示區塊 */
-    .user-profile { background: #f8f9fa; padding: 12px 15px; border-radius: 16px; margin-bottom: 25px; display: flex; align-items: center; border: 1px solid #eee; }
-    .user-avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; margin-right: 15px; border: 2px solid #06C755; background-color: #fff; }
+    /* LINE 帳號顯示區塊壓縮 */
+    .user-profile { background: #f8f9fa; padding: 8px 12px; border-radius: 12px; margin-bottom: 12px; display: flex; align-items: center; border: 1px solid #eee; flex-shrink: 0; }
+    .user-avatar { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; margin-right: 12px; border: 2px solid #06C755; background-color: #fff; }
     .user-info-text { display: flex; flex-direction: column; }
-    .user-label { font-size: 0.75rem; color: #888; margin-bottom: 2px; }
-    .user-name { font-weight: bold; color: #333; font-size: 1.05rem; }
+    .user-label { font-size: 0.7rem; color: #888; margin-bottom: 1px; }
+    .user-name { font-weight: bold; color: #333; font-size: 0.95rem; }
 
-    /* 表單輸入框優化 */
-    .form-label { font-size: 0.95rem; font-weight: 800; color: #1e8753; margin-bottom: 8px; }
-    .form-control { border-radius: 12px; padding: 12px 15px; border: 1px solid #ddd; font-size: 1.05rem; background-color: #fafafa; transition: all 0.2s; }
-    .form-control:focus { background-color: #fff; border-color: #06C755; box-shadow: 0 0 0 4px rgba(6, 199, 85, 0.15); outline: none; }
+    /* 表單輸入框極限優化 */
+    .input-group-wrapper { margin-bottom: 10px; flex-shrink: 0; }
+    .form-label { font-size: 0.85rem; font-weight: 800; color: #1e8753; margin-bottom: 4px; display: inline-block; }
+    .form-control { border-radius: 10px; padding: 10px 12px; border: 1px solid #ddd; font-size: 1rem; background-color: #fafafa; }
+    .form-control:focus { background-color: #fff; border-color: #06C755; box-shadow: 0 0 0 3px rgba(6, 199, 85, 0.15); outline: none; }
     
-    /* 隱私權打勾區塊 */
-    .form-check { margin-top: 15px; margin-bottom: 25px; }
-    .form-check-input { width: 1.2rem; height: 1.2rem; margin-top: 0.15rem; }
+    /* 隱私權打勾區塊壓縮 */
+    .form-check { margin-top: 5px; margin-bottom: 15px; flex-shrink: 0; }
+    .form-check-input { width: 1.1rem; height: 1.1rem; margin-top: 0.1rem; }
     .form-check-input:checked { background-color: #06C755; border-color: #06C755; }
-    .form-check-label { font-size: 0.85rem; color: #666; line-height: 1.5; padding-left: 5px; }
+    .form-check-label { font-size: 0.8rem; color: #666; line-height: 1.4; padding-left: 5px; }
     
-    /* 底部大按鈕 */
-    .btn-submit { background-color: #06C755; color: white; border: none; border-radius: 14px; padding: 15px; font-size: 1.15rem; font-weight: bold; width: 100%; box-shadow: 0 6px 15px rgba(6, 199, 85, 0.3); transition: all 0.2s; display: flex; justify-content: center; align-items: center; gap: 8px; }
-    .btn-submit:active { transform: scale(0.97); box-shadow: 0 2px 8px rgba(6, 199, 85, 0.2); }
+    /* 🔥 底部大按鈕：使用 margin-top: auto 強制推到最底部 */
+    .btn-submit { background-color: #06C755; color: white; border: none; border-radius: 12px; padding: 12px; font-size: 1.1rem; font-weight: bold; width: 100%; box-shadow: 0 4px 12px rgba(6, 199, 85, 0.25); transition: all 0.2s; display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: auto; flex-shrink: 0; }
+    .btn-submit:active { transform: scale(0.97); box-shadow: 0 2px 6px rgba(6, 199, 85, 0.2); }
 
     #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
   </style>
@@ -57,8 +60,8 @@
 <body>
 
 <div id="loading">
-  <div class="spinner-border text-success" role="status" style="width: 3.5rem; height: 3.5rem;"></div>
-  <p class="mt-3 text-secondary fw-bold fs-5" id="loadingText">系統連線中...</p>
+  <div class="spinner-border text-success" role="status" style="width: 3rem; height: 3rem;"></div>
+  <p class="mt-3 text-secondary fw-bold fs-6" id="loadingText">LINE 安全登入中...</p>
 </div>
 
 <div class="container">
@@ -72,7 +75,7 @@
     
     <div class="card-body">
       <div class="section-title">建立您的專屬藥歷檔案</div>
-      <div class="section-desc">綁定後，藥師就能直接透過 LINE 通知您來拿藥囉！</div>
+      <div class="section-desc">綁定後，藥師就能直接透過 LINE 通知您拿藥</div>
 
       <div class="user-profile">
         <img id="userThumb" src="https://placehold.co/50" class="user-avatar">
@@ -82,12 +85,12 @@
         </div>
       </div>
 
-      <div class="mb-3">
+      <div class="input-group-wrapper">
         <label class="form-label"><i class="bi bi-person-fill"></i> 領藥人姓名</label>
         <input type="text" class="form-control" id="bName" placeholder="例如：陳大明">
       </div>
       
-      <div class="mb-3">
+      <div class="input-group-wrapper">
         <label class="form-label"><i class="bi bi-telephone-fill"></i> 聯絡電話</label>
         <input type="tel" class="form-control" id="bPhone" placeholder="例如：0912345678">
       </div>
@@ -95,12 +98,12 @@
       <div class="form-check">
         <input class="form-check-input" type="checkbox" id="privacyConsentBind">
         <label class="form-check-label" for="privacyConsentBind">
-          我已詳細閱讀並同意 <a href="#" onclick="showPrivacyModal(event)" class="text-success fw-bold text-decoration-none">隱私權保護與服務條款</a>。
+          我已詳細閱讀並同意 <a href="#" onclick="showPrivacyModal(event)" class="text-success fw-bold text-decoration-none">隱私權保護條款</a>
         </label>
       </div>
 
       <button class="btn-submit" onclick="submitBind()">
-        <i class="bi bi-link-45deg fs-4"></i> 確認綁定 LINE 通知
+        <i class="bi bi-link-45deg fs-5"></i> 確認綁定 LINE
       </button>
     </div>
   </div>
@@ -151,12 +154,10 @@
           document.getElementById('bName').value = lineDisplayName; 
           if(profile.pictureUrl) document.getElementById('userThumb').src = profile.pictureUrl;
           
-          // 隱藏 Loading，顯示表單
           document.getElementById('loading').style.display = 'none';
-          document.getElementById('formContent').style.display = 'block';
+          document.getElementById('formContent').style.display = 'flex'; // 顯示為 Flex，保持高度結構
         });
       } else {
-        // 如果沒有登入，強迫登入並導向回這個獨立綁定頁面 (bind.html)
         liff.login({ redirectUri: window.location.href });
       }
     }).catch(err => { 
@@ -176,7 +177,7 @@
     const isConsent = document.getElementById('privacyConsentBind').checked;
 
     if (!name || phone.length < 9) return alert("⚠️ 請填寫完整的領藥人姓名與正確的手機號碼！");
-    if (!isConsent) return alert("⚠️ 請先閱讀並勾選同意「隱私權保護與服務條款」才能完成綁定喔！");
+    if (!isConsent) return alert("⚠️ 請先閱讀並勾選同意「隱私權保護條款」才能完成綁定喔！");
 
     document.getElementById('loadingText').innerText = "安全連線綁定中...";
     document.getElementById('loading').style.display = 'flex'; 
