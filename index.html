@@ -41,6 +41,7 @@
     .back-btn i { font-size: 1.2rem; margin-right: 5px; color: #06C755; }
     #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
     
+    /* 多圖預覽區 CSS */
     .preview-box { width: 100%; height: 200px; background: #f8f9fa; border: 2px dashed #06C755; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; position: relative; margin-bottom: 15px; transition: height 0.3s ease; }
     .placeholder-text { color: #06C755; text-align: center; font-size: 0.95rem; font-weight: bold; }
     .thumb-wrap { position: relative; width: 100%; padding-top: 100%; border-radius: 8px; overflow: hidden; border: 1px solid #ddd; }
@@ -105,7 +106,6 @@
             <span>雲端藥歷查詢</span>
           </button>
         </div>
-
       </div>
     </div>
   </div>
@@ -166,6 +166,13 @@
     </div>
     <div id="medHistoryResult"></div>
   </div>
+
+  <div id="view-success" class="hidden-mode sub-view d-flex flex-column justify-content-center align-items-center text-center" style="background: #fcfcfc;">
+    <i class="bi bi-check-circle-fill text-success mb-3" style="font-size: 5.5rem;"></i>
+    <h3 class="fw-bold text-dark mb-2">已經幫您完成<br>綁定領藥通知</h3>
+    <p class="text-muted mb-5 mt-3" style="font-size:1.1rem;">請告知櫃台藥師您的<strong class="text-dark">「姓名」</strong>，<br>為您完成最後的建檔手續。</p>
+    <button class="btn btn-success btn-lg rounded-pill px-5 fw-bold shadow-sm" onclick="closeLiffWindow()">關閉視窗</button>
+  </div>
 </div>
 
 <div class="modal fade" id="privacyModal" tabindex="-1" aria-hidden="true">
@@ -193,6 +200,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+  // 您提供的正確 GAS 網址
   const GAS_URL = "https://script.google.com/macros/s/AKfycbyUXCejmkI52ZJVUN1K1t1j2ZvfdZMCgHsgB79okITgzn7to2sfte43R5I0GOQnFp1opQ/exec";
   const LIFF_ID = "2008912977-DuJTm5u1"; 
 
@@ -211,13 +219,13 @@
   }
 
   let lineUserId = "", lineDisplayName = "", linePictureUrl = "";
-  
   let uploadedImages = []; 
   
   const urlParams = new URLSearchParams(window.location.search);
   const currentMode = urlParams.get('mode');
 
   window.onload = function() { initLiff(); };
+  
   function initLiff() {
     liff.init({ liffId: LIFF_ID }).then(() => {
       document.getElementById('loading').style.display = 'none';
@@ -230,7 +238,10 @@
           if(profile.pictureUrl) document.getElementById('userThumb').src = profile.pictureUrl;
           document.getElementById('userInfo').classList.remove('hidden-mode');
           
-          if (currentMode === 'upload') openUpload();
+          if (currentMode === 'quickbind') {
+             doQuickBind();
+          }
+          else if (currentMode === 'upload') openUpload();
           else if (currentMode === 'status') openStatus();
           else if (currentMode === 'meds') openMedHistory();
           else goHome(); 
@@ -242,6 +253,51 @@
     }).catch(err => { document.getElementById('loading').style.display = 'none'; goHome(); });
   }
 
+  // 🔥 極速隱形綁定，送出成功後顯示視窗
+  function doQuickBind() {
+    document.getElementById('loadingText').innerText = "極速綁定處理中...";
+    document.getElementById('loading').style.display = 'flex';
+    
+    fetch(GAS_URL, { 
+      method: "POST", 
+      body: JSON.stringify({ 
+        action: "upload", 
+        name: lineDisplayName, 
+        lineName: lineDisplayName, 
+        linePic: linePictureUrl, 
+        phone: "", 
+        dept: "快速綁定", 
+        notify: "LINE通知", 
+        fileDataArray: [], 
+        fileNameArray: [], 
+        lineUserId: lineUserId, 
+        isRegister: true 
+      }) 
+    })
+    .then(res => res.json())
+    .then(res => {
+      document.getElementById('loading').style.display = 'none';
+      if(res.status === 'success' || res.status === 'duplicate') {
+        document.getElementById('view-home').classList.add('hidden-mode');
+        document.getElementById('view-form').classList.add('hidden-mode');
+        document.getElementById('view-status').classList.add('hidden-mode');
+        document.getElementById('view-meds').classList.add('hidden-mode');
+        document.getElementById('view-success').classList.remove('hidden-mode');
+      } else {
+        alert("❌ 授權失敗：" + res.message);
+        goHome();
+      }
+    }).catch(err => { document.getElementById('loading').style.display = 'none'; alert("❌ 連線異常"); goHome(); });
+  }
+
+  function closeLiffWindow() {
+    if(liff.isInClient()) {
+        liff.closeWindow();
+    } else {
+        goHome();
+    }
+  }
+
   function doLiffLogout() { if (confirm("確定要登出嗎？")) { if (liff.isLoggedIn()) { liff.logout(); location.href = window.location.href.split('?')[0]; } } }
 
   function goHome() {
@@ -250,6 +306,7 @@
     document.getElementById('view-form').classList.add('hidden-mode');
     document.getElementById('view-status').classList.add('hidden-mode');
     document.getElementById('view-meds').classList.add('hidden-mode');
+    document.getElementById('view-success').classList.add('hidden-mode');
   }
 
   function openUpload() { 
@@ -257,6 +314,7 @@
     document.getElementById('view-home').classList.add('hidden-mode'); 
     document.getElementById('view-status').classList.add('hidden-mode'); 
     document.getElementById('view-meds').classList.add('hidden-mode'); 
+    document.getElementById('view-success').classList.add('hidden-mode');
     document.getElementById('view-form').classList.remove('hidden-mode'); 
     document.getElementById('uNotify').value = "LINE通知";
   }
@@ -266,6 +324,7 @@
     document.getElementById('view-home').classList.add('hidden-mode'); 
     document.getElementById('view-form').classList.add('hidden-mode'); 
     document.getElementById('view-meds').classList.add('hidden-mode'); 
+    document.getElementById('view-success').classList.add('hidden-mode');
     document.getElementById('view-status').classList.remove('hidden-mode'); 
     fetchUploadHistory();
   }
@@ -275,6 +334,7 @@
     document.getElementById('view-home').classList.add('hidden-mode'); 
     document.getElementById('view-form').classList.add('hidden-mode'); 
     document.getElementById('view-status').classList.add('hidden-mode'); 
+    document.getElementById('view-success').classList.add('hidden-mode');
     document.getElementById('view-meds').classList.remove('hidden-mode'); 
     document.getElementById('medHistoryResult').innerHTML = ''; document.getElementById('qName').value = ''; document.getElementById('qId').value = '';
     document.getElementById('medQueryForm').style.display = 'block'; 
@@ -519,7 +579,7 @@
     
     const isRegisterMode = uploadedImages.length === 0; 
     const finalDept = isRegisterMode ? "LINE綁定" : "一般"; 
-    const loadingMsg = isRegisterMode ? "綁定資料加密傳送中..." : "處方箋加密上傳中...";
+    const loadingMsg = isRegisterMode ? "綁定資料傳送中..." : "處方箋加密上傳中...";
 
     document.getElementById('loading').style.display = 'flex'; 
     document.getElementById('loadingText').innerText = loadingMsg;
