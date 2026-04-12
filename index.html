@@ -40,9 +40,13 @@
     .back-btn { font-size: 1rem; font-weight: bold; color: #495057; padding: 8px 18px; background: #f8f9fa; border-radius: 50px; display: inline-flex; align-items: center; border: none; transition: 0.2s; }
     .back-btn i { font-size: 1.2rem; margin-right: 5px; color: #06C755; }
     #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-    .preview-box { width: 100%; height: 200px; background: #f8f9fa; border: 2px dashed #06C755; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; position: relative; margin-bottom: 15px; }
-    .preview-box img { width: 100%; height: 100%; object-fit: contain; display: none; }
+    
+    /* 🔥 新增多圖預覽的 CSS */
+    .preview-box { width: 100%; height: 200px; background: #f8f9fa; border: 2px dashed #06C755; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; position: relative; margin-bottom: 15px; transition: height 0.3s ease; }
     .placeholder-text { color: #06C755; text-align: center; font-size: 0.95rem; font-weight: bold; }
+    .thumb-wrap { position: relative; width: 100%; padding-top: 100%; border-radius: 8px; overflow: hidden; border: 1px solid #ddd; }
+    .thumb-wrap img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
+    .thumb-remove { position: absolute; top: 4px; right: 4px; background: rgba(220,53,69,0.9); color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.2rem; border: none; line-height: 1; padding: 0; }
     
     .rx-card { border: 1px solid #20935A; border-radius: 12px; overflow: hidden; margin-bottom: 20px; background: #fff; }
     .rx-header { background-color: #20935A; color: white; padding: 10px 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
@@ -88,16 +92,16 @@
         
         <div class="home-btn-group">
           <button class="menu-btn main-btn" onclick="openUpload()">
-            <img src="5.png" class="menu-banner" alt="處方上傳與綁定">
+            <img src="https://i.imgur.com/G5iM4J1.png" class="menu-banner" alt="處方上傳與綁定">
             <span class="main-btn-text">處方上傳 / Line綁定領藥通知</span>
           </button>
           
           <button class="menu-btn" onclick="openStatus()">
-            <img src="3.png" class="menu-icon" alt="領藥狀態查詢">
+            <img src="https://i.imgur.com/5J3bB8q.png" class="menu-icon" alt="領藥狀態查詢">
             <span>領藥狀態查詢</span>
           </button>
           <button class="menu-btn" onclick="openMedHistory()">
-            <img src="4.png" class="menu-icon" alt="雲端藥歷">
+            <img src="https://i.imgur.com/vHqB01e.png" class="menu-icon" alt="雲端藥歷">
             <span>雲端藥歷查詢</span>
           </button>
         </div>
@@ -110,12 +114,14 @@
     <div class="back-btn-container"><button class="back-btn" onclick="goHome()"><i class="bi bi-chevron-left"></i> 返回主畫面</button></div>
     <div class="card p-4 shadow-sm border-0 bg-light">
       <h5 class="fw-bold text-success mb-2" id="formTitle"><i class="bi bi-person-lines-fill"></i> 建立領藥檔案</h5>
-      <p class="small text-muted mb-3">若您有實體處方箋，請點擊下方虛線框拍照。<b>若您僅需綁定 LINE，請直接跳過拍照，填寫下方資料送出即可！</b></p>
+      <p class="small text-muted mb-3">若您有多張實體處方箋，可以連續拍照上傳。<b>若您僅需綁定 LINE，請直接跳過拍照，填寫下方資料送出即可！</b></p>
       
       <div id="cameraSection">
-        <div class="preview-box shadow-sm" onclick="document.getElementById('fileInput').click()">
-          <div class="placeholder-text" id="placeholder"><span style="font-size: 2.2rem;">📷</span><br>點此拍照 / 選照片<br><span style="font-size: 0.8rem; font-weight: normal; color: #666;">(無處方箋可略過)</span></div>
-          <img id="previewImg">
+        <div class="row g-2 mb-2" id="previewGrid"></div>
+        <div class="preview-box shadow-sm" onclick="document.getElementById('fileInput').click()" id="uploadBtnBox">
+          <div class="placeholder-text" id="placeholder">
+             <span style="font-size: 2.2rem;">📷</span><br>點此拍照 / 選照片<br><span style="font-size: 0.8rem; font-weight: normal; color: #666;">(無處方箋可略過)</span>
+          </div>
         </div>
         <input type="file" id="fileInput" accept="image/*" style="display: none;" onchange="handleFile(this)">
       </div>
@@ -187,7 +193,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbyUXCejmkI52ZJVUN1K1t1j2ZvfdZMCgHsgB79okITgzn7to2sfte43R5I0GOQnFp1opQ/exec"; 
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbyUXCejmkI52ZJVUN1K1t1j2ZvfdZMCgHsgB79okITgzn7to2sfte43R5I0GOQnFp1opQ/exec";
   const LIFF_ID = "2008912977-DuJTm5u1"; 
 
   const NHI_DEPT_MAP = {
@@ -196,21 +202,23 @@
     "12":"精神科","13":"復健科","14":"整形外科","15":"職業醫學科","22":"急診醫學科",
     "23":"牙醫一般科","39":"牙醫一般科","40":"牙醫一般科","60":"中醫科","81":"麻醉科"
   };
-
   function translateDept(codeStr) {
     if (!codeStr) return "一般科";
     let c = String(codeStr).trim().toUpperCase();
     let num = parseInt(c, 10);
     if (!isNaN(num) && num.toString() === c.replace(/^0+/, '')) { c = num < 10 ? "0" + num : String(num); }
-    return NHI_DEPT_MAP[c] ? NHI_DEPT_MAP[c] : c; 
+    return NHI_DEPT_MAP[c] ? NHI_DEPT_MAP[c] : c;
   }
 
-  let lineUserId = "", lineDisplayName = "", linePictureUrl = "", base64Image = "", fileName = "";
+  let lineUserId = "", lineDisplayName = "", linePictureUrl = "";
+  
+  // 🔥 新增：儲存多張圖片的陣列
+  let uploadedImages = []; 
+  
   const urlParams = new URLSearchParams(window.location.search);
   const currentMode = urlParams.get('mode');
 
   window.onload = function() { initLiff(); };
-
   function initLiff() {
     liff.init({ liffId: LIFF_ID }).then(() => {
       document.getElementById('loading').style.display = 'none';
@@ -251,7 +259,7 @@
     document.getElementById('view-status').classList.add('hidden-mode'); 
     document.getElementById('view-meds').classList.add('hidden-mode'); 
     document.getElementById('view-form').classList.remove('hidden-mode'); 
-    document.getElementById('uNotify').value = "LINE通知"; 
+    document.getElementById('uNotify').value = "LINE通知";
   }
   
   function openStatus() { 
@@ -260,7 +268,7 @@
     document.getElementById('view-form').classList.add('hidden-mode'); 
     document.getElementById('view-meds').classList.add('hidden-mode'); 
     document.getElementById('view-status').classList.remove('hidden-mode'); 
-    fetchUploadHistory(); 
+    fetchUploadHistory();
   }
   
   function openMedHistory() { 
@@ -269,16 +277,15 @@
     document.getElementById('view-form').classList.add('hidden-mode'); 
     document.getElementById('view-status').classList.add('hidden-mode'); 
     document.getElementById('view-meds').classList.remove('hidden-mode'); 
-    document.getElementById('medHistoryResult').innerHTML = ''; document.getElementById('qName').value = ''; document.getElementById('qId').value = ''; 
+    document.getElementById('medHistoryResult').innerHTML = ''; document.getElementById('qName').value = ''; document.getElementById('qId').value = '';
     document.getElementById('medQueryForm').style.display = 'block'; 
   }
 
   function showPrivacyModal(event) { event.preventDefault(); new bootstrap.Modal(document.getElementById('privacyModal')).show(); }
 
-  // 🔥 狀態查詢連動：待處理 vs 已收單處理
   function fetchUploadHistory() {
     if (!lineUserId) return;
-    document.getElementById('uploadHistoryList').innerHTML = `<div class="text-center text-muted small py-4"><div class="spinner-border spinner-border-sm text-info me-2"></div> 讀取紀錄中...</div>`;
+    document.getElementById('uploadHistoryList').innerHTML = '<div class="text-center text-muted small py-4"><div class="spinner-border spinner-border-sm text-info me-2"></div> 讀取紀錄中...</div>';
     fetch(GAS_URL, { method: "POST", body: JSON.stringify({ action: "history", lineUserId: lineUserId }) })
     .then(res => res.json()).then(res => {
       if (res.status === 'success') {
@@ -290,15 +297,15 @@
           let cleanDate = String(item.date).split('T')[0].split(' ')[0];
           let highResImg = imgSrc.replace('w200','w1600'); 
           
-          container.innerHTML += `
-            <div class="card p-2 mb-2 shadow-sm border-0 flex-row align-items-center bg-light" style="cursor:pointer; transition: transform 0.2s;" onclick="window.open('${highResImg}', '_blank')" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">
-              <img src="${imgSrc}" style="width: 55px; height: 55px; object-fit: cover; border-radius: 8px; margin-right: 15px; border:1px solid #ddd;">
-              <div class="flex-grow-1">
-                <div class="fw-bold" style="font-size:0.95rem; color:#333;">${cleanDate} <i class="bi bi-zoom-in text-muted ms-1" style="font-size: 0.8rem;"></i></div>
-                <div class="small text-muted">${item.dept || '一般領藥'}</div>
-              </div>
-              <div><span class="badge ${statusColor} px-2 py-1 shadow-sm">${item.status}</span></div>
-            </div>`;
+          container.innerHTML += 
+            '<div class="card p-2 mb-2 shadow-sm border-0 flex-row align-items-center bg-light" style="cursor:pointer; transition: transform 0.2s;" onclick="window.open(\'' + highResImg + '\', \'_blank\')" onmousedown="this.style.transform=\'scale(0.98)\'" onmouseup="this.style.transform=\'scale(1)\'">' +
+              '<img src="' + imgSrc + '" style="width: 55px; height: 55px; object-fit: cover; border-radius: 8px; margin-right: 15px; border:1px solid #ddd;">' +
+              '<div class="flex-grow-1">' +
+                '<div class="fw-bold" style="font-size:0.95rem; color:#333;">' + cleanDate + ' <i class="bi bi-zoom-in text-muted ms-1" style="font-size: 0.8rem;"></i></div>' +
+                '<div class="small text-muted">' + (item.dept || '一般領藥') + '</div>' +
+              '</div>' +
+              '<div><span class="badge ' + statusColor + ' px-2 py-1 shadow-sm">' + item.status + '</span></div>' +
+            '</div>';
         });
       }
     }).catch(err => { document.getElementById('uploadHistoryList').innerHTML = '<div class="text-center text-danger small py-3">連線異常</div>'; });
@@ -314,7 +321,7 @@
   }
 
   function _addDays(date, days) { let result = new Date(date); result.setDate(result.getDate() + days); return result; }
-  function _fmt(date, format) { if(!date || isNaN(date.getTime())) return '-'; let y = date.getFullYear(); let m = String(date.getMonth() + 1).padStart(2, '0'); let d = String(date.getDate()).padStart(2, '0'); return format === 'MM/DD' ? `${m}/${d}` : `${y}-${m}-${d}`; }
+  function _fmt(date, format) { if(!date || isNaN(date.getTime())) return '-'; let y = date.getFullYear(); let m = String(date.getMonth() + 1).padStart(2, '0'); let d = String(date.getDate()).padStart(2, '0'); return format === 'MM/DD' ? m + '/' + d : y + '-' + m + '-' + d; }
 
   function toggleMedCard(groupId) {
     let body = document.getElementById('rx-body-' + groupId);
@@ -332,7 +339,6 @@
   function queryMedHistory() {
     const name = document.getElementById('qName').value.trim();
     const id = document.getElementById('qId').value.trim().toUpperCase();
-
     if (!name || !id) { return alert("⚠️ 請輸入完整的領藥人姓名與身分證字號！"); }
 
     document.getElementById('loading').style.display = 'flex';
@@ -347,7 +353,7 @@
         if (!res.data || res.data.length === 0) { resultDiv.innerHTML = '<div class="alert alert-warning text-center small fw-bold">查無相符的用藥紀錄，請確認資料是否正確，或向藥局詢問。</div>'; return; }
         
         document.getElementById('medQueryForm').style.display = 'none';
-        
+      
         const groupedData = {};
         res.data.forEach(item => {
           let rxDate = item.rxDate ? item.rxDate.replace(/\//g, '-') : '';
@@ -368,11 +374,8 @@
           let isDuplicate = groupedData[groupKey].items.some(existingItem => existingItem.drug === item.drug);
           if (!isDuplicate) groupedData[groupKey].items.push(item);
         });
-
         const sortedGroupKeys = Object.keys(groupedData).sort((a, b) => { let dateA = groupedData[a].rxDateStr; let dateB = groupedData[b].rxDateStr; return dateB.localeCompare(dateA); });
-
-        let html = `<div class="d-flex justify-content-between align-items-center mb-3 mt-2 px-1"><div class="text-success fw-bold fs-5"><i class="bi bi-person-lines-fill"></i> ${name} 的藥歷</div><button class="btn btn-sm btn-outline-secondary px-3" onclick="resetMedQuery()">重新查詢</button></div>`;
-
+        let html = '<div class="d-flex justify-content-between align-items-center mb-3 mt-2 px-1"><div class="text-success fw-bold fs-5"><i class="bi bi-person-lines-fill"></i> ' + name + ' 的藥歷</div><button class="btn btn-sm btn-outline-secondary px-3" onclick="resetMedQuery()">重新查詢</button></div>';
         let groupId = 0;
         sortedGroupKeys.forEach(key => {
           let meta = groupedData[key];
@@ -381,7 +384,7 @@
           let rxDate = _parseDate(meta.rxDateStr);
           let date2Str = '-', date3Str = '-', returnDateStr = '-';
           let date2Obj = null, date3Obj = null;
-          
+   
           if (rxDate) {
              date2Obj = _addDays(rxDate, meta.days);
              date3Obj = _addDays(rxDate, meta.days * 2);
@@ -394,71 +397,63 @@
 
           let refill2UI = '';
           if (meta.totalRefills >= 2) {
-            let r2Status = `<span class="text-danger fw-bold">${date2Str}</span>`;
-            if (meta.maxCurrentRefill >= 2) r2Status = `<span class="text-success fw-bold me-2">${_fmt(date2Obj, 'MM/DD') || '-'}</span><span class="badge bg-success">✅ 已領取</span>`;
-            refill2UI = `<div class="rx-date-row"><span class="text-muted">👉 第二次領藥：</span><div>${r2Status}</div></div>`;
+            let r2Status = '<span class="text-danger fw-bold">' + date2Str + '</span>';
+            if (meta.maxCurrentRefill >= 2) r2Status = '<span class="text-success fw-bold me-2">' + (_fmt(date2Obj, 'MM/DD') || '-') + '</span><span class="badge bg-success">✅ 已領取</span>';
+            refill2UI = '<div class="rx-date-row"><span class="text-muted">👉 第二次領藥：</span><div>' + r2Status + '</div></div>';
           }
 
           let refill3UI = '';
           if (meta.totalRefills >= 3) {
-            let r3Status = `<span class="text-danger fw-bold">${date3Str}</span>`;
-            if (meta.maxCurrentRefill >= 3) r3Status = `<span class="text-success fw-bold me-2">${_fmt(date3Obj, 'MM/DD') || '-'}</span><span class="badge bg-success">✅ 已領取</span>`;
-            refill3UI = `<div class="rx-date-row"><span class="text-muted">👉 第三次領藥：</span><div>${r3Status}</div></div>`;
+            let r3Status = '<span class="text-danger fw-bold">' + date3Str + '</span>';
+            if (meta.maxCurrentRefill >= 3) r3Status = '<span class="text-success fw-bold me-2">' + (_fmt(date3Obj, 'MM/DD') || '-') + '</span><span class="badge bg-success">✅ 已領取</span>';
+            refill3UI = '<div class="rx-date-row"><span class="text-muted">👉 第三次領藥：</span><div>' + r3Status + '</div></div>';
           }
 
           let displayDept = translateDept(meta.dept);
-
-          html += `
-          <div class="rx-card shadow-sm">
-            <div class="rx-header" id="rx-header-${groupId}" onclick="toggleMedCard(${groupId})">
-               <span><i class="bi bi-folder2-open"></i> 處方日：${meta.rxDateStr}</span>
-               <div><span class="badge px-2 py-1">${displayDept}</span></div>
-            </div>
-            
-            <div class="rx-body-collapse ${isOpen}" id="rx-body-${groupId}">
-               <div class="rx-progress-box">
-                 <div class="rx-progress-header">
-                   <span class="fw-bold text-dark"><i class="bi bi-file-earmark-medical text-info"></i> 慢箋領藥進度</span>
-                   <span class="badge bg-info text-white px-2 py-1">目前進度: ${meta.maxCurrentRefill}/${meta.totalRefills}</span>
-                 </div>
-                 
-                 <div class="rx-meta"><i class="bi bi-building"></i> 醫療院所：<strong>${meta.hospital}</strong></div>
-                 <div class="rx-meta"><i class="bi bi-person-badge"></i> 看診醫師：<strong>${meta.physician}</strong></div>
-                 <div class="rx-meta mb-3"><i class="bi bi-calendar-event"></i> 處方開立：<strong>${meta.rxDateStr}</strong> <span class="text-muted" style="font-size:0.8rem;">(單次: ${meta.days}天)</span></div>
-                 
-                 ${refill2UI}
-                 ${refill3UI}
-                 
-                 <div class="rx-return-box">
-                   <span class="text-dark fw-bold"><i class="bi bi-hospital"></i> 藥品用罄(預約回診日)</span>
-                   <span class="text-danger fw-bold fs-6">${returnDateStr}</span>
-                 </div>
-               </div>
-
-               <button class="btn btn-outline-success w-100 fw-bold btn-sm mb-1 rounded-pill" onclick="toggleMedList('medList_${groupId}')">
-                 <i class="bi bi-list-ul"></i> 展開藥品明細 (${meta.items.length} 項) <i class="bi bi-chevron-down"></i>
-               </button>
-
-               <div id="medList_${groupId}" style="display: none; padding-top: 15px;">
-          `;
+          html += '<div class="rx-card shadow-sm">' +
+            '<div class="rx-header" id="rx-header-' + groupId + '" onclick="toggleMedCard(' + groupId + ')">' +
+               '<span><i class="bi bi-folder2-open"></i> 處方日：' + meta.rxDateStr + '</span>' +
+               '<div><span class="badge px-2 py-1">' + displayDept + '</span></div>' +
+            '</div>' +
+            '<div class="rx-body-collapse ' + isOpen + '" id="rx-body-' + groupId + '">' +
+               '<div class="rx-progress-box">' +
+                 '<div class="rx-progress-header">' +
+                   '<span class="fw-bold text-dark"><i class="bi bi-file-earmark-medical text-info"></i> 慢箋領藥進度</span>' +
+                   '<span class="badge bg-info text-white px-2 py-1">目前進度: ' + meta.maxCurrentRefill + '/' + meta.totalRefills + '</span>' +
+                 '</div>' +
+                 '<div class="rx-meta"><i class="bi bi-building"></i> 醫療院所：<strong>' + meta.hospital + '</strong></div>' +
+                 '<div class="rx-meta"><i class="bi bi-person-badge"></i> 看診醫師：<strong>' + meta.physician + '</strong></div>' +
+                 '<div class="rx-meta mb-3"><i class="bi bi-calendar-event"></i> 處方開立：<strong>' + meta.rxDateStr + '</strong> <span class="text-muted" style="font-size:0.8rem;">(單次: ' + meta.days + '天)</span></div>' +
+                 refill2UI +
+                 refill3UI +
+                 '<div class="rx-return-box">' +
+                   '<span class="text-dark fw-bold"><i class="bi bi-hospital"></i> 藥品用罄(預約回診日)</span>' +
+                   '<span class="text-danger fw-bold fs-6">' + returnDateStr + '</span>' +
+                 '</div>' +
+               '</div>' +
+               '<button class="btn btn-outline-success w-100 fw-bold btn-sm mb-1 rounded-pill" onclick="toggleMedList(\'medList_' + groupId + '\')">' +
+                 '<i class="bi bi-list-ul"></i> 展開藥品明細 (' + meta.items.length + ' 項) <i class="bi bi-chevron-down"></i>' +
+               '</button>' +
+               '<div id="medList_' + groupId + '" style="display: none; padding-top: 15px;">';
           
           meta.items.forEach((med, idx) => {
-            html += `<div class="med-item"><div class="med-num">${idx + 1}</div><div class="med-info"><div class="med-name">${med.drug || '-'}</div><div class="med-tags"><div><span class="tag-box">每次用量 <strong class="text-dark">${med.dosage || '-'}</strong></span><span class="tag-box">天數 <strong class="text-dark">${med.days || '-'}</strong></span></div><div class="text-success fw-bold">總量: ${med.total || '-'}</div></div></div></div>`;
+            html += '<div class="med-item"><div class="med-num">' + (idx + 1) + '</div><div class="med-info"><div class="med-name">' + (med.drug || '-') + '</div><div class="med-tags"><div><span class="tag-box">每次用量 <strong class="text-dark">' + (med.dosage || '-') + '</strong></span><span class="tag-box">天數 <strong class="text-dark">' + (med.days || '-') + '</strong></span></div><div class="text-success fw-bold">總量: ' + (med.total || '-') + '</div></div></div></div>';
           });
           
-          html += `</div></div></div>`;
+          html += '</div></div></div>';
           groupId++;
         });
 
         resultDiv.innerHTML = html;
-      } else { resultDiv.innerHTML = `<div class="alert alert-danger text-center small fw-bold">❌ 查詢失敗：${res.message}</div>`; }
+      } else { resultDiv.innerHTML = '<div class="alert alert-danger text-center small fw-bold">❌ 查詢失敗：' + res.message + '</div>'; }
     }).catch(err => { document.getElementById('loading').style.display = 'none'; resultDiv.innerHTML = '<div class="alert alert-danger text-center small fw-bold">❌ 網路連線異常，請稍後再試。</div>'; });
   }
 
+  // 🔥 核心更新：將單張圖片升級為多張圖片陣列處理
   function handleFile(input) {
     if (input.files && input.files[0]) {
-      const file = input.files[0]; 
-      fileName = file.name; 
+      const file = input.files[0];
+      const fName = file.name; 
       
       document.getElementById('loadingText').innerText = "照片優化處理中...";
       document.getElementById('loading').style.display = 'flex';
@@ -470,18 +465,21 @@
           img.src = e.target.result;
           img.onload = function() {
             const canvas = document.createElement('canvas');
+            
             let w = img.width, h = img.height; const MAX_SIZE = 1600;
             if (w > h && w > MAX_SIZE) { h *= MAX_SIZE / w; w = MAX_SIZE; } else if (h > w && h > MAX_SIZE) { w *= MAX_SIZE / h; h = MAX_SIZE; }
             canvas.width = w; canvas.height = h; 
             const ctx = canvas.getContext('2d'); 
+        
             ctx.drawImage(img, 0, 0, w, h);
-            base64Image = canvas.toDataURL('image/jpeg', 0.85);
+            const b64 = canvas.toDataURL('image/jpeg', 0.85);
             
-            document.getElementById('previewImg').src = base64Image; 
-            document.getElementById('previewImg').style.display = 'block'; 
-            document.getElementById('placeholder').style.display = 'none';
+            // 存入陣列並渲染
+            uploadedImages.push({ base64: b64, fileName: fName });
+            renderPreviews();
             
             document.getElementById('loading').style.display = 'none';
+            input.value = ''; // 清空 file input，允許重複選取相同檔案
           }
         }; 
         reader.readAsDataURL(file);
@@ -489,25 +487,66 @@
     }
   }
 
+  // 刪除特定處方照片
+  function removeImage(index) {
+      uploadedImages.splice(index, 1);
+      renderPreviews();
+  }
+
+  // 渲染多張處方的預覽圖格線
+  function renderPreviews() {
+      const grid = document.getElementById('previewGrid');
+      grid.innerHTML = '';
+      uploadedImages.forEach((img, index) => {
+          const col = document.createElement('div');
+          col.className = 'col-4 col-sm-3';
+          col.innerHTML = '<div class="thumb-wrap shadow-sm"><img src="' + img.base64 + '"><button type="button" class="thumb-remove" onclick="event.stopPropagation(); removeImage(' + index + ')"><i class="bi bi-x"></i></button></div>';
+          grid.appendChild(col);
+      });
+      
+      const uploadBox = document.getElementById('uploadBtnBox');
+      if (uploadedImages.length > 0) {
+          document.getElementById('placeholder').innerHTML = '<span style="font-size: 1.5rem;">➕</span><br>再加一單';
+          uploadBox.style.height = '100px'; 
+      } else {
+          document.getElementById('placeholder').innerHTML = '<span style="font-size: 2.2rem;">📷</span><br>點此拍照 / 選照片<br><span style="font-size: 0.8rem; font-weight: normal; color: #666;">(無處方箋可略過)</span>';
+          uploadBox.style.height = '200px';
+      }
+  }
+
   function submitData() {
     const name = document.getElementById('uName').value.trim(); 
-    const phone = document.getElementById('uPhone').value.trim(); 
+    const phone = document.getElementById('uPhone').value.trim();
     const isConsent = document.getElementById('privacyConsentUpload').checked;
 
     if (!name || phone.length < 9) return alert("⚠️ 請填寫完整姓名與正確的手機號碼！");
     if (!isConsent) return alert("⚠️ 請先閱讀並勾選同意「隱私權與服務條款」才能送出資料喔！");
     
-    const isRegisterMode = base64Image ? false : true;
+    const isRegisterMode = uploadedImages.length === 0; // 若無圖片，則視為純綁定
     const finalDept = isRegisterMode ? "LINE綁定" : "一般"; 
     const loadingMsg = isRegisterMode ? "綁定資料加密傳送中..." : "處方箋加密上傳中...";
 
     document.getElementById('loading').style.display = 'flex'; 
     document.getElementById('loadingText').innerText = loadingMsg;
     
+    // 提取所有的 base64 與檔名
+    const b64Array = uploadedImages.map(function(img) { return img.base64; });
+    const nameArray = uploadedImages.map(function(img) { return img.fileName; });
+
     fetch(GAS_URL, { 
       method: "POST", 
       body: JSON.stringify({ 
-        action: "upload", name: name, lineName: lineDisplayName, linePic: linePictureUrl, phone: phone, dept: finalDept, notify: "LINE通知", fileData: base64Image || "", fileName: fileName || "", lineUserId: lineUserId, isRegister: isRegisterMode 
+        action: "upload", 
+        name: name, 
+        lineName: lineDisplayName, 
+        linePic: linePictureUrl, 
+        phone: phone, 
+        dept: finalDept, 
+        notify: "LINE通知", 
+        fileDataArray: b64Array, // 傳送陣列
+        fileNameArray: nameArray, // 傳送陣列
+        lineUserId: lineUserId, 
+        isRegister: isRegisterMode 
       }) 
     })
     .then(res => res.json())
@@ -515,7 +554,12 @@
       document.getElementById('loading').style.display = 'none';
       if(res.status === 'success') {
         if (isRegisterMode) { alert("✅ 綁定成功！\n藥局未來將能透過 LINE 通知您領藥。"); } 
-        else { alert("✅ 處方箋已加密送達雲端！\n藥局處理完成後，您可於「領藥狀態查詢」中追蹤進度。"); }
+        else { alert("✅ " + uploadedImages.length + " 張處方箋已加密送達雲端！\n藥局處理完成後，您可於「領藥狀態查詢」中追蹤進度。"); }
+        
+        // 🔥 發送成功後，徹底清空照片陣列與畫面，並保留姓名電話
+        uploadedImages = [];
+        renderPreviews();
+
         if(liff.isInClient()) liff.closeWindow(); else goHome();
       } else if(res.status === 'duplicate') { alert("⚠️ " + res.message); goHome(); } 
       else { alert("❌ 失敗：" + res.message); }
