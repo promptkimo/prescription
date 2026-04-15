@@ -9,15 +9,13 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
-    body { background-color: #fcfcfc; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; margin: 0; padding: 0; height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
+    body { background-color: #fcfcfc; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
     .container { max-width: 600px; padding: 0; flex-grow: 1; display: flex; flex-direction: column; margin: 0 auto; width: 100%; height: 100%; background: #ffffff; box-shadow: 0 0 20px rgba(0,0,0,0.02); }
-    
     .hidden-mode { display: none !important; } 
     #view-home { height: 100%; display: flex; flex-direction: column; overflow: hidden; }
     .brand-header { background: #ffffff; padding: 30px 20px 10px; text-align: center; margin-bottom: 5px; flex-shrink: 0; }
     .brand-title { font-weight: 900; font-size: 1.8rem; letter-spacing: 2px; margin-bottom: 3px; color: #06C755; } 
     .brand-subtitle { font-size: 0.85rem; color: #6c757d; margin-bottom: 0; font-weight: 500; letter-spacing: 1px; }
-    
     .home-content { display: flex; flex-direction: column; flex-grow: 1; padding: 0 0 30px 0; min-height: 0; }
     .home-content-wrapper { max-width: 360px; width: 100%; margin: 0 auto; padding: 0 15px; box-sizing: border-box; }
     
@@ -41,7 +39,6 @@
     .back-btn i { font-size: 1.2rem; margin-right: 5px; color: #06C755; }
     #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
     
-    /* 多圖預覽區 CSS */
     .preview-box { width: 100%; height: 200px; background: #f8f9fa; border: 2px dashed #06C755; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; position: relative; margin-bottom: 15px; transition: height 0.3s ease; }
     .placeholder-text { color: #06C755; text-align: center; font-size: 0.95rem; font-weight: bold; }
     .thumb-wrap { position: relative; width: 100%; padding-top: 100%; border-radius: 8px; overflow: hidden; border: 1px solid #ddd; }
@@ -92,17 +89,17 @@
         
         <div class="home-btn-group">
           <button class="menu-btn main-btn" onclick="openUpload()">
-            <img src="5.png" class="menu-banner" alt="處方上傳與綁定">
+            <img src="5.png" class="menu-banner" alt="處方上傳與綁定" onerror="this.style.display='none'">
             <span class="main-btn-text">處方上傳 / Line綁定領藥通知</span>
           </button>
           
           <button class="menu-btn" onclick="openStatus()">
-            <img src="3.png" class="menu-icon" alt="領藥狀態查詢">
+            <img src="3.png" class="menu-icon" alt="領藥狀態查詢" onerror="this.style.display='none'">
             <span>領藥狀態查詢</span>
           </button>
           
           <button class="menu-btn" onclick="openMedHistory()">
-            <img src="4.png" class="menu-icon" alt="雲端藥歷">
+            <img src="4.png" class="menu-icon" alt="雲端藥歷" onerror="this.style.display='none'">
             <span>雲端藥歷查詢</span>
           </button>
         </div>
@@ -169,7 +166,7 @@
 
   <div id="view-success" class="hidden-mode sub-view d-flex flex-column justify-content-center align-items-center text-center" style="background: #fcfcfc;">
     <i class="bi bi-check-circle-fill text-success mb-3" style="font-size: 5.5rem;"></i>
-    <h3 class="fw-bold text-dark mb-2">已經幫您完成<br>綁定領藥通知</h3>
+    <h3 class="fw-bold text-dark mb-2">極速綁定授權成功</h3>
     <p class="text-muted mb-5 mt-3" style="font-size:1.1rem;">請告知櫃台藥師您的<strong class="text-dark">「姓名」</strong>，<br>為您完成最後的建檔手續。</p>
     <button class="btn btn-success btn-lg rounded-pill px-5 fw-bold shadow-sm" onclick="closeLiffWindow()">關閉視窗</button>
   </div>
@@ -200,29 +197,23 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  // 您提供的正確 GAS 網址
+  // ⚠️ 請確保這是您最新的 Google Apps Script 發布網址
   const GAS_URL = "https://script.google.com/macros/s/AKfycbyUXCejmkI52ZJVUN1K1t1j2ZvfdZMCgHsgB79okITgzn7to2sfte43R5I0GOQnFp1opQ/exec";
   const LIFF_ID = "2008912977-DuJTm5u1"; 
-
-  const NHI_DEPT_MAP = {
-    "00":"不分科","01":"家醫科","02":"內科","03":"外科","04":"小兒科","05":"婦產科",
-    "06":"骨科","07":"泌尿科","08":"耳鼻喉科","09":"眼科","10":"皮膚科","11":"神經科",
-    "12":"精神科","13":"復健科","14":"整形外科","15":"職業醫學科","22":"急診醫學科",
-    "23":"牙醫一般科","39":"牙醫一般科","40":"牙醫一般科","60":"中醫科","81":"麻醉科"
-  };
-  function translateDept(codeStr) {
-    if (!codeStr) return "一般科";
-    let c = String(codeStr).trim().toUpperCase();
-    let num = parseInt(c, 10);
-    if (!isNaN(num) && num.toString() === c.replace(/^0+/, '')) { c = num < 10 ? "0" + num : String(num); }
-    return NHI_DEPT_MAP[c] ? NHI_DEPT_MAP[c] : c;
-  }
 
   let lineUserId = "", lineDisplayName = "", linePictureUrl = "";
   let uploadedImages = []; 
   
   const urlParams = new URLSearchParams(window.location.search);
   const currentMode = urlParams.get('mode');
+
+  // 🔥 核心優化 1：帶超時機制的 fetch (解決 Android WebView 重新導向卡死)
+  const fetchWithTimeout = (url, options, timeout = 12000) => {
+      return Promise.race([
+          fetch(url, options),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), timeout))
+      ]);
+  };
 
   window.onload = function() { initLiff(); };
   
@@ -250,44 +241,62 @@
         if (currentMode) { liff.login({ redirectUri: window.location.href.split('?')[0] + "?mode=" + currentMode }); } 
         else { goHome(); }
       }
-    }).catch(err => { document.getElementById('loading').style.display = 'none'; goHome(); });
+    }).catch(err => { 
+        document.getElementById('loading').style.display = 'none'; 
+        alert("LINE 初始化失敗，請確認網路狀態後重試。");
+        goHome(); 
+    });
   }
 
-  // 🔥 極速隱形綁定，送出成功後顯示視窗
-  function doQuickBind() {
-    document.getElementById('loadingText').innerText = "極速綁定處理中...";
+  // 🔥 核心優化 2：極速綁定加入 Timeout 與非同步渲染 (讓出 UI 執行緒)
+  function doQuickBind(retryCount = 0) {
+    document.getElementById('loadingText').innerText = retryCount > 0 ? "網路不穩，自動重試中..." : "授權安全連線中...";
     document.getElementById('loading').style.display = 'flex';
     
-    fetch(GAS_URL, { 
-      method: "POST", 
-      body: JSON.stringify({ 
-        action: "upload", 
-        name: lineDisplayName, 
-        lineName: lineDisplayName, 
-        linePic: linePictureUrl, 
-        phone: "", 
-        dept: "快速綁定", 
-        notify: "LINE通知", 
-        fileDataArray: [], 
-        fileNameArray: [], 
-        lineUserId: lineUserId, 
-        isRegister: true 
-      }) 
-    })
-    .then(res => res.json())
-    .then(res => {
-      document.getElementById('loading').style.display = 'none';
-      if(res.status === 'success' || res.status === 'duplicate') {
-        document.getElementById('view-home').classList.add('hidden-mode');
-        document.getElementById('view-form').classList.add('hidden-mode');
-        document.getElementById('view-status').classList.add('hidden-mode');
-        document.getElementById('view-meds').classList.add('hidden-mode');
-        document.getElementById('view-success').classList.remove('hidden-mode');
-      } else {
-        alert("❌ 授權失敗：" + res.message);
-        goHome();
-      }
-    }).catch(err => { document.getElementById('loading').style.display = 'none'; alert("❌ 連線異常"); goHome(); });
+    // 使用 setTimeout 讓瀏覽器有時間畫出「載入中」畫面，避免 Android 卡頓
+    setTimeout(() => {
+        fetchWithTimeout(GAS_URL, { 
+          method: "POST", 
+          body: JSON.stringify({ 
+            action: "upload", 
+            name: lineDisplayName, 
+            lineName: lineDisplayName, 
+            linePic: linePictureUrl, 
+            phone: "", 
+            dept: "快速綁定", 
+            notify: "LINE通知", 
+            fileDataArray: [], 
+            fileNameArray: [], 
+            lineUserId: lineUserId, 
+            isRegister: true 
+          }) 
+        }, 12000) // 12秒強制超時
+        .then(res => res.json())
+        .then(res => {
+          document.getElementById('loading').style.display = 'none';
+          if(res.status === 'success' || res.status === 'duplicate') {
+            document.getElementById('view-home').classList.add('hidden-mode');
+            document.getElementById('view-form').classList.add('hidden-mode');
+            document.getElementById('view-status').classList.add('hidden-mode');
+            document.getElementById('view-meds').classList.add('hidden-mode');
+            document.getElementById('view-success').classList.remove('hidden-mode');
+          } else {
+            alert("❌ 授權失敗：" + res.message);
+            goHome();
+          }
+        })
+        .catch(err => { 
+          // 靜默重試機制：若逾時或網路錯誤，自動重試一次
+          if (retryCount === 0) {
+              console.warn("第一次連線超時，自動重試...", err);
+              doQuickBind(1);
+          } else {
+              document.getElementById('loading').style.display = 'none'; 
+              alert("⚠️ 網路連線逾時，請確保訊號良好後再次掃描條碼！"); 
+              goHome(); 
+          }
+        });
+    }, 50);
   }
 
   function closeLiffWindow() {
@@ -342,10 +351,12 @@
 
   function showPrivacyModal(event) { event.preventDefault(); new bootstrap.Modal(document.getElementById('privacyModal')).show(); }
 
+  // 狀態查詢也套用 Timeout 防呆
   function fetchUploadHistory() {
     if (!lineUserId) return;
     document.getElementById('uploadHistoryList').innerHTML = '<div class="text-center text-muted small py-4"><div class="spinner-border spinner-border-sm text-info me-2"></div> 讀取紀錄中...</div>';
-    fetch(GAS_URL, { method: "POST", body: JSON.stringify({ action: "history", lineUserId: lineUserId }) })
+    
+    fetchWithTimeout(GAS_URL, { method: "POST", body: JSON.stringify({ action: "history", lineUserId: lineUserId }) }, 15000)
     .then(res => res.json()).then(res => {
       if (res.status === 'success') {
         const container = document.getElementById('uploadHistoryList'); container.innerHTML = '';
@@ -367,7 +378,7 @@
             '</div>';
         });
       }
-    }).catch(err => { document.getElementById('uploadHistoryList').innerHTML = '<div class="text-center text-danger small py-3">連線異常</div>'; });
+    }).catch(err => { document.getElementById('uploadHistoryList').innerHTML = '<div class="text-center text-danger small py-3">⚠️ 連線逾時，請稍後重試</div>'; });
   }
 
   function _parseDate(dStr) {
@@ -384,7 +395,6 @@
 
   function toggleMedCard(groupId) {
     let body = document.getElementById('rx-body-' + groupId);
-    let header = document.getElementById('rx-header-' + groupId);
     if(body.classList.contains('open')) { body.classList.remove('open'); } else { body.classList.add('open'); }
   }
 
@@ -404,7 +414,7 @@
     document.getElementById('loadingText').innerText = "安全連線查詢中...";
     const resultDiv = document.getElementById('medHistoryResult'); resultDiv.innerHTML = '';
 
-    fetch(GAS_URL, { method: "POST", body: JSON.stringify({ action: "queryMed", name: name, id: id, lineUserId: lineUserId }) })
+    fetchWithTimeout(GAS_URL, { method: "POST", body: JSON.stringify({ action: "queryMed", name: name, id: id, lineUserId: lineUserId }) }, 15000)
     .then(res => res.json())
     .then(res => {
       document.getElementById('loading').style.display = 'none';
@@ -505,7 +515,7 @@
 
         resultDiv.innerHTML = html;
       } else { resultDiv.innerHTML = '<div class="alert alert-danger text-center small fw-bold">❌ 查詢失敗：' + res.message + '</div>'; }
-    }).catch(err => { document.getElementById('loading').style.display = 'none'; resultDiv.innerHTML = '<div class="alert alert-danger text-center small fw-bold">❌ 網路連線異常，請稍後再試。</div>'; });
+    }).catch(err => { document.getElementById('loading').style.display = 'none'; resultDiv.innerHTML = '<div class="alert alert-danger text-center small fw-bold">⚠️ 網路連線逾時，請稍後再試。</div>'; });
   }
 
   function handleFile(input) {
@@ -569,6 +579,7 @@
       }
   }
 
+  // 同樣套用 setTimeout 與 Timeout 防止傳圖卡死
   function submitData() {
     const name = document.getElementById('uName').value.trim(); 
     const phone = document.getElementById('uPhone').value.trim();
@@ -587,36 +598,42 @@
     const b64Array = uploadedImages.map(function(img) { return img.base64; });
     const nameArray = uploadedImages.map(function(img) { return img.fileName; });
 
-    fetch(GAS_URL, { 
-      method: "POST", 
-      body: JSON.stringify({ 
-        action: "upload", 
-        name: name, 
-        lineName: lineDisplayName, 
-        linePic: linePictureUrl, 
-        phone: phone, 
-        dept: finalDept, 
-        notify: "LINE通知", 
-        fileDataArray: b64Array, 
-        fileNameArray: nameArray, 
-        lineUserId: lineUserId, 
-        isRegister: isRegisterMode 
-      }) 
-    })
-    .then(res => res.json())
-    .then(res => {
-      document.getElementById('loading').style.display = 'none';
-      if(res.status === 'success') {
-        if (isRegisterMode) { alert("✅ 綁定成功！\n藥局未來將能透過 LINE 通知您領藥。"); } 
-        else { alert("✅ " + uploadedImages.length + " 張處方箋已加密送達雲端！\n藥局處理完成後，您可於「領藥狀態查詢」中追蹤進度。"); }
-        
-        uploadedImages = [];
-        renderPreviews();
+    setTimeout(() => {
+        fetchWithTimeout(GAS_URL, { 
+          method: "POST", 
+          body: JSON.stringify({ 
+            action: "upload", 
+            name: name, 
+            lineName: lineDisplayName, 
+            linePic: linePictureUrl, 
+            phone: phone, 
+            dept: finalDept, 
+            notify: "LINE通知", 
+            fileDataArray: b64Array, 
+            fileNameArray: nameArray, 
+            lineUserId: lineUserId, 
+            isRegister: isRegisterMode 
+          }) 
+        }, 20000) // 上傳圖片可能比較久，給20秒
+        .then(res => res.json())
+        .then(res => {
+          document.getElementById('loading').style.display = 'none';
+          if(res.status === 'success') {
+            if (isRegisterMode) { alert("✅ 綁定成功！\n藥局未來將能透過 LINE 通知您領藥。"); } 
+            else { alert("✅ " + uploadedImages.length + " 張處方箋已加密送達雲端！\n藥局處理完成後，您可於「領藥狀態查詢」中追蹤進度。"); }
+            
+            uploadedImages = [];
+            renderPreviews();
 
-        if(liff.isInClient()) liff.closeWindow(); else goHome();
-      } else if(res.status === 'duplicate') { alert("⚠️ " + res.message); goHome(); } 
-      else { alert("❌ 失敗：" + res.message); }
-    }).catch(err => { document.getElementById('loading').style.display = 'none'; goHome(); });
+            if(liff.isInClient()) liff.closeWindow(); else goHome();
+          } else if(res.status === 'duplicate') { alert("⚠️ " + res.message); goHome(); } 
+          else { alert("❌ 失敗：" + res.message); }
+        }).catch(err => { 
+            document.getElementById('loading').style.display = 'none'; 
+            alert("⚠️ 網路連線逾時，請確保網路暢通後再試一次。"); 
+            goHome(); 
+        });
+    }, 50);
   }
 </script>
 </body>
