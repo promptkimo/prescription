@@ -207,13 +207,48 @@
   const urlParams = new URLSearchParams(window.location.search);
   const currentMode = urlParams.get('mode');
 
-  // 🔥 核心優化 1：帶超時機制的 fetch (解決 Android WebView 重新導向卡死)
-  const fetchWithTimeout = (url, options, timeout = 12000) => {
-      return Promise.race([
-          fetch(url, options),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), timeout))
-      ]);
-  };
+  // 🔥 終極 Android 防卡頓引擎：改用 text/plain 繞過 CORS 預檢，並結合 XHR 備用方案
+  function sendToGAS(payload, timeout = 15000) {
+      return new Promise((resolve, reject) => {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => {
+              controller.abort();
+              reject(new Error("timeout"));
+          }, timeout);
+
+          // 關鍵：使用 text/plain 騙過 Android 瀏覽器，不發送 OPTIONS 預檢請求，直接 POST
+          fetch(GAS_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+              body: JSON.stringify(payload),
+              redirect: 'follow',
+              signal: controller.signal
+          })
+          .then(response => {
+              clearTimeout(timeoutId);
+              return response.json();
+          })
+          .then(data => resolve(data))
+          .catch(err => {
+              clearTimeout(timeoutId);
+              // 若 fetch 失敗，無縫切換到傳統且最穩定的 XMLHttpRequest 作為備用
+              console.warn("Fetch failed, trying XHR fallback...", err);
+              const xhr = new XMLHttpRequest();
+              xhr.open("POST", GAS_URL, true);
+              xhr.setRequestHeader("Content-Type", "text/plain;charset=utf-8");
+              xhr.timeout = timeout;
+              xhr.onload = function() {
+                  if (xhr.status >= 200 && xhr.status < 300) {
+                      try { resolve(JSON.parse(xhr.responseText)); } 
+                      catch(e) { reject(e); }
+                  } else { reject(new Error("XHR Error")); }
+              };
+              xhr.onerror = () => reject(new Error("Network Error"));
+              xhr.ontimeout = () => reject(new Error("timeout"));
+              xhr.send(JSON.stringify(payload));
+          });
+      });
+  }
 
   window.onload = function() { initLiff(); };
   
@@ -248,16 +283,12 @@
     });
   }
 
-  // 🔥 核心優化 2：極速綁定加入 Timeout 與非同步渲染 (讓出 UI 執行緒)
   function doQuickBind(retryCount = 0) {
     document.getElementById('loadingText').innerText = retryCount > 0 ? "網路不穩，自動重試中..." : "授權安全連線中...";
     document.getElementById('loading').style.display = 'flex';
     
-    // 使用 setTimeout 讓瀏覽器有時間畫出「載入中」畫面，避免 Android 卡頓
     setTimeout(() => {
-        fetchWithTimeout(GAS_URL, { 
-          method: "POST", 
-          body: JSON.stringify({ 
+        sendToGAS({ 
             action: "upload", 
             name: lineDisplayName, 
             lineName: lineDisplayName, 
@@ -269,9 +300,7 @@
             fileNameArray: [], 
             lineUserId: lineUserId, 
             isRegister: true 
-          }) 
-        }, 12000) // 12秒強制超時
-        .then(res => res.json())
+        }, 12000)
         .then(res => {
           document.getElementById('loading').style.display = 'none';
           if(res.status === 'success' || res.status === 'duplicate') {
@@ -286,7 +315,6 @@
           }
         })
         .catch(err => { 
-          // 靜默重試機制：若逾時或網路錯誤，自動重試一次
           if (retryCount === 0) {
               console.warn("第一次連線超時，自動重試...", err);
               doQuickBind(1);
@@ -300,11 +328,7 @@
   }
 
   function closeLiffWindow() {
-    if(liff.isInClient()) {
-        liff.closeWindow();
-    } else {
-        goHome();
-    }
+    if(liff.isInClient()) { liff.closeWindow(); } else { goHome(); }
   }
 
   function doLiffLogout() { if (confirm("確定要登出嗎？")) { if (liff.isLoggedIn()) { liff.logout(); location.href = window.location.href.split('?')[0]; } } }
@@ -351,13 +375,12 @@
 
   function showPrivacyModal(event) { event.preventDefault(); new bootstrap.Modal(document.getElementById('privacyModal')).show(); }
 
-  // 狀態查詢也套用 Timeout 防呆
   function fetchUploadHistory() {
     if (!lineUserId) return;
     document.getElementById('uploadHistoryList').innerHTML = '<div class="text-center text-muted small py-4"><div class="spinner-border spinner-border-sm text-info me-2"></div> 讀取紀錄中...</div>';
     
-    fetchWithTimeout(GAS_URL, { method: "POST", body: JSON.stringify({ action: "history", lineUserId: lineUserId }) }, 15000)
-    .then(res => res.json()).then(res => {
+    sendToGAS({ action: "history", lineUserId: lineUserId }, 15000)
+    .then(res => {
       if (res.status === 'success') {
         const container = document.getElementById('uploadHistoryList'); container.innerHTML = '';
         if (!res.history || res.history.length === 0) { container.innerHTML = '<div class="text-center text-muted small py-4 bg-white rounded-3 shadow-sm border border-light">您目前尚無處方箋上傳紀錄</div>'; return; }
@@ -414,8 +437,7 @@
     document.getElementById('loadingText').innerText = "安全連線查詢中...";
     const resultDiv = document.getElementById('medHistoryResult'); resultDiv.innerHTML = '';
 
-    fetchWithTimeout(GAS_URL, { method: "POST", body: JSON.stringify({ action: "queryMed", name: name, id: id, lineUserId: lineUserId }) }, 15000)
-    .then(res => res.json())
+    sendToGAS({ action: "queryMed", name: name, id: id, lineUserId: lineUserId }, 15000)
     .then(res => {
       document.getElementById('loading').style.display = 'none';
       if (res.status === 'success') {
@@ -579,7 +601,6 @@
       }
   }
 
-  // 同樣套用 setTimeout 與 Timeout 防止傳圖卡死
   function submitData() {
     const name = document.getElementById('uName').value.trim(); 
     const phone = document.getElementById('uPhone').value.trim();
@@ -599,9 +620,7 @@
     const nameArray = uploadedImages.map(function(img) { return img.fileName; });
 
     setTimeout(() => {
-        fetchWithTimeout(GAS_URL, { 
-          method: "POST", 
-          body: JSON.stringify({ 
+        sendToGAS({ 
             action: "upload", 
             name: name, 
             lineName: lineDisplayName, 
@@ -613,9 +632,7 @@
             fileNameArray: nameArray, 
             lineUserId: lineUserId, 
             isRegister: isRegisterMode 
-          }) 
-        }, 20000) // 上傳圖片可能比較久，給20秒
-        .then(res => res.json())
+        }, 25000)
         .then(res => {
           document.getElementById('loading').style.display = 'none';
           if(res.status === 'success') {
