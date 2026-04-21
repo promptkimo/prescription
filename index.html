@@ -44,7 +44,6 @@
     .thumb-wrap img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
     .thumb-remove { position: absolute; top: 4px; right: 4px; background: rgba(220,53,69,0.9); color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.2rem; border: none; line-height: 1; padding: 0; }
     
-    /* 💊 藥歷卡片精美排版 CSS */
     .rx-card { border: 1px solid #20935A; border-radius: 12px; overflow: hidden; margin-bottom: 20px; background: #fff; }
     .rx-header { background-color: #20935A; color: white; padding: 12px 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
     .rx-header .badge { font-weight: bold; font-size: 0.9rem; }
@@ -152,14 +151,11 @@
   let lineUserId = "", lineDisplayName = "", linePictureUrl = "";
   let uploadedImages = []; 
   
-  // 🔥 強化的科別翻譯字典 (包含健保數字代碼與各醫院常見英文代碼)
   const NHI_DEPT_MAP = {
-    // 標準健保代碼
     "00":"不分科","01":"家醫科","02":"內科","03":"外科","04":"小兒科","05":"婦產科",
     "06":"骨科","07":"泌尿科","08":"耳鼻喉科","09":"眼科","10":"皮膚科","11":"神經科",
     "12":"精神科","13":"復健科","14":"整形外科","15":"職業醫學科","22":"急診醫學科",
     "23":"牙科","39":"牙科","40":"牙科","60":"中醫科","81":"麻醉科",
-    // 各大醫院常見英文科別代碼擴充
     "FM":"家醫科","GM":"一般內科","CV":"心臟內科","CVS":"心臟外科","CM":"胸腔內科",
     "GI":"胃腸肝膽科","AG":"胃腸肝膽科","META":"新陳代謝科","END":"內分泌科","NEPH":"腎臟科",
     "HEMA":"血液科","INF":"感染科","AIR":"風濕免疫科","NEU":"神經內科","NS":"神經外科",
@@ -172,7 +168,6 @@
     if (!codeStr) return "一般科";
     let c = String(codeStr).trim().toUpperCase();
     let num = parseInt(c, 10);
-    // 若為純數字則去開頭 0 (如 01 -> 1)，並補零查詢；若是英文字母則直接查
     if (!isNaN(num) && num.toString() === c.replace(/^0+/, '')) { c = num < 10 ? "0" + num : String(num); }
     return NHI_DEPT_MAP[c] ? NHI_DEPT_MAP[c] : c; 
   }
@@ -299,38 +294,55 @@
                       <div class="text-success fw-bold fs-5"><i class="bi bi-person-lines-fill"></i> ${name} 的藥歷</div>
                       <button class="btn btn-sm btn-outline-secondary px-3 rounded-pill" onclick="resetMedQuery()"><i class="bi bi-arrow-counterclockwise"></i> 重新查詢</button>
                     </div>`;
+        
+        // 獲取今天的日期 (用於比較是否過期)
+        let today = new Date();
+        today.setHours(0, 0, 0, 0);
                     
         Object.keys(grouped).forEach((k, index) => {
           let m = grouped[k]; 
           let rxDate = _parseDate(m.rxDateStr);
-          let isOpen = index === 0 ? 'open' : ''; // 預設展開第一張單
+          let isOpen = index === 0 ? 'open' : ''; 
           
-          // 🔥 日期區間計算邏輯 (往前推算 10 天)
+          // 計算第二次領藥時間
+          let date2Obj = rxDate ? _addDays(rxDate, m.days) : null;
           let d2Start = rxDate ? _fmt(_addDays(rxDate, m.days - 10), 'MM/DD') : '-';
-          let d2End = rxDate ? _fmt(_addDays(rxDate, m.days), 'MM/DD') : '-';
+          let d2End = date2Obj ? _fmt(date2Obj, 'MM/DD') : '-';
           let d2Range = rxDate ? `${d2Start} ~ ${d2End}` : '-';
 
+          // 計算第三次領藥時間
+          let date3Obj = rxDate ? _addDays(rxDate, m.days * 2) : null;
           let d3Start = rxDate ? _fmt(_addDays(rxDate, m.days * 2 - 10), 'MM/DD') : '-';
-          let d3End = rxDate ? _fmt(_addDays(rxDate, m.days * 2), 'MM/DD') : '-';
+          let d3End = date3Obj ? _fmt(date3Obj, 'MM/DD') : '-';
           let d3Range = rxDate ? `${d3Start} ~ ${d3End}` : '-';
 
           let retD = rxDate ? _fmt(_addDays(rxDate, m.days * m.totalRefills), 'YYYY-MM-DD') : '-';
 
+          // 🔥 引入時間感知判斷邏輯
           let refill2UI = '';
           if (m.totalRefills >= 2) {
             let r2Status = `<span class="text-danger fw-bold">${d2Range}</span>`;
-            if (m.maxCurrentRefill >= 2) r2Status = `<span class="text-success fw-bold me-2">${d2End}</span><span class="badge bg-success">✅ 已領取</span>`;
+            if (m.maxCurrentRefill >= 2) {
+              r2Status = `<span class="text-success fw-bold me-2">${d2End}</span><span class="badge bg-success">✅ 已領取</span>`;
+            } else if (date2Obj && date2Obj < today) {
+              // 時間已過，且沒有紀錄顯示已領取 -> 變灰色並加上刪除線
+              r2Status = `<span class="text-muted fw-bold me-2"><del>${d2Range}</del></span><span class="badge bg-secondary">過期 / 他處領取</span>`;
+            }
             refill2UI = `<div class="rx-date-row"><span class="text-muted">👉 第二次領藥：</span><div>${r2Status}</div></div>`;
           }
 
           let refill3UI = '';
           if (m.totalRefills >= 3) {
             let r3Status = `<span class="text-danger fw-bold">${d3Range}</span>`;
-            if (m.maxCurrentRefill >= 3) r3Status = `<span class="text-success fw-bold me-2">${d3End}</span><span class="badge bg-success">✅ 已領取</span>`;
+            if (m.maxCurrentRefill >= 3) {
+              r3Status = `<span class="text-success fw-bold me-2">${d3End}</span><span class="badge bg-success">✅ 已領取</span>`;
+            } else if (date3Obj && date3Obj < today) {
+              // 時間已過，且沒有紀錄顯示已領取 -> 變灰色並加上刪除線
+              r3Status = `<span class="text-muted fw-bold me-2"><del>${d3Range}</del></span><span class="badge bg-secondary">過期 / 他處領取</span>`;
+            }
             refill3UI = `<div class="rx-date-row"><span class="text-muted">👉 第三次領藥：</span><div>${r3Status}</div></div>`;
           }
 
-          // 產生藥品明細清單
           let medsHtml = m.items.map((med, idx) => `
             <div class="med-item">
                 <div class="med-num">${idx + 1}</div>
