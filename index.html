@@ -44,21 +44,23 @@
     .thumb-wrap img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
     .thumb-remove { position: absolute; top: 4px; right: 4px; background: rgba(220,53,69,0.9); color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.2rem; border: none; line-height: 1; padding: 0; }
     
+    /* 💊 藥歷卡片精美排版 CSS */
     .rx-card { border: 1px solid #20935A; border-radius: 12px; overflow: hidden; margin-bottom: 20px; background: #fff; }
-    .rx-header { background-color: #20935A; color: white; padding: 10px 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-    .rx-header .badge { background-color: #fff; color: #20935A; font-weight: bold; }
+    .rx-header { background-color: #20935A; color: white; padding: 12px 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+    .rx-header .badge { font-weight: bold; font-size: 0.9rem; }
     .rx-progress-box { border: 2px solid #17A2B8; border-radius: 8px; padding: 15px; margin-bottom: 15px; }
     .rx-progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
     .rx-meta { font-size: 0.9rem; color: #555; margin-bottom: 4px; }
     .rx-date-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; margin-top: 10px; }
-    .rx-return-box { background-color: #f8f9fa; padding: 8px 12px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; margin-top: 12px; }
+    .rx-return-box { background-color: #f8f9fa; padding: 10px 12px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; font-size: 0.95rem; margin-top: 12px; border-left: 4px solid #dc3545; }
+    
     .med-item { display: flex; align-items: flex-start; border-bottom: 1px dashed #eee; padding-bottom: 12px; margin-bottom: 12px; }
     .med-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
     .med-num { background-color: #20935A; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold; margin-right: 12px; flex-shrink: 0; }
     .med-info { flex-grow: 1; }
-    .med-name { font-weight: bold; font-size: 0.95rem; color: #333; margin-bottom: 6px; }
-    .med-tags { display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; }
-    .tag-box { border: 1px solid #ddd; border-radius: 4px; padding: 2px 6px; color: #666; margin-right: 5px; }
+    .med-name { font-weight: bold; font-size: 0.95rem; color: #333; margin-bottom: 6px; line-height: 1.3; }
+    .med-tags { display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; flex-wrap: wrap; gap: 4px; }
+    .tag-box { border: 1px solid #ddd; background: #fdfdfd; border-radius: 4px; padding: 2px 6px; color: #666; }
     .rx-body-collapse { display: none; padding: 15px; }
     .rx-body-collapse.open { display: block; animation: fadeIn 0.3s ease; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -143,25 +145,34 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  // ⚠️ 請務必確認此處為您最新的 Google Apps Script 發佈網址
+  // ⚠️ 請確認此為您最新的 Google Apps Script 發佈網址
   const GAS_URL = "https://script.google.com/macros/s/AKfycbyUXCejmkI52ZJVUN1K1t1j2ZvfdZMCgHsgB79okITgzn7to2sfte43R5I0GOQnFp1opQ/exec";
   const LIFF_ID = "2008912977-DuJTm5u1"; 
 
   let lineUserId = "", lineDisplayName = "", linePictureUrl = "";
   let uploadedImages = []; 
   
+  // 🔥 強化的科別翻譯字典 (包含健保數字代碼與各醫院常見英文代碼)
   const NHI_DEPT_MAP = {
+    // 標準健保代碼
     "00":"不分科","01":"家醫科","02":"內科","03":"外科","04":"小兒科","05":"婦產科",
     "06":"骨科","07":"泌尿科","08":"耳鼻喉科","09":"眼科","10":"皮膚科","11":"神經科",
     "12":"精神科","13":"復健科","14":"整形外科","15":"職業醫學科","22":"急診醫學科",
-    "23":"牙醫一般科","39":"牙醫一般科","40":"牙醫一般科","60":"中醫科","81":"麻醉科"
+    "23":"牙科","39":"牙科","40":"牙科","60":"中醫科","81":"麻醉科",
+    // 各大醫院常見英文科別代碼擴充
+    "FM":"家醫科","GM":"一般內科","CV":"心臟內科","CVS":"心臟外科","CM":"胸腔內科",
+    "GI":"胃腸肝膽科","AG":"胃腸肝膽科","META":"新陳代謝科","END":"內分泌科","NEPH":"腎臟科",
+    "HEMA":"血液科","INF":"感染科","AIR":"風濕免疫科","NEU":"神經內科","NS":"神經外科",
+    "PSY":"精神科","GS":"一般外科","ORTH":"骨科","GU":"泌尿科","URO":"泌尿科",
+    "OBS":"產科","GYN":"婦科","OBG":"婦產科","PED":"小兒科","OPH":"眼科",
+    "ENT":"耳鼻喉科","DER":"皮膚科","REH":"復健科","DENT":"牙科","ONC":"腫瘤科"
   };
 
-  // 🔥 關鍵修復：在前台定義 translateDept 函數
   function translateDept(codeStr) {
     if (!codeStr) return "一般科";
     let c = String(codeStr).trim().toUpperCase();
     let num = parseInt(c, 10);
+    // 若為純數字則去開頭 0 (如 01 -> 1)，並補零查詢；若是英文字母則直接查
     if (!isNaN(num) && num.toString() === c.replace(/^0+/, '')) { c = num < 10 ? "0" + num : String(num); }
     return NHI_DEPT_MAP[c] ? NHI_DEPT_MAP[c] : c; 
   }
@@ -243,7 +254,7 @@
         let statusColor = item.status === '已收單處理' ? 'bg-success' : 'bg-warning text-dark';
         container.innerHTML += `<div class="card p-2 mb-2 shadow-sm border-0 flex-row align-items-center bg-light">
           <img src="${item.img}" style="width:50px;height:50px;object-fit:cover;border-radius:5px;margin-right:10px;">
-          <div class="flex-grow-1"><div class="fw-bold small">${item.date}</div><div class="text-muted small">${item.dept}</div></div>
+          <div class="flex-grow-1"><div class="fw-bold small">${item.date}</div><div class="text-muted small">${translateDept(item.dept)}</div></div>
           <span class="badge ${statusColor} small">${item.status}</span>
         </div>`;
       });
@@ -264,13 +275,16 @@
     const name = document.getElementById('qName').value.trim();
     const id = document.getElementById('qId').value.trim().toUpperCase();
     if (!name || !id) return alert("請填寫姓名與身分證");
+    
     document.getElementById('loading').style.display = 'flex';
     const resultDiv = document.getElementById('medHistoryResult');
+    
     sendToGAS({ action: "queryMed", name: name, id: id })
     .then(res => {
       document.getElementById('loading').style.display = 'none';
       if (res.status === 'success' && res.data.length > 0) {
         document.getElementById('medQueryForm').style.display = 'none';
+        
         const grouped = {};
         res.data.forEach(item => {
           let key = (item.rxDate || item.date.split(' ')[0]) + '_' + (item.hospital || '院所');
@@ -280,28 +294,90 @@
           if (parseInt(refillParts[1]) > grouped[key].totalRefills) grouped[key].totalRefills = parseInt(refillParts[1]);
           grouped[key].items.push(item);
         });
-        let html = `<div class="d-flex justify-content-between mb-3"><b>${name} 的用藥紀錄</b><button class="btn btn-sm btn-outline-secondary" onclick="resetMedQuery()">重查</button></div>`;
-        Object.keys(grouped).forEach(k => {
-          let m = grouped[k]; let rxDate = _parseDate(m.rxDateStr);
-          let d2 = rxDate ? _fmt(_addDays(rxDate, m.days), 'MM/DD') : '-';
-          let d3 = rxDate ? _fmt(_addDays(rxDate, m.days*2), 'MM/DD') : '-';
-          let retD = rxDate ? _fmt(_addDays(rxDate, m.days*m.totalRefills), 'YYYY-MM-DD') : '-';
-          html += `<div class="rx-card shadow-sm">
-            <div class="rx-header" onclick="this.nextElementSibling.classList.toggle('open')"><span>${m.rxDateStr} - ${translateDept(m.dept)}</span><i class="bi bi-chevron-down"></i></div>
-            <div class="rx-body-collapse open">
+        
+        let html = `<div class="d-flex justify-content-between align-items-center mb-3 mt-2 px-1">
+                      <div class="text-success fw-bold fs-5"><i class="bi bi-person-lines-fill"></i> ${name} 的藥歷</div>
+                      <button class="btn btn-sm btn-outline-secondary px-3 rounded-pill" onclick="resetMedQuery()"><i class="bi bi-arrow-counterclockwise"></i> 重新查詢</button>
+                    </div>`;
+                    
+        Object.keys(grouped).forEach((k, index) => {
+          let m = grouped[k]; 
+          let rxDate = _parseDate(m.rxDateStr);
+          let isOpen = index === 0 ? 'open' : ''; // 預設展開第一張單
+          
+          // 🔥 日期區間計算邏輯 (往前推算 10 天)
+          let d2Start = rxDate ? _fmt(_addDays(rxDate, m.days - 10), 'MM/DD') : '-';
+          let d2End = rxDate ? _fmt(_addDays(rxDate, m.days), 'MM/DD') : '-';
+          let d2Range = rxDate ? `${d2Start} ~ ${d2End}` : '-';
+
+          let d3Start = rxDate ? _fmt(_addDays(rxDate, m.days * 2 - 10), 'MM/DD') : '-';
+          let d3End = rxDate ? _fmt(_addDays(rxDate, m.days * 2), 'MM/DD') : '-';
+          let d3Range = rxDate ? `${d3Start} ~ ${d3End}` : '-';
+
+          let retD = rxDate ? _fmt(_addDays(rxDate, m.days * m.totalRefills), 'YYYY-MM-DD') : '-';
+
+          let refill2UI = '';
+          if (m.totalRefills >= 2) {
+            let r2Status = `<span class="text-danger fw-bold">${d2Range}</span>`;
+            if (m.maxCurrentRefill >= 2) r2Status = `<span class="text-success fw-bold me-2">${d2End}</span><span class="badge bg-success">✅ 已領取</span>`;
+            refill2UI = `<div class="rx-date-row"><span class="text-muted">👉 第二次領藥：</span><div>${r2Status}</div></div>`;
+          }
+
+          let refill3UI = '';
+          if (m.totalRefills >= 3) {
+            let r3Status = `<span class="text-danger fw-bold">${d3Range}</span>`;
+            if (m.maxCurrentRefill >= 3) r3Status = `<span class="text-success fw-bold me-2">${d3End}</span><span class="badge bg-success">✅ 已領取</span>`;
+            refill3UI = `<div class="rx-date-row"><span class="text-muted">👉 第三次領藥：</span><div>${r3Status}</div></div>`;
+          }
+
+          // 產生藥品明細清單
+          let medsHtml = m.items.map((med, idx) => `
+            <div class="med-item">
+                <div class="med-num">${idx + 1}</div>
+                <div class="med-info">
+                    <div class="med-name">${med.drug || '-'}</div>
+                    <div class="med-tags">
+                        <div>
+                            <span class="tag-box">每次 <strong class="text-dark">${med.dosage || '-'}</strong></span>
+                            <span class="tag-box">開立 <strong class="text-dark">${med.days || '-'} 天</strong></span>
+                        </div>
+                        <div class="text-success fw-bold">總量: ${med.total || '-'}</div>
+                    </div>
+                </div>
+            </div>
+          `).join('');
+
+          html += `
+          <div class="rx-card shadow-sm">
+            <div class="rx-header" onclick="this.nextElementSibling.classList.toggle('open')">
+              <span><i class="bi bi-folder2-open"></i> 處方日：${m.rxDateStr}</span>
+              <span class="badge bg-white text-success px-2 py-1">${translateDept(m.dept)}</span>
+            </div>
+            <div class="rx-body-collapse ${isOpen}">
               <div class="rx-progress-box">
-                <div class="small">🏥 ${m.hospital} | 進度: ${m.maxCurrentRefill}/${m.totalRefills}</div>
-                <div class="rx-date-row"><span>第二次領藥：</span><b class="text-danger">${d2}</b></div>
-                <div class="rx-date-row"><span>第三次領藥：</span><b class="text-danger">${d3}</b></div>
-                <div class="rx-return-box"><span>預約回診日：</span><b class="text-danger">${retD}</b></div>
+                <div class="rx-progress-header">
+                  <span class="fw-bold text-dark"><i class="bi bi-file-earmark-medical text-info"></i> 慢箋領藥進度</span>
+                  <span class="badge bg-info text-white px-2 py-1">目前進度: ${m.maxCurrentRefill}/${m.totalRefills}</span>
+                </div>
+                <div class="rx-meta"><i class="bi bi-building"></i> 醫療院所：<strong>${m.hospital}</strong></div>
+                <div class="rx-meta mb-3"><i class="bi bi-calendar-event"></i> 處方天數：<strong>${m.days} 天</strong></div>
+                ${refill2UI}
+                ${refill3UI}
+                <div class="rx-return-box shadow-sm">
+                  <span class="text-dark fw-bold"><i class="bi bi-hospital"></i> 預約回診日</span>
+                  <span class="text-danger fw-bold fs-6">${retD}</span>
+                </div>
               </div>
-              <div class="med-list small">` + m.items.map(i => `<div>• ${i.drug} (${i.total})</div>`).join('') + `</div>
+              <div style="padding-top: 5px;">
+                ${medsHtml}
+              </div>
             </div>
           </div>`;
         });
+        
         resultDiv.innerHTML = html;
-      } else { alert("查無資料"); }
-    }).catch(() => { document.getElementById('loading').style.display = 'none'; alert("查詢失敗"); });
+      } else { alert("查無相符資料，請確認身分證是否正確"); }
+    }).catch(() => { document.getElementById('loading').style.display = 'none'; alert("查詢失敗，網路逾時"); });
   }
 
   function resetMedQuery() { document.getElementById('medQueryForm').style.display = 'block'; document.getElementById('medHistoryResult').innerHTML = ''; }
