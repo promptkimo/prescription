@@ -38,6 +38,8 @@
     .back-btn i { font-size: 1.2rem; margin-right: 5px; color: #06C755; }
     #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
     
+    .preview-box { width: 100%; height: 180px; background: #f8f9fa; border: 2px dashed #06C755; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; position: relative; margin-bottom: 15px; }
+    .placeholder-text { color: #06C755; text-align: center; font-size: 0.95rem; font-weight: bold; }
     .thumb-wrap { position: relative; width: 100%; padding-top: 100%; border-radius: 8px; overflow: hidden; border: 1px solid #ddd; }
     .thumb-wrap img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
     .thumb-remove { position: absolute; top: 4px; right: 4px; background: rgba(220,53,69,0.9); color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.2rem; border: none; line-height: 1; padding: 0; }
@@ -61,24 +63,15 @@
     .rx-body-collapse { display: none; padding: 15px; }
     .rx-body-collapse.open { display: block; animation: fadeIn 0.3s ease; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-    #view-success { text-align: center; }
-    .success-icon { display: none; color: #06C755; font-size: 5rem; margin-bottom: 15px; }
   </style>
 </head>
 <body>
 
-<div id="loading">
-  <div class="spinner-border text-success" role="status"></div>
-  <p class="mt-3 text-secondary fw-bold" id="loadingText">系統連線中...</p>
-</div>
+<div id="loading"><div class="spinner-border text-success" role="status"></div><p class="mt-3 text-secondary fw-bold" id="loadingText">系統連線中...</p></div>
 
 <div class="container"> 
   <div id="view-home">
-    <div class="brand-header">
-      <h1 class="brand-title">樂森藥局</h1>
-      <p class="brand-subtitle">Lawson Pharmacy Cloud</p>
-    </div>
+    <div class="brand-header"><h1 class="brand-title">樂森藥局</h1><p class="brand-subtitle">Lawson Pharmacy Cloud</p></div>
     <div class="home-content">
       <div class="home-content-wrapper">
         <div class="user-card hidden-mode" id="userInfo">
@@ -92,18 +85,9 @@
           <button class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="doLiffLogout()">登出</button>
         </div>
         <div class="home-btn-group">
-          <button class="menu-btn main-btn" onclick="openUpload()">
-            <img src="5.png" class="menu-banner" alt="處方上傳" onerror="this.style.display='none'">
-            <span class="main-btn-text">處方上傳 / Line綁定領藥通知</span>
-          </button>
-          <button class="menu-btn" onclick="openStatus()">
-            <img src="3.png" class="menu-icon" alt="狀態查詢" onerror="this.style.display='none'">
-            <span>領藥狀態查詢</span>
-          </button>
-          <button class="menu-btn" onclick="openMedHistory()">
-            <img src="4.png" class="menu-icon" alt="雲端藥歷" onerror="this.style.display='none'">
-            <span>雲端藥歷查詢</span>
-          </button>
+          <button class="menu-btn main-btn" onclick="openUpload()"><img src="5.png" class="menu-banner" alt="處方上傳" onerror="this.style.display='none'"><span class="main-btn-text">處方上傳 / Line綁定領藥通知</span></button>
+          <button class="menu-btn" onclick="openStatus()"><img src="3.png" class="menu-icon" alt="狀態查詢" onerror="this.style.display='none'"><span>領藥狀態查詢</span></button>
+          <button class="menu-btn" onclick="openMedHistory()"><img src="4.png" class="menu-icon" alt="雲端藥歷" onerror="this.style.display='none'"><span>雲端藥歷查詢</span></button>
         </div>
       </div>
     </div>
@@ -113,19 +97,15 @@
     <div class="back-btn-container"><button class="back-btn" onclick="goHome()"><i class="bi bi-chevron-left"></i> 返回主畫面</button></div>
     <div class="card p-4 shadow-sm border-0 bg-light">
       <h5 class="fw-bold text-success mb-2"><i class="bi bi-person-lines-fill"></i> 建立領藥檔案</h5>
-      <p class="small text-muted mb-3">請直接點擊下方按鈕選擇相片。若僅需綁定 LINE，可不傳照片直接送出！</p>
-      
-      <div id="cameraSection" class="mb-3">
+      <p class="small text-muted mb-3">若您有多張實體處方箋，可以連續拍照上傳。若僅需綁定 LINE，請直接跳過拍照填寫資料送出即可！</p>
+      <div id="cameraSection">
         <div class="row g-2 mb-2" id="previewGrid"></div>
-        
-        <!-- 🌟 最原始、最防呆的標準 HTML 檔案輸入框 -->
-        <div class="p-3 border rounded bg-white text-center shadow-sm">
-          <label class="form-label text-success fw-bold mb-2">📷 請選擇處方照片</label>
-          <input type="file" id="fileInput" class="form-control" onchange="handleFile(this)">
+        <div class="preview-box shadow-sm" onclick="document.getElementById('fileInput').click()" id="uploadBtnBox">
+          <div class="placeholder-text" id="placeholder"><span style="font-size: 2rem;">📷</span><br>點此拍照 / 選照片<br><span class="small fw-normal text-muted">(無處方箋可略過)</span></div>
         </div>
+        <input type="file" id="fileInput" accept="image/*" style="display: none;" onchange="handleFile(this)">
       </div>
-      
-      <div class="mb-3 mt-3"><label class="form-label small fw-bold">領藥人姓名</label><input type="text" class="form-control" id="uName" placeholder="請輸入姓名"></div>
+      <div class="mb-3 mt-2"><label class="form-label small fw-bold">領藥人姓名</label><input type="text" class="form-control" id="uName" placeholder="請輸入姓名"></div>
       <div class="mb-3"><label class="form-label small fw-bold">聯絡電話</label><input type="tel" class="form-control" id="uPhone" placeholder="請輸入手機號碼"></div>
       <div class="form-check mb-4"><input class="form-check-input" type="checkbox" id="privacyConsentUpload"><label class="form-check-label text-muted small" for="privacyConsentUpload">我已同意隱私權保護與服務條款，並授權藥局建檔通知。</label></div>
       <button class="btn btn-success w-100 fw-bold py-2 shadow-sm fs-5" onclick="submitData()">確認送出資料</button>
@@ -156,15 +136,15 @@
 
   <div id="view-success" class="hidden-mode sub-view d-flex flex-column justify-content-center align-items-center text-center">
     <i class="bi bi-check-circle-fill text-success mb-3" style="font-size: 5rem;"></i>
-    <h3 class="fw-bold text-dark" id="successTitle">操作成功</h3>
-    <p class="text-muted mb-5" id="successDesc">藥局已收到您的資訊。</p>
+    <h3 class="fw-bold text-dark">授權成功</h3>
+    <p class="text-muted mb-5">請告知櫃台藥師您的姓名以完成建檔。</p>
     <button class="btn btn-success btn-lg rounded-pill px-5 fw-bold shadow-sm" onclick="closeLiffWindow()">關閉視窗</button>
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  // 已經確認你提供的專屬 GAS URL
+  // ⚠️ 請確認此為您最新的 Google Apps Script 發佈網址
   const GAS_URL = "https://script.google.com/macros/s/AKfycbyUXCejmkI52ZJVUN1K1t1j2ZvfdZMCgHsgB79okITgzn7to2sfte43R5I0GOQnFp1opQ/exec";
   const LIFF_ID = "2008912977-DuJTm5u1"; 
 
@@ -175,7 +155,13 @@
     "00":"不分科","01":"家醫科","02":"內科","03":"外科","04":"小兒科","05":"婦產科",
     "06":"骨科","07":"泌尿科","08":"耳鼻喉科","09":"眼科","10":"皮膚科","11":"神經科",
     "12":"精神科","13":"復健科","14":"整形外科","15":"職業醫學科","22":"急診醫學科",
-    "23":"牙科","39":"牙科","40":"牙科","60":"中醫科","81":"麻醉科"
+    "23":"牙科","39":"牙科","40":"牙科","60":"中醫科","81":"麻醉科",
+    "FM":"家醫科","GM":"一般內科","CV":"心臟內科","CVS":"心臟外科","CM":"胸腔內科",
+    "GI":"胃腸肝膽科","AG":"胃腸肝膽科","META":"新陳代謝科","END":"內分泌科","NEPH":"腎臟科",
+    "HEMA":"血液科","INF":"感染科","AIR":"風濕免疫科","NEU":"神經內科","NS":"神經外科",
+    "PSY":"精神科","GS":"一般外科","ORTH":"骨科","GU":"泌尿科","URO":"泌尿科",
+    "OBS":"產科","GYN":"婦科","OBG":"婦產科","PED":"小兒科","OPH":"眼科",
+    "ENT":"耳鼻喉科","DER":"皮膚科","REH":"復健科","DENT":"牙科","ONC":"腫瘤科"
   };
 
   function translateDept(codeStr) {
@@ -210,10 +196,7 @@
       document.getElementById('loading').style.display = 'none';
       if (liff.isLoggedIn()) {
         liff.getProfile().then(profile => {
-          lineUserId = profile.userId; 
-          lineDisplayName = profile.displayName; 
-          linePictureUrl = profile.pictureUrl || "";
-          
+          lineUserId = profile.userId; lineDisplayName = profile.displayName; linePictureUrl = profile.pictureUrl || "";
           document.getElementById('userNameDisplay').innerText = lineDisplayName;
           document.getElementById('uName').value = lineDisplayName; 
           if(profile.pictureUrl) document.getElementById('userThumb').src = profile.pictureUrl;
@@ -221,10 +204,7 @@
           
           const urlParams = new URLSearchParams(window.location.search);
           const mode = urlParams.get('mode');
-          
-          if (mode === 'quickbind') {
-              doQuickBind(); 
-          }
+          if (mode === 'quickbind') doQuickBind();
           else if (mode === 'upload') openUpload();
           else if (mode === 'status') openStatus();
           else if (mode === 'meds') openMedHistory();
@@ -236,42 +216,17 @@
 
   function doQuickBind() {
     document.getElementById('loading').style.display = 'flex';
-    document.getElementById('loadingText').innerText = '藥局建檔中...';
-    
-    const payload = {
-      action: "upload",
-      isRegister: true,        
-      dept: "快速綁定",         
-      name: lineDisplayName, 
-      lineUserId: lineUserId,
-      lineName: lineDisplayName, 
-      linePic: linePictureUrl || "", 
-      phone: "",
-      notify: "LINE通知"
-    };
-
-    sendToGAS(payload)
+    sendToGAS({ action: "upload", name: lineDisplayName, lineUserId: lineUserId, isRegister: true, dept: "快速綁定", notify: "LINE通知" })
     .then(res => {
       document.getElementById('loading').style.display = 'none';
       if(res.status === 'success' || res.status === 'duplicate') {
         document.getElementById('view-home').classList.add('hidden-mode');
-        document.getElementById('successTitle').innerText = "建檔請求已送出！";
-        document.getElementById('successDesc').innerText = "藥局已收到您的資訊，稍後請告知櫃台人員您的姓名。\n\n(畫面將自動關閉)";
         document.getElementById('view-success').classList.remove('hidden-mode');
-        setTimeout(() => { liff.closeWindow(); }, 2500);
       } else { alert("❌ 失敗：" + res.message); goHome(); }
     }).catch(() => { document.getElementById('loading').style.display = 'none'; alert("連線超時"); goHome(); });
   }
 
-  function doLiffLogout() {
-      if (liff.isLoggedIn()) {
-          liff.logout();
-          window.location.reload();
-      }
-  }
-
   function closeLiffWindow() { liff.closeWindow(); }
-  
   function goHome() { 
     document.getElementById('view-home').classList.remove('hidden-mode');
     document.getElementById('view-form').classList.add('hidden-mode');
@@ -340,6 +295,7 @@
                       <button class="btn btn-sm btn-outline-secondary px-3 rounded-pill" onclick="resetMedQuery()"><i class="bi bi-arrow-counterclockwise"></i> 重新查詢</button>
                     </div>`;
         
+        // 獲取今天的日期 (用於比較是否過期)
         let today = new Date();
         today.setHours(0, 0, 0, 0);
                     
@@ -348,11 +304,13 @@
           let rxDate = _parseDate(m.rxDateStr);
           let isOpen = index === 0 ? 'open' : ''; 
           
+          // 計算第二次領藥時間
           let date2Obj = rxDate ? _addDays(rxDate, m.days) : null;
           let d2Start = rxDate ? _fmt(_addDays(rxDate, m.days - 10), 'MM/DD') : '-';
           let d2End = date2Obj ? _fmt(date2Obj, 'MM/DD') : '-';
           let d2Range = rxDate ? `${d2Start} ~ ${d2End}` : '-';
 
+          // 計算第三次領藥時間
           let date3Obj = rxDate ? _addDays(rxDate, m.days * 2) : null;
           let d3Start = rxDate ? _fmt(_addDays(rxDate, m.days * 2 - 10), 'MM/DD') : '-';
           let d3End = date3Obj ? _fmt(date3Obj, 'MM/DD') : '-';
@@ -360,12 +318,14 @@
 
           let retD = rxDate ? _fmt(_addDays(rxDate, m.days * m.totalRefills), 'YYYY-MM-DD') : '-';
 
+          // 🔥 引入時間感知判斷邏輯
           let refill2UI = '';
           if (m.totalRefills >= 2) {
             let r2Status = `<span class="text-danger fw-bold">${d2Range}</span>`;
             if (m.maxCurrentRefill >= 2) {
               r2Status = `<span class="text-success fw-bold me-2">${d2End}</span><span class="badge bg-success">✅ 已領取</span>`;
             } else if (date2Obj && date2Obj < today) {
+              // 時間已過，且沒有紀錄顯示已領取 -> 變灰色並加上刪除線
               r2Status = `<span class="text-muted fw-bold me-2"><del>${d2Range}</del></span><span class="badge bg-secondary">過期 / 他處領取</span>`;
             }
             refill2UI = `<div class="rx-date-row"><span class="text-muted">👉 第二次領藥：</span><div>${r2Status}</div></div>`;
@@ -377,6 +337,7 @@
             if (m.maxCurrentRefill >= 3) {
               r3Status = `<span class="text-success fw-bold me-2">${d3End}</span><span class="badge bg-success">✅ 已領取</span>`;
             } else if (date3Obj && date3Obj < today) {
+              // 時間已過，且沒有紀錄顯示已領取 -> 變灰色並加上刪除線
               r3Status = `<span class="text-muted fw-bold me-2"><del>${d3Range}</del></span><span class="badge bg-secondary">過期 / 他處領取</span>`;
             }
             refill3UI = `<div class="rx-date-row"><span class="text-muted">👉 第三次領藥：</span><div>${r3Status}</div></div>`;
@@ -433,34 +394,24 @@
 
   function resetMedQuery() { document.getElementById('medQueryForm').style.display = 'block'; document.getElementById('medHistoryResult').innerHTML = ''; }
 
-  // 🌟 核心修正：移除會導致手機崩潰的 Canvas 壓縮，直接以 Base64 原檔送出
   function handleFile(input) {
-    if (!input.files || input.files.length === 0) return;
-    
-    const file = input.files[0];
-
-    document.getElementById('loading').style.display = 'flex';
-    document.getElementById('loadingText').innerText = '讀取照片中...';
-    
-    const reader = new FileReader();
-    
-    // 讀取成功後，直接把結果存起來，絕對不去操作圖片畫布 (Canvas)
-    reader.onload = function(e) {
-      uploadedImages.push({ base64: e.target.result, fileName: file.name });
-      renderPreviews(); 
-      document.getElementById('loading').style.display = 'none';
-      input.value = ''; // 清空欄位
-    };
-    
-    // 如果讀取失敗，跳出警告
-    reader.onerror = function() {
-      document.getElementById('loading').style.display = 'none';
-      alert("❌ 讀取檔案失敗，請檢查手機權限。");
-      input.value = '';
-    };
-    
-    // 啟動讀取
-    reader.readAsDataURL(file);
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      document.getElementById('loading').style.display = 'flex';
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image(); img.src = e.target.result;
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          let w = img.width, h = img.height; if(w > 1200) { h *= 1200/w; w = 1200; }
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          uploadedImages.push({ base64: canvas.toDataURL('image/jpeg', 0.8), fileName: file.name });
+          renderPreviews(); document.getElementById('loading').style.display = 'none';
+        }
+      };
+      reader.readAsDataURL(file);
+    }
   }
 
   function renderPreviews() {
@@ -475,32 +426,11 @@
     const phone = document.getElementById('uPhone').value.trim();
     if (!name || phone.length < 9) return alert("請填寫正確資料");
     if (!document.getElementById('privacyConsentUpload').checked) return alert("請同意條款");
-    
     document.getElementById('loading').style.display = 'flex';
-    document.getElementById('loadingText').innerText = '資料上傳中...';
-    
-    sendToGAS({ 
-      action: "upload", 
-      name: name, 
-      phone: phone, 
-      lineUserId: lineUserId, 
-      lineName: lineDisplayName, 
-      linePic: linePictureUrl || "", 
-      fileDataArray: uploadedImages.map(i=>i.base64), 
-      isRegister: false, 
-      dept: "一般", 
-      notify: "LINE通知" 
-    })
+    sendToGAS({ action: "upload", name: name, phone: phone, lineUserId: lineUserId, fileDataArray: uploadedImages.map(i=>i.base64), isRegister: false, dept: "一般", notify: "LINE通知" })
     .then(res => {
       document.getElementById('loading').style.display = 'none';
-      if(res.status === 'success') { 
-        document.getElementById('view-home').classList.add('hidden-mode');
-        document.getElementById('successTitle').innerText = "上傳成功！";
-        document.getElementById('successDesc').innerText = "藥局已收到您的處方單。\n\n(畫面將自動關閉)";
-        document.getElementById('view-success').classList.remove('hidden-mode');
-        
-        setTimeout(() => { liff.closeWindow(); }, 2500);
-      } else { alert(res.message); }
+      if(res.status === 'success') { alert("上傳成功"); goHome(); } else { alert(res.message); }
     }).catch(() => { document.getElementById('loading').style.display = 'none'; alert("連線失敗"); });
   }
 </script>
