@@ -126,8 +126,9 @@
             <span class="small fw-normal text-muted">(無處方箋可略過)</span>
           </div>
         </label>
-        <!-- 🌟 核心修正：加入 image/jpeg, image/png, image/jpg 強制 iOS/Android 轉換 HEIC 格式 -->
-        <input type="file" id="fileInput" accept="image/jpeg, image/png, image/jpg" style="display: none;" onchange="handleFile(this)">
+        <!-- 🌟 核心修正 1：改用 opacity: 0 取代 display: none，避免被瀏覽器阻擋 -->
+        <!-- 🌟 核心修正 2：恢復 accept="image/*"，讓手機可以自由選取相簿各種格式 -->
+        <input type="file" id="fileInput" accept="image/*" style="position: absolute; opacity: 0; width: 1px; height: 1px; z-index: -1;" onchange="handleFile(this)">
       </div>
       
       <div class="mb-3 mt-3"><label class="form-label small fw-bold">領藥人姓名</label><input type="text" class="form-control" id="uName" placeholder="請輸入姓名"></div>
@@ -444,48 +445,49 @@
 
   function resetMedQuery() { document.getElementById('medQueryForm').style.display = 'block'; document.getElementById('medHistoryResult').innerHTML = ''; }
 
-  // 🌟 修正：確保加入防呆處理，並在讀取後重置 input
+  // 🌟 核心修正 3：使用 URL.createObjectURL 解決手機載入大照片會記憶體崩潰的問題
   function handleFile(input) {
     if (input.files && input.files[0]) {
       const file = input.files[0];
       
-      // 檔案類型基礎防護
-      if (!file.type.match('image.*')) {
-          alert('請選擇有效的圖片檔案！');
-          input.value = '';
-          return;
-      }
-      
       document.getElementById('loading').style.display = 'flex';
       document.getElementById('loadingText').innerText = '照片處理中...';
       
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const img = new Image(); 
-        img.onload = function() {
+      const img = new Image(); 
+      img.onload = function() {
+        try {
           const canvas = document.createElement('canvas');
           let w = img.width, h = img.height; 
-          if(w > 1200) { h *= 1200/w; w = 1200; }
+          
+          // 壓縮圖片
+          if(w > 1200) { h = Math.floor(h * 1200 / w); w = 1200; }
           canvas.width = w; canvas.height = h;
-          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          
           uploadedImages.push({ base64: canvas.toDataURL('image/jpeg', 0.8), fileName: file.name });
           renderPreviews(); 
+          
+          // 釋放記憶體
+          URL.revokeObjectURL(img.src);
+          
           document.getElementById('loading').style.display = 'none';
-          input.value = ''; // 清空欄位以便使用者連續點擊選擇新檔案
-        };
-        img.onerror = function() {
+          input.value = ''; // 清空欄位
+        } catch(err) {
           document.getElementById('loading').style.display = 'none';
-          alert("照片解析失敗，請重新拍照或選擇");
+          alert("照片處理發生錯誤，請嘗試截圖後上傳。");
           input.value = '';
-        };
-        img.src = e.target.result;
+        }
       };
-      reader.onerror = function() {
+      img.onerror = function() {
         document.getElementById('loading').style.display = 'none';
-        alert("讀取檔案失敗");
+        alert("照片解析失敗，可能是不支援的格式。建議將照片截圖後，再上傳該截圖。");
         input.value = '';
       };
-      reader.readAsDataURL(file);
+      
+      // 這是解決閃退與卡死的關鍵！比 FileReader 快且節省記憶體
+      img.src = URL.createObjectURL(file);
     }
   }
 
