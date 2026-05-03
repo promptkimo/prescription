@@ -38,6 +38,11 @@
     .back-btn i { font-size: 1.2rem; margin-right: 5px; color: #06C755; }
     #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
     
+    .native-file-input { width: 100%; padding: 20px; border: 2px dashed #06C755; border-radius: 8px; background-color: #f8f9fa; text-align: center; cursor: pointer; outline: none; margin-bottom: 15px; }
+    .native-file-input::file-selector-button { display: none; }
+    .native-file-input::-webkit-file-upload-button { display: none; }
+    .native-file-input-label { display: block; text-align: center; color: #06C755; font-size: 1rem; font-weight: bold; margin-top: -50px; pointer-events: none; }
+    
     .thumb-wrap { position: relative; width: 100%; padding-top: 100%; border-radius: 8px; overflow: hidden; border: 1px solid #ddd; }
     .thumb-wrap img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
     .thumb-remove { position: absolute; top: 4px; right: 4px; background: rgba(220,53,69,0.9); color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.2rem; border: none; line-height: 1; padding: 0; }
@@ -118,7 +123,6 @@
       <div id="cameraSection" class="mb-3">
         <div class="row g-2 mb-2" id="previewGrid"></div>
         
-        <!-- 🌟 核心修正：移除所有隱藏特效，直接暴露出最原生的檔案輸入框 -->
         <div class="p-3 border rounded bg-white text-center shadow-sm">
           <label class="form-label text-success fw-bold mb-2">📷 請選擇處方照片</label>
           <input type="file" id="fileInput" accept="image/*" class="form-control" onchange="handleFile(this)">
@@ -176,13 +180,7 @@
     "00":"不分科","01":"家醫科","02":"內科","03":"外科","04":"小兒科","05":"婦產科",
     "06":"骨科","07":"泌尿科","08":"耳鼻喉科","09":"眼科","10":"皮膚科","11":"神經科",
     "12":"精神科","13":"復健科","14":"整形外科","15":"職業醫學科","22":"急診醫學科",
-    "23":"牙科","39":"牙科","40":"牙科","60":"中醫科","81":"麻醉科",
-    "FM":"家醫科","GM":"一般內科","CV":"心臟內科","CVS":"心臟外科","CM":"胸腔內科",
-    "GI":"胃腸肝膽科","AG":"胃腸肝膽科","META":"新陳代謝科","END":"內分泌科","NEPH":"腎臟科",
-    "HEMA":"血液科","INF":"感染科","AIR":"風濕免疫科","NEU":"神經內科","NS":"神經外科",
-    "PSY":"精神科","GS":"一般外科","ORTH":"骨科","GU":"泌尿科","URO":"泌尿科",
-    "OBS":"產科","GYN":"婦科","OBG":"婦產科","PED":"小兒科","OPH":"眼科",
-    "ENT":"耳鼻喉科","DER":"皮膚科","REH":"復健科","DENT":"牙科","ONC":"腫瘤科"
+    "23":"牙科","39":"牙科","40":"牙科","60":"中醫科","81":"麻醉科"
   };
 
   function translateDept(codeStr) {
@@ -440,68 +438,84 @@
 
   function resetMedQuery() { document.getElementById('medQueryForm').style.display = 'block'; document.getElementById('medHistoryResult').innerHTML = ''; }
 
-  // 🌟 核心修正：加入嚴密的錯誤捕捉與明確的提示
+  // 🌟 核心防彈機制：加入 try...catch 捕捉與 HEIC 直接攔截
   function handleFile(input) {
-    if (!input.files || input.files.length === 0) return;
-    
-    const file = input.files[0];
-    
-    document.getElementById('loading').style.display = 'flex';
-    document.getElementById('loadingText').innerText = '照片處理中...';
-    
-    const reader = new FileReader();
-    
-    reader.onload = function(e) {
-      const img = new Image(); 
+    try {
+      if (!input.files || input.files.length === 0) {
+        return; // 若使用者取消選取，則安靜退出
+      }
       
-      img.onload = function() {
-        try {
-          const canvas = document.createElement('canvas');
-          let w = img.width, h = img.height; 
-          
-          // 適度壓縮，保護手機記憶體不崩潰
-          const MAX_SIZE = 1000;
-          if (w > MAX_SIZE || h > MAX_SIZE) {
-              if (w > h) { h = Math.floor(h * MAX_SIZE / w); w = MAX_SIZE; }
-              else { w = Math.floor(w * MAX_SIZE / h); h = MAX_SIZE; }
+      const file = input.files[0];
+      
+      // 1. 強制檢查附檔名，若為 HEIC 則直接擋下並提示截圖
+      const fileNameLower = file.name.toLowerCase();
+      if (fileNameLower.endsWith('.heic') || fileNameLower.endsWith('.heif')) {
+          alert('⚠️ 系統偵測到這是 iPhone 的高畫質 (HEIC) 照片，目前無法直接上傳。\n\n👉 解決辦法：請先將這張照片「螢幕截圖」，然後上傳該張截圖檔案即可！');
+          input.value = ''; 
+          return;
+      }
+
+      document.getElementById('loading').style.display = 'flex';
+      document.getElementById('loadingText').innerText = '照片處理中...';
+      
+      const reader = new FileReader();
+      
+      reader.onload = function(e) {
+        const img = new Image(); 
+        
+        img.onload = function() {
+          try {
+            const canvas = document.createElement('canvas');
+            let w = img.width, h = img.height; 
+            
+            // 壓縮寬高，避免記憶體爆掉
+            const MAX_SIZE = 1000;
+            if (w > MAX_SIZE || h > MAX_SIZE) {
+                if (w > h) { h = Math.floor(h * MAX_SIZE / w); w = MAX_SIZE; }
+                else { w = Math.floor(w * MAX_SIZE / h); h = MAX_SIZE; }
+            }
+            
+            canvas.width = w; 
+            canvas.height = h;
+            
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, w, h);
+            
+            // 將壓縮品質調整為 0.7，兼顧清晰與體積
+            uploadedImages.push({ base64: canvas.toDataURL('image/jpeg', 0.7), fileName: file.name });
+            renderPreviews(); 
+            
+            document.getElementById('loading').style.display = 'none';
+            input.value = ''; 
+          } catch(err) {
+            document.getElementById('loading').style.display = 'none';
+            alert("❌ 圖片處理失敗！\n建議辦法：請將照片「螢幕截圖」後再上傳。");
+            input.value = '';
           }
-          
-          canvas.width = w; 
-          canvas.height = h;
-          
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, w, h);
-          
-          // 壓縮為 JPEG，減輕上傳負擔
-          uploadedImages.push({ base64: canvas.toDataURL('image/jpeg', 0.6), fileName: file.name });
-          renderPreviews(); 
-          
+        };
+        
+        img.onerror = function() {
           document.getElementById('loading').style.display = 'none';
-          input.value = ''; // 清空，讓使用者可以再次點擊相同檔案
-        } catch(err) {
-          document.getElementById('loading').style.display = 'none';
-          alert("處理圖片時發生異常，請嘗試將照片「螢幕截圖」後再上傳。");
+          alert("❌ 無法解析此照片檔案。\n建議辦法：請將照片「螢幕截圖」後再上傳。");
           input.value = '';
-        }
+        };
+        
+        img.src = e.target.result;
       };
       
-      img.onerror = function() {
+      reader.onerror = function() {
         document.getElementById('loading').style.display = 'none';
-        alert("手機無法解析此相簿照片格式！\n👉 解決辦法：請將該照片「螢幕截圖」後，上傳截圖檔案即可成功。");
+        alert("❌ 讀取檔案失敗，請檢查手機權限。");
         input.value = '';
       };
       
-      img.src = e.target.result;
-    };
-    
-    reader.onerror = function() {
+      reader.readAsDataURL(file);
+      
+    } catch (globalError) {
+      alert("❌ 發生預期外的錯誤：" + globalError.message);
       document.getElementById('loading').style.display = 'none';
-      alert("無法讀取檔案，請檢查手機相簿權限是否已開啟。");
       input.value = '';
-    };
-    
-    // 開始讀取檔案
-    reader.readAsDataURL(file);
+    }
   }
 
   function renderPreviews() {
