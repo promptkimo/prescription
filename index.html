@@ -38,15 +38,24 @@
     .back-btn i { font-size: 1.2rem; margin-right: 5px; color: #06C755; }
     #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
 
-    /* 🔥 修正：用 label 包住 input，並把 input 設為「不可見但仍存在於佈局」 */
+    /* 🔥 終極解法：把真正的 input 透明覆蓋在按鈕上方，使用者點的就是 input 本身 */
     .preview-box { width: 100%; height: 140px; background: #f8f9fa; border: 2px dashed #06C755; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; position: relative; margin-bottom: 10px; }
-    .upload-label { display: block; width: 100%; cursor: pointer; margin: 0; }
-    /* 🔥 重點：用 opacity:0 + position:absolute 替代 display:none，避免手機 WebView 阻擋 */
-    .file-input-hidden { position: absolute; width: 0.1px; height: 0.1px; opacity: 0; overflow: hidden; z-index: -1; }
     .upload-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
-    .upload-row .preview-box { height: 120px; margin-bottom: 0; }
-    .ios-warning { background: #fff8e1; border: 1px solid #ffc107; border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; font-size: 0.85rem; color: #6c5b00; }
-    .ios-warning a { color: #06C755; font-weight: bold; text-decoration: underline; }
+    .upload-row .upload-wrapper { height: 120px; margin-bottom: 0; }
+    .upload-wrapper { position: relative; width: 100%; height: 140px; margin-bottom: 10px; }
+    .upload-wrapper .preview-box { height: 100%; margin-bottom: 0; pointer-events: none; }
+    /* 🔥 關鍵：input 透明覆蓋整個按鈕，z-index 拉高，使用者點到的真的是 input */
+    .upload-wrapper input[type="file"] {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      opacity: 0;
+      cursor: pointer;
+      z-index: 10;
+      font-size: 100px;  /* iOS 需要這個才會正確接收觸控事件 */
+    }
+    .ios-warning { background: #fff8e1; border: 1px solid #ffc107; border-radius: 8px; padding: 12px; margin-bottom: 10px; font-size: 0.9rem; color: #6c5b00; text-align: center; }
+    .ios-warning a, .ios-warning button { color: white; font-weight: bold; text-decoration: none; background: #06C755; padding: 6px 14px; border-radius: 20px; border: none; display: inline-block; margin-top: 6px; }
 
     .placeholder-text { color: #06C755; text-align: center; font-size: 0.95rem; font-weight: bold; }
     .thumb-wrap { position: relative; width: 100%; padding-top: 100%; border-radius: 8px; overflow: hidden; border: 1px solid #ddd; }
@@ -110,27 +119,30 @@
       <div id="cameraSection">
         <div class="row g-2 mb-2" id="previewGrid"></div>
 
-        <!-- 🔥 iOS LIFF 解法：拍照 / 相簿拆兩個按鈕 + 提供 Safari 逃生口 -->
+        <!-- 🔥 iOS LIFF 警告：醒目的 Safari 逃生口 -->
         <div id="iosWarning" class="ios-warning hidden-mode">
-          ⚠️ iOS 用戶若無法選取相簿照片，請<a href="javascript:void(0)" onclick="openInExternalBrowser()">點此用 Safari 開啟</a>後再上傳。
+          📱 偵測到 iOS LINE 內建瀏覽器<br>
+          <span class="small">若無法選取相簿照片，請改用 Safari 開啟：</span><br>
+          <button type="button" onclick="openInExternalBrowser()">🦊 在 Safari 開啟</button>
         </div>
 
+        <!-- 🔥 終極解法：input 透明覆蓋按鈕，使用者點的就是 input，沒有任何中介 -->
         <div class="upload-row">
-          <!-- 拍照按鈕：用 capture="environment" 強制相機 -->
-          <label for="fileCamera" class="upload-label">
+          <!-- 拍照 -->
+          <div class="upload-wrapper">
             <div class="preview-box shadow-sm">
               <div class="placeholder-text"><span style="font-size: 1.6rem;">📷</span><br>拍照</div>
             </div>
-          </label>
-          <input type="file" id="fileCamera" class="file-input-hidden" accept="image/*" capture="environment" onchange="handleFile(this)">
+            <input type="file" accept="image/*" capture="environment" onchange="handleFile(this)">
+          </div>
 
-          <!-- 從相簿選取：完全不寫 accept、不寫 capture (iOS LIFF 對 accept 太敏感) -->
-          <label for="fileGallery" class="upload-label">
+          <!-- 從相簿選取 -->
+          <div class="upload-wrapper">
             <div class="preview-box shadow-sm">
               <div class="placeholder-text"><span style="font-size: 1.6rem;">🖼️</span><br>從相簿選取</div>
             </div>
-          </label>
-          <input type="file" id="fileGallery" class="file-input-hidden" multiple onchange="handleFile(this)">
+            <input type="file" accept="image/*" multiple onchange="handleFile(this)">
+          </div>
         </div>
         <p class="small text-muted text-center mb-2">(無處方箋可略過直接送出)</p>
       </div>
