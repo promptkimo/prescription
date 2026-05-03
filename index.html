@@ -113,16 +113,15 @@
     <div class="back-btn-container"><button class="back-btn" onclick="goHome()"><i class="bi bi-chevron-left"></i> 返回主畫面</button></div>
     <div class="card p-4 shadow-sm border-0 bg-light">
       <h5 class="fw-bold text-success mb-2"><i class="bi bi-person-lines-fill"></i> 建立領藥檔案</h5>
-      <p class="small text-muted mb-3">若您有多張實體處方箋，可以連續拍照上傳。若僅需綁定 LINE，請直接跳過拍照填寫資料送出即可！</p>
+      <p class="small text-muted mb-3">請直接點擊下方按鈕選擇相片。若僅需綁定 LINE，可不傳照片直接送出！</p>
       
       <div id="cameraSection" class="mb-3">
         <div class="row g-2 mb-2" id="previewGrid"></div>
         
+        <!-- 🌟 最原始、最防呆的標準 HTML 檔案輸入框 -->
         <div class="p-3 border rounded bg-white text-center shadow-sm">
           <label class="form-label text-success fw-bold mb-2">📷 請選擇處方照片</label>
-          <!-- 🌟 核心修正 1：移除 onchange 屬性，精準指定副檔名 -->
-          <input type="file" id="fileInput" accept=".jpg,.jpeg,.png,.heic,.heif" class="form-control">
-          <div class="text-muted small mt-2">(無處方箋可略過)</div>
+          <input type="file" id="fileInput" class="form-control" onchange="handleFile(this)">
         </div>
       </div>
       
@@ -165,7 +164,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  // ⚠️ 請確認此處填寫的是正確的 Web App URL
+  // 已經確認你提供的專屬 GAS URL
   const GAS_URL = "https://script.google.com/macros/s/AKfycbyUXCejmkI52ZJVUN1K1t1j2ZvfdZMCgHsgB79okITgzn7to2sfte43R5I0GOQnFp1opQ/exec";
   const LIFF_ID = "2008912977-DuJTm5u1"; 
 
@@ -434,91 +433,34 @@
 
   function resetMedQuery() { document.getElementById('medQueryForm').style.display = 'block'; document.getElementById('medHistoryResult').innerHTML = ''; }
 
-  // 🌟 核心修正 1：改用原生 JavaScript 事件監聽，破解 LIFF 環境中 onchange 靜默失效的問題
-  document.addEventListener("DOMContentLoaded", function() {
-      const fileInput = document.getElementById('fileInput');
-      if(fileInput) {
-          fileInput.addEventListener('change', function(e) {
-              // 🌟 核心修正 2：第一時間跳出 Alert！只要看到這個，代表突破了手機阻擋
-              alert("✅ 已成功抓取手機照片檔案！準備處理...");
-              handleFile(e.target);
-          });
-      }
-  });
-
-  // 處理相片檔案
+  // 🌟 核心修正：移除會導致手機崩潰的 Canvas 壓縮，直接以 Base64 原檔送出
   function handleFile(input) {
-    try {
-      if (!input.files || input.files.length === 0) return;
-      
-      const file = input.files[0];
-      
-      const fileNameLower = file.name.toLowerCase();
-      if (fileNameLower.endsWith('.heic') || fileNameLower.endsWith('.heif')) {
-          alert('⚠️ 偵測到 iPhone 高畫質 (HEIC) 照片！\n👉 請先將照片「螢幕截圖」，然後上傳截圖即可。');
-          input.value = ''; 
-          return;
-      }
+    if (!input.files || input.files.length === 0) return;
+    
+    const file = input.files[0];
 
-      document.getElementById('loading').style.display = 'flex';
-      document.getElementById('loadingText').innerText = '照片處理中...';
-      
-      const reader = new FileReader();
-      
-      reader.onload = function(e) {
-        const img = new Image(); 
-        
-        img.onload = function() {
-          try {
-            const canvas = document.createElement('canvas');
-            let w = img.width, h = img.height; 
-            
-            const MAX_SIZE = 1000;
-            if (w > MAX_SIZE || h > MAX_SIZE) {
-                if (w > h) { h = Math.floor(h * MAX_SIZE / w); w = MAX_SIZE; }
-                else { w = Math.floor(w * MAX_SIZE / h); h = MAX_SIZE; }
-            }
-            
-            canvas.width = w; 
-            canvas.height = h;
-            
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, w, h);
-            
-            uploadedImages.push({ base64: canvas.toDataURL('image/jpeg', 0.7), fileName: file.name });
-            renderPreviews(); 
-            
-            document.getElementById('loading').style.display = 'none';
-            input.value = ''; 
-          } catch(err) {
-            document.getElementById('loading').style.display = 'none';
-            alert("❌ 圖片處理失敗，請嘗試將照片「螢幕截圖」後再上傳。");
-            input.value = '';
-          }
-        };
-        
-        img.onerror = function() {
-          document.getElementById('loading').style.display = 'none';
-          alert("❌ 手機無法解析此相簿照片格式。\n👉 請將照片「螢幕截圖」後，上傳截圖檔案。");
-          input.value = '';
-        };
-        
-        img.src = e.target.result;
-      };
-      
-      reader.onerror = function() {
-        document.getElementById('loading').style.display = 'none';
-        alert("❌ 讀取檔案失敗，請檢查手機權限。");
-        input.value = '';
-      };
-      
-      reader.readAsDataURL(file);
-      
-    } catch (globalError) {
-      alert("❌ 發生預期外的錯誤：" + globalError.message);
+    document.getElementById('loading').style.display = 'flex';
+    document.getElementById('loadingText').innerText = '讀取照片中...';
+    
+    const reader = new FileReader();
+    
+    // 讀取成功後，直接把結果存起來，絕對不去操作圖片畫布 (Canvas)
+    reader.onload = function(e) {
+      uploadedImages.push({ base64: e.target.result, fileName: file.name });
+      renderPreviews(); 
       document.getElementById('loading').style.display = 'none';
+      input.value = ''; // 清空欄位
+    };
+    
+    // 如果讀取失敗，跳出警告
+    reader.onerror = function() {
+      document.getElementById('loading').style.display = 'none';
+      alert("❌ 讀取檔案失敗，請檢查手機權限。");
       input.value = '';
-    }
+    };
+    
+    // 啟動讀取
+    reader.readAsDataURL(file);
   }
 
   function renderPreviews() {
