@@ -39,10 +39,14 @@
     #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
 
     /* 🔥 修正：用 label 包住 input，並把 input 設為「不可見但仍存在於佈局」 */
-    .preview-box { width: 100%; height: 180px; background: #f8f9fa; border: 2px dashed #06C755; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; position: relative; margin-bottom: 15px; }
+    .preview-box { width: 100%; height: 140px; background: #f8f9fa; border: 2px dashed #06C755; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; position: relative; margin-bottom: 10px; }
     .upload-label { display: block; width: 100%; cursor: pointer; margin: 0; }
     /* 🔥 重點：用 opacity:0 + position:absolute 替代 display:none，避免手機 WebView 阻擋 */
     .file-input-hidden { position: absolute; width: 0.1px; height: 0.1px; opacity: 0; overflow: hidden; z-index: -1; }
+    .upload-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+    .upload-row .preview-box { height: 120px; margin-bottom: 0; }
+    .ios-warning { background: #fff8e1; border: 1px solid #ffc107; border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; font-size: 0.85rem; color: #6c5b00; }
+    .ios-warning a { color: #06C755; font-weight: bold; text-decoration: underline; }
 
     .placeholder-text { color: #06C755; text-align: center; font-size: 0.95rem; font-weight: bold; }
     .thumb-wrap { position: relative; width: 100%; padding-top: 100%; border-radius: 8px; overflow: hidden; border: 1px solid #ddd; }
@@ -106,14 +110,29 @@
       <div id="cameraSection">
         <div class="row g-2 mb-2" id="previewGrid"></div>
 
-        <!-- 🔥 修正重點：用 <label for> 直接包住 input，移除 onclick 的 JS 點擊 -->
-        <label for="fileInput" class="upload-label">
-          <div class="preview-box shadow-sm" id="uploadBtnBox">
-            <div class="placeholder-text" id="placeholder"><span style="font-size: 2rem;">📷</span><br>點此拍照 / 選照片<br><span class="small fw-normal text-muted">(無處方箋可略過)</span></div>
-          </div>
-        </label>
-        <!-- 🔥 修正：accept 用具體 MIME 型態、加 multiple；用 class 取代 display:none -->
-        <input type="file" id="fileInput" class="file-input-hidden" accept="image/jpeg,image/jpg,image/png,image/heic,image/heif,image/webp" multiple onchange="handleFile(this)">
+        <!-- 🔥 iOS LIFF 解法：拍照 / 相簿拆兩個按鈕 + 提供 Safari 逃生口 -->
+        <div id="iosWarning" class="ios-warning hidden-mode">
+          ⚠️ iOS 用戶若無法選取相簿照片，請<a href="javascript:void(0)" onclick="openInExternalBrowser()">點此用 Safari 開啟</a>後再上傳。
+        </div>
+
+        <div class="upload-row">
+          <!-- 拍照按鈕：用 capture="environment" 強制相機 -->
+          <label for="fileCamera" class="upload-label">
+            <div class="preview-box shadow-sm">
+              <div class="placeholder-text"><span style="font-size: 1.6rem;">📷</span><br>拍照</div>
+            </div>
+          </label>
+          <input type="file" id="fileCamera" class="file-input-hidden" accept="image/*" capture="environment" onchange="handleFile(this)">
+
+          <!-- 從相簿選取：完全不寫 accept、不寫 capture (iOS LIFF 對 accept 太敏感) -->
+          <label for="fileGallery" class="upload-label">
+            <div class="preview-box shadow-sm">
+              <div class="placeholder-text"><span style="font-size: 1.6rem;">🖼️</span><br>從相簿選取</div>
+            </div>
+          </label>
+          <input type="file" id="fileGallery" class="file-input-hidden" multiple onchange="handleFile(this)">
+        </div>
+        <p class="small text-muted text-center mb-2">(無處方箋可略過直接送出)</p>
       </div>
       <div class="mb-3 mt-2"><label class="form-label small fw-bold">領藥人姓名</label><input type="text" class="form-control" id="uName" placeholder="請輸入姓名"></div>
       <div class="mb-3"><label class="form-label small fw-bold">聯絡電話</label><input type="tel" class="form-control" id="uPhone" placeholder="請輸入手機號碼"></div>
@@ -201,9 +220,38 @@
 
   window.onload = function() { initLiff(); };
 
+  // 🔥 偵測是否為 iOS 上的 LINE LIFF 環境
+  function isIosLiff() {
+    try {
+      if (typeof liff !== 'undefined' && liff.isInClient && liff.isInClient()) {
+        if (liff.getOS && liff.getOS() === 'ios') return true;
+      }
+    } catch(e) {}
+    // fallback：用 UA 判斷
+    return /iPhone|iPad|iPod/i.test(navigator.userAgent) && /Line/i.test(navigator.userAgent);
+  }
+
+  // 🔥 用外部 Safari 重新開啟此頁
+  function openInExternalBrowser() {
+    try {
+      if (typeof liff !== 'undefined' && liff.openWindow) {
+        liff.openWindow({ url: window.location.href, external: true });
+      } else {
+        window.open(window.location.href, '_blank');
+      }
+    } catch(e) { alert('請手動複製網址到 Safari 開啟'); }
+  }
+
   function initLiff() {
     liff.init({ liffId: LIFF_ID }).then(() => {
       document.getElementById('loading').style.display = 'none';
+
+      // 🔥 iOS LIFF 顯示警告 + 逃生按鈕
+      if (isIosLiff()) {
+        const w = document.getElementById('iosWarning');
+        if (w) w.classList.remove('hidden-mode');
+      }
+
       if (liff.isLoggedIn()) {
         liff.getProfile().then(profile => {
           lineUserId = profile.userId; lineDisplayName = profile.displayName; linePictureUrl = profile.pictureUrl || "";
@@ -398,7 +446,7 @@
 
   function resetMedQuery() { document.getElementById('medQueryForm').style.display = 'block'; document.getElementById('medHistoryResult').innerHTML = ''; }
 
-  // 🔥 修正：改成 for 迴圈處理多檔；用 createObjectURL 在某些 LIFF 上更穩
+  // 🔥 iOS 友善版：優先用 createObjectURL（HEIC 從相簿選的圖比 FileReader 更穩）
   function handleFile(input) {
     if (!input.files || input.files.length === 0) return;
     document.getElementById('loading').style.display = 'flex';
@@ -406,45 +454,69 @@
     const files = Array.from(input.files);
     let processed = 0;
 
+    function done() {
+      processed++;
+      if (processed === files.length) {
+        renderPreviews();
+        document.getElementById('loading').style.display = 'none';
+        input.value = ''; // 清空才能第二次選同一張
+      }
+    }
+
     files.forEach(file => {
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const img = new Image();
-        img.onload = function() {
+      // 過濾非圖片檔（因 gallery input 沒設 accept）
+      if (file.type && file.type.indexOf('image') === -1 && !/\.(jpe?g|png|heic|heif|webp|gif|bmp)$/i.test(file.name)) {
+        alert('「' + file.name + '」不是圖片檔，已略過');
+        done();
+        return;
+      }
+
+      let objectUrl = null;
+      try { objectUrl = URL.createObjectURL(file); } catch(e) {}
+
+      const img = new Image();
+      img.onload = function() {
+        try {
           const canvas = document.createElement('canvas');
           let w = img.width, h = img.height;
           if (w > 1200) { h = h * (1200 / w); w = 1200; }
           canvas.width = w; canvas.height = h;
           canvas.getContext('2d').drawImage(img, 0, 0, w, h);
           uploadedImages.push({ base64: canvas.toDataURL('image/jpeg', 0.8), fileName: file.name });
-          processed++;
-          if (processed === files.length) {
-            renderPreviews();
-            document.getElementById('loading').style.display = 'none';
-            // 🔥 重要：清空 input.value，否則同一張照片無法第二次選取
-            input.value = '';
-          }
-        };
-        img.onerror = function() {
-          processed++;
-          if (processed === files.length) {
-            renderPreviews();
-            document.getElementById('loading').style.display = 'none';
-            input.value = '';
-            alert('部分圖片無法讀取，請改用 JPG/PNG 格式');
-          }
-        };
-        img.src = e.target.result;
-      };
-      reader.onerror = function() {
-        processed++;
-        if (processed === files.length) {
-          document.getElementById('loading').style.display = 'none';
-          input.value = '';
-          alert('讀取檔案失敗，請重試');
+        } catch(e) {
+          alert('圖片處理失敗：' + (e.message || e));
         }
+        if (objectUrl) URL.revokeObjectURL(objectUrl);
+        done();
       };
-      reader.readAsDataURL(file);
+      img.onerror = function() {
+        // createObjectURL 失敗時 fallback 到 FileReader
+        if (objectUrl) URL.revokeObjectURL(objectUrl);
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const img2 = new Image();
+          img2.onload = function() {
+            try {
+              const canvas = document.createElement('canvas');
+              let w = img2.width, h = img2.height;
+              if (w > 1200) { h = h * (1200 / w); w = 1200; }
+              canvas.width = w; canvas.height = h;
+              canvas.getContext('2d').drawImage(img2, 0, 0, w, h);
+              uploadedImages.push({ base64: canvas.toDataURL('image/jpeg', 0.8), fileName: file.name });
+            } catch(e2) { alert('圖片處理失敗（HEIC 格式不支援？請改用 JPG/PNG）'); }
+            done();
+          };
+          img2.onerror = function() {
+            alert('「' + file.name + '」格式不支援（iOS 請拍照時關閉 HEIC：設定→相機→格式→相容性最大）');
+            done();
+          };
+          img2.src = e.target.result;
+        };
+        reader.onerror = function() { alert('讀取「' + file.name + '」失敗'); done(); };
+        reader.readAsDataURL(file);
+      };
+      img.src = objectUrl || '';
+      if (!objectUrl) img.onerror();
     });
   }
 
