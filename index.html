@@ -38,7 +38,8 @@
     .back-btn i { font-size: 1.2rem; margin-right: 5px; color: #06C755; }
     #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
     
-    .preview-box { width: 100%; height: 180px; background: #f8f9fa; border: 2px dashed #06C755; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; position: relative; margin-bottom: 15px; }
+    /* 修改點：加入 label 的 CSS 相容性 */
+    .preview-box { width: 100%; height: 180px; background: #f8f9fa; border: 2px dashed #06C755; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; position: relative; margin-bottom: 15px; margin-top: 0; }
     .placeholder-text { color: #06C755; text-align: center; font-size: 0.95rem; font-weight: bold; }
     .thumb-wrap { position: relative; width: 100%; padding-top: 100%; border-radius: 8px; overflow: hidden; border: 1px solid #ddd; }
     .thumb-wrap img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
@@ -64,7 +65,6 @@
     .rx-body-collapse.open { display: block; animation: fadeIn 0.3s ease; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-    /* 成功畫面字體與圖示調整 */
     #view-success { text-align: center; }
     .success-icon { display: none; color: #06C755; font-size: 5rem; margin-bottom: 15px; }
   </style>
@@ -117,14 +117,21 @@
     <div class="card p-4 shadow-sm border-0 bg-light">
       <h5 class="fw-bold text-success mb-2"><i class="bi bi-person-lines-fill"></i> 建立領藥檔案</h5>
       <p class="small text-muted mb-3">若您有多張實體處方箋，可以連續拍照上傳。若僅需綁定 LINE，請直接跳過拍照填寫資料送出即可！</p>
+      
       <div id="cameraSection">
         <div class="row g-2 mb-2" id="previewGrid"></div>
-        <div class="preview-box shadow-sm" onclick="document.getElementById('fileInput').click()" id="uploadBtnBox">
-          <div class="placeholder-text" id="placeholder"><span style="font-size: 2rem;">📷</span><br>點此拍照 / 選照片<br><span class="small fw-normal text-muted">(無處方箋可略過)</span></div>
-        </div>
+        
+        <!-- 🌟 核心修正：將 div 更改為 label，完美支援手機原生觸發檔案總管/相機 -->
+        <label for="fileInput" class="preview-box shadow-sm m-0" id="uploadBtnBox">
+          <div class="placeholder-text" id="placeholder">
+            <span style="font-size: 2rem;">📷</span><br>點此拍照 / 選照片<br>
+            <span class="small fw-normal text-muted">(無處方箋可略過)</span>
+          </div>
+        </label>
         <input type="file" id="fileInput" accept="image/*" style="display: none;" onchange="handleFile(this)">
       </div>
-      <div class="mb-3 mt-2"><label class="form-label small fw-bold">領藥人姓名</label><input type="text" class="form-control" id="uName" placeholder="請輸入姓名"></div>
+      
+      <div class="mb-3 mt-3"><label class="form-label small fw-bold">領藥人姓名</label><input type="text" class="form-control" id="uName" placeholder="請輸入姓名"></div>
       <div class="mb-3"><label class="form-label small fw-bold">聯絡電話</label><input type="tel" class="form-control" id="uPhone" placeholder="請輸入手機號碼"></div>
       <div class="form-check mb-4"><input class="form-check-input" type="checkbox" id="privacyConsentUpload"><label class="form-check-label text-muted small" for="privacyConsentUpload">我已同意隱私權保護與服務條款，並授權藥局建檔通知。</label></div>
       <button class="btn btn-success w-100 fw-bold py-2 shadow-sm fs-5" onclick="submitData()">確認送出資料</button>
@@ -228,7 +235,7 @@
           const mode = urlParams.get('mode');
           
           if (mode === 'quickbind') {
-              doQuickBind(); // 進入極速綁定模式
+              doQuickBind(); 
           }
           else if (mode === 'upload') openUpload();
           else if (mode === 'status') openStatus();
@@ -243,12 +250,11 @@
     document.getElementById('loading').style.display = 'flex';
     document.getElementById('loadingText').innerText = '藥局建檔中...';
     
-    // ⚠️ 確保此處將 LINE 的暱稱與照片放入 Payload 中，解決後台顯示 "未載入 LINE 暱稱" 的問題
     const payload = {
       action: "upload",
       isRegister: true,        
       dept: "快速綁定",         
-      name: lineDisplayName,  // 預設填入 LINE 暱稱，方便藥師辨識
+      name: lineDisplayName, 
       lineUserId: lineUserId,
       lineName: lineDisplayName, 
       linePic: linePictureUrl || "", 
@@ -264,11 +270,7 @@
         document.getElementById('successTitle').innerText = "建檔請求已送出！";
         document.getElementById('successDesc').innerText = "藥局已收到您的資訊，稍後請告知櫃台人員您的姓名。\n\n(畫面將自動關閉)";
         document.getElementById('view-success').classList.remove('hidden-mode');
-        
-        // 成功後延遲 2.5 秒自動關閉 LINE 網頁視窗
-        setTimeout(() => {
-            liff.closeWindow();
-        }, 2500);
+        setTimeout(() => { liff.closeWindow(); }, 2500);
       } else { alert("❌ 失敗：" + res.message); goHome(); }
     }).catch(() => { document.getElementById('loading').style.display = 'none'; alert("連線超時"); goHome(); });
   }
@@ -281,6 +283,7 @@
   }
 
   function closeLiffWindow() { liff.closeWindow(); }
+  
   function goHome() { 
     document.getElementById('view-home').classList.remove('hidden-mode');
     document.getElementById('view-form').classList.add('hidden-mode');
@@ -442,21 +445,38 @@
 
   function resetMedQuery() { document.getElementById('medQueryForm').style.display = 'block'; document.getElementById('medHistoryResult').innerHTML = ''; }
 
+  // 🌟 手機專用圖片處理函數 (加入防卡死機制)
   function handleFile(input) {
     if (input.files && input.files[0]) {
       const file = input.files[0];
       document.getElementById('loading').style.display = 'flex';
+      document.getElementById('loadingText').innerText = '照片處理中...';
+      
       const reader = new FileReader();
       reader.onload = function(e) {
-        const img = new Image(); img.src = e.target.result;
+        const img = new Image(); 
         img.onload = function() {
           const canvas = document.createElement('canvas');
-          let w = img.width, h = img.height; if(w > 1200) { h *= 1200/w; w = 1200; }
+          let w = img.width, h = img.height; 
+          if(w > 1200) { h *= 1200/w; w = 1200; }
           canvas.width = w; canvas.height = h;
           canvas.getContext('2d').drawImage(img, 0, 0, w, h);
           uploadedImages.push({ base64: canvas.toDataURL('image/jpeg', 0.8), fileName: file.name });
-          renderPreviews(); document.getElementById('loading').style.display = 'none';
-        }
+          renderPreviews(); 
+          document.getElementById('loading').style.display = 'none';
+          input.value = ''; // 清空 input 以利連續選擇/拍照
+        };
+        img.onerror = function() {
+          document.getElementById('loading').style.display = 'none';
+          alert("照片解析失敗，請重新拍照或選擇");
+          input.value = '';
+        };
+        img.src = e.target.result;
+      };
+      reader.onerror = function() {
+        document.getElementById('loading').style.display = 'none';
+        alert("讀取檔案失敗");
+        input.value = '';
       };
       reader.readAsDataURL(file);
     }
@@ -478,7 +498,6 @@
     document.getElementById('loading').style.display = 'flex';
     document.getElementById('loadingText').innerText = '資料上傳中...';
     
-    // ⚠️ 確保此處亦將 LINE 暱稱與照片一併送出
     sendToGAS({ 
       action: "upload", 
       name: name, 
@@ -499,9 +518,7 @@
         document.getElementById('successDesc').innerText = "藥局已收到您的處方單。\n\n(畫面將自動關閉)";
         document.getElementById('view-success').classList.remove('hidden-mode');
         
-        setTimeout(() => {
-            liff.closeWindow();
-        }, 2500);
+        setTimeout(() => { liff.closeWindow(); }, 2500);
       } else { alert(res.message); }
     }).catch(() => { document.getElementById('loading').style.display = 'none'; alert("連線失敗"); });
   }
