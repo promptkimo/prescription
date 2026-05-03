@@ -38,7 +38,6 @@
     .back-btn i { font-size: 1.2rem; margin-right: 5px; color: #06C755; }
     #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
     
-    /* 修改點：加入 label 的 CSS 相容性 */
     .preview-box { width: 100%; height: 180px; background: #f8f9fa; border: 2px dashed #06C755; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; position: relative; margin-bottom: 15px; margin-top: 0; }
     .placeholder-text { color: #06C755; text-align: center; font-size: 0.95rem; font-weight: bold; }
     .thumb-wrap { position: relative; width: 100%; padding-top: 100%; border-radius: 8px; overflow: hidden; border: 1px solid #ddd; }
@@ -121,14 +120,14 @@
       <div id="cameraSection">
         <div class="row g-2 mb-2" id="previewGrid"></div>
         
-        <!-- 🌟 核心修正：將 div 更改為 label，完美支援手機原生觸發檔案總管/相機 -->
         <label for="fileInput" class="preview-box shadow-sm m-0" id="uploadBtnBox">
           <div class="placeholder-text" id="placeholder">
             <span style="font-size: 2rem;">📷</span><br>點此拍照 / 選照片<br>
             <span class="small fw-normal text-muted">(無處方箋可略過)</span>
           </div>
         </label>
-        <input type="file" id="fileInput" accept="image/*" style="display: none;" onchange="handleFile(this)">
+        <!-- 🌟 核心修正：加入 image/jpeg, image/png, image/jpg 強制 iOS/Android 轉換 HEIC 格式 -->
+        <input type="file" id="fileInput" accept="image/jpeg, image/png, image/jpg" style="display: none;" onchange="handleFile(this)">
       </div>
       
       <div class="mb-3 mt-3"><label class="form-label small fw-bold">領藥人姓名</label><input type="text" class="form-control" id="uName" placeholder="請輸入姓名"></div>
@@ -445,10 +444,18 @@
 
   function resetMedQuery() { document.getElementById('medQueryForm').style.display = 'block'; document.getElementById('medHistoryResult').innerHTML = ''; }
 
-  // 🌟 手機專用圖片處理函數 (加入防卡死機制)
+  // 🌟 修正：確保加入防呆處理，並在讀取後重置 input
   function handleFile(input) {
     if (input.files && input.files[0]) {
       const file = input.files[0];
+      
+      // 檔案類型基礎防護
+      if (!file.type.match('image.*')) {
+          alert('請選擇有效的圖片檔案！');
+          input.value = '';
+          return;
+      }
+      
       document.getElementById('loading').style.display = 'flex';
       document.getElementById('loadingText').innerText = '照片處理中...';
       
@@ -464,7 +471,7 @@
           uploadedImages.push({ base64: canvas.toDataURL('image/jpeg', 0.8), fileName: file.name });
           renderPreviews(); 
           document.getElementById('loading').style.display = 'none';
-          input.value = ''; // 清空 input 以利連續選擇/拍照
+          input.value = ''; // 清空欄位以便使用者連續點擊選擇新檔案
         };
         img.onerror = function() {
           document.getElementById('loading').style.display = 'none';
