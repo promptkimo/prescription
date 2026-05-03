@@ -38,12 +38,6 @@
     .back-btn i { font-size: 1.2rem; margin-right: 5px; color: #06C755; }
     #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
     
-    /* 🌟 核心修正：將 input 樣式還原，不使用任何會干擾的透明或隱藏屬性 */
-    .native-file-input { width: 100%; padding: 20px; border: 2px dashed #06C755; border-radius: 8px; background-color: #f8f9fa; text-align: center; cursor: pointer; outline: none; margin-bottom: 15px; }
-    .native-file-input::file-selector-button { display: none; } /* 隱藏預設按鈕 */
-    .native-file-input::-webkit-file-upload-button { display: none; } /* Safari */
-    .native-file-input-label { display: block; text-align: center; color: #06C755; font-size: 1rem; font-weight: bold; margin-top: -50px; pointer-events: none; }
-    
     .thumb-wrap { position: relative; width: 100%; padding-top: 100%; border-radius: 8px; overflow: hidden; border: 1px solid #ddd; }
     .thumb-wrap img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
     .thumb-remove { position: absolute; top: 4px; right: 4px; background: rgba(220,53,69,0.9); color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.2rem; border: none; line-height: 1; padding: 0; }
@@ -121,15 +115,15 @@
       <h5 class="fw-bold text-success mb-2"><i class="bi bi-person-lines-fill"></i> 建立領藥檔案</h5>
       <p class="small text-muted mb-3">若您有多張實體處方箋，可以連續拍照上傳。若僅需綁定 LINE，請直接跳過拍照填寫資料送出即可！</p>
       
-      <div id="cameraSection">
+      <div id="cameraSection" class="mb-3">
         <div class="row g-2 mb-2" id="previewGrid"></div>
         
-        <!-- 🌟 核心修正：移除所有複雜的層疊結構，只留下乾淨的原生 input -->
-        <!-- 同時移除 accept 限制，讓手機自由發揮 -->
-        <input type="file" id="fileInput" class="native-file-input" onchange="handleFile(this)" title=" ">
-        <div class="native-file-input-label">📷 點此拍照 / 選照片</div>
-        <div class="text-center small text-muted mt-2 mb-3">(無處方箋可略過)</div>
-
+        <!-- 🌟 核心修正：移除所有隱藏特效，直接暴露出最原生的檔案輸入框 -->
+        <div class="p-3 border rounded bg-white text-center shadow-sm">
+          <label class="form-label text-success fw-bold mb-2">📷 請選擇處方照片</label>
+          <input type="file" id="fileInput" accept="image/*" class="form-control" onchange="handleFile(this)">
+          <div class="text-muted small mt-2">(無處方箋可略過)</div>
+        </div>
       </div>
       
       <div class="mb-3 mt-3"><label class="form-label small fw-bold">領藥人姓名</label><input type="text" class="form-control" id="uName" placeholder="請輸入姓名"></div>
@@ -139,7 +133,6 @@
     </div>
   </div>
 
-  <!-- 下方程式碼 (狀態查詢、藥歷查詢等) 保持不變 -->
   <div id="view-status" class="hidden-mode sub-view">
     <div class="back-btn-container"><button class="back-btn" onclick="goHome()"><i class="bi bi-chevron-left"></i> 返回主畫面</button></div>
     <div class="card p-4 shadow-sm border-0">
@@ -172,7 +165,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  // ⚠️ 確保此為您最新的 Google Apps Script 網頁應用程式網址 (Web App URL)
+  // ⚠️ 請確認此處填寫的是正確的 Web App URL
   const GAS_URL = "https://script.google.com/macros/s/AKfycbyUXCejmkI52ZJVUN1K1t1j2ZvfdZMCgHsgB79okITgzn7to2sfte43R5I0GOQnFp1opQ/exec";
   const LIFF_ID = "2008912977-DuJTm5u1"; 
 
@@ -447,65 +440,68 @@
 
   function resetMedQuery() { document.getElementById('medQueryForm').style.display = 'block'; document.getElementById('medHistoryResult').innerHTML = ''; }
 
-  // 🌟 核心修正：回歸最穩定的 FileReader，確保所有手機相簿都能順利載入
+  // 🌟 核心修正：加入嚴密的錯誤捕捉與明確的提示
   function handleFile(input) {
-    if (input.files && input.files[0]) {
-      const file = input.files[0];
+    if (!input.files || input.files.length === 0) return;
+    
+    const file = input.files[0];
+    
+    document.getElementById('loading').style.display = 'flex';
+    document.getElementById('loadingText').innerText = '照片處理中...';
+    
+    const reader = new FileReader();
+    
+    reader.onload = function(e) {
+      const img = new Image(); 
       
-      document.getElementById('loading').style.display = 'flex';
-      document.getElementById('loadingText').innerText = '照片處理中...';
-      
-      const reader = new FileReader();
-      
-      reader.onload = function(e) {
-        const img = new Image(); 
-        img.onload = function() {
-          try {
-            const canvas = document.createElement('canvas');
-            let w = img.width, h = img.height; 
-            
-            // 壓縮寬高，避免記憶體爆掉
-            const MAX_SIZE = 1200;
-            if (w > MAX_SIZE || h > MAX_SIZE) {
-                if (w > h) { h = Math.floor(h * MAX_SIZE / w); w = MAX_SIZE; }
-                else { w = Math.floor(w * MAX_SIZE / h); h = MAX_SIZE; }
-            }
-            
-            canvas.width = w; 
-            canvas.height = h;
-            
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, w, h);
-            
-            // 將壓縮品質調整為 0.7，兼顧清晰與體積
-            uploadedImages.push({ base64: canvas.toDataURL('image/jpeg', 0.7), fileName: file.name });
-            renderPreviews(); 
-            
-            document.getElementById('loading').style.display = 'none';
-            input.value = ''; // 清空 input
-          } catch(err) {
-            document.getElementById('loading').style.display = 'none';
-            alert("照片處理發生錯誤，請嘗試截圖後上傳。");
-            input.value = '';
+      img.onload = function() {
+        try {
+          const canvas = document.createElement('canvas');
+          let w = img.width, h = img.height; 
+          
+          // 適度壓縮，保護手機記憶體不崩潰
+          const MAX_SIZE = 1000;
+          if (w > MAX_SIZE || h > MAX_SIZE) {
+              if (w > h) { h = Math.floor(h * MAX_SIZE / w); w = MAX_SIZE; }
+              else { w = Math.floor(w * MAX_SIZE / h); h = MAX_SIZE; }
           }
-        };
-        img.onerror = function() {
+          
+          canvas.width = w; 
+          canvas.height = h;
+          
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          
+          // 壓縮為 JPEG，減輕上傳負擔
+          uploadedImages.push({ base64: canvas.toDataURL('image/jpeg', 0.6), fileName: file.name });
+          renderPreviews(); 
+          
           document.getElementById('loading').style.display = 'none';
-          alert("無法解析此照片，請嘗試換一張或將照片截圖後上傳。");
+          input.value = ''; // 清空，讓使用者可以再次點擊相同檔案
+        } catch(err) {
+          document.getElementById('loading').style.display = 'none';
+          alert("處理圖片時發生異常，請嘗試將照片「螢幕截圖」後再上傳。");
           input.value = '';
-        };
-        
-        img.src = e.target.result;
+        }
       };
       
-      reader.onerror = function() {
+      img.onerror = function() {
         document.getElementById('loading').style.display = 'none';
-        alert("讀取檔案失敗。");
+        alert("手機無法解析此相簿照片格式！\n👉 解決辦法：請將該照片「螢幕截圖」後，上傳截圖檔案即可成功。");
         input.value = '';
       };
       
-      reader.readAsDataURL(file);
-    }
+      img.src = e.target.result;
+    };
+    
+    reader.onerror = function() {
+      document.getElementById('loading').style.display = 'none';
+      alert("無法讀取檔案，請檢查手機相簿權限是否已開啟。");
+      input.value = '';
+    };
+    
+    // 開始讀取檔案
+    reader.readAsDataURL(file);
   }
 
   function renderPreviews() {
