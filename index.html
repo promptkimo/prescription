@@ -11,23 +11,23 @@
   <style>
     body { background-color: #fcfcfc; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
     .container { max-width: 600px; padding: 0; flex-grow: 1; display: flex; flex-direction: column; margin: 0 auto; width: 100%; height: 100%; background: #ffffff; box-shadow: 0 0 20px rgba(0,0,0,0.02); }
-    .hidden-mode { display: none !important; } 
+    .hidden-mode { display: none !important; }
     #view-home { height: 100%; display: flex; flex-direction: column; overflow: hidden; }
     .brand-header { background: #ffffff; padding: 30px 20px 10px; text-align: center; margin-bottom: 5px; flex-shrink: 0; }
-    .brand-title { font-weight: 900; font-size: 1.8rem; letter-spacing: 2px; margin-bottom: 3px; color: #06C755; } 
+    .brand-title { font-weight: 900; font-size: 1.8rem; letter-spacing: 2px; margin-bottom: 3px; color: #06C755; }
     .brand-subtitle { font-size: 0.85rem; color: #6c757d; margin-bottom: 0; font-weight: 500; letter-spacing: 1px; }
     .home-content { display: flex; flex-direction: column; flex-grow: 1; padding: 0 0 30px 0; min-height: 0; }
     .home-content-wrapper { max-width: 360px; width: 100%; margin: 0 auto; padding: 0 15px; box-sizing: border-box; }
-    
+
     .user-card { background: #f8f9fa; padding: 10px 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #f0f2f5; display: flex; justify-content: space-between; align-items: center; width: 100%; box-sizing: border-box; }
     .user-avatar { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; margin-right: 12px; border: 2px solid #06C755; }
-    
+
     .home-btn-group { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; width: 100%; justify-items: center; }
     .menu-btn { background: transparent !important; border: none !important; box-shadow: none !important; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1); outline: none; cursor: pointer; padding: 0; width: 100%; }
     .menu-btn:active { transform: scale(0.96); opacity: 0.9; }
     .menu-icon { width: 105px; height: 105px; margin-bottom: 8px; object-fit: contain; filter: drop-shadow(0 6px 12px rgba(0,0,0,0.06)); }
     .menu-btn span { font-size: 1.05rem; font-weight: 800; letter-spacing: 0.5px; color: #444; text-align: center; line-height: 1.3; }
-    
+
     .main-btn { grid-column: 1 / -1; width: 100%; background: #ffffff !important; border: 1px solid #eef0f2 !important; border-radius: 16px; padding: 12px 10px 15px 10px; box-shadow: 0 6px 20px rgba(6, 199, 85, 0.08) !important; display: flex; flex-direction: column; align-items: center; box-sizing: border-box; }
     .menu-banner { width: 100%; height: auto; object-fit: contain; margin-bottom: 8px; }
     .main-btn-text { font-size: 1.2rem; font-weight: 900; color: #333; letter-spacing: 0.5px; }
@@ -37,13 +37,18 @@
     .back-btn { font-size: 1rem; font-weight: bold; color: #495057; padding: 8px 18px; background: #f8f9fa; border-radius: 50px; display: inline-flex; align-items: center; border: none; transition: 0.2s; }
     .back-btn i { font-size: 1.2rem; margin-right: 5px; color: #06C755; }
     #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-    
+
+    /* 🔥 修正：用 label 包住 input，並把 input 設為「不可見但仍存在於佈局」 */
     .preview-box { width: 100%; height: 180px; background: #f8f9fa; border: 2px dashed #06C755; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; position: relative; margin-bottom: 15px; }
+    .upload-label { display: block; width: 100%; cursor: pointer; margin: 0; }
+    /* 🔥 重點：用 opacity:0 + position:absolute 替代 display:none，避免手機 WebView 阻擋 */
+    .file-input-hidden { position: absolute; width: 0.1px; height: 0.1px; opacity: 0; overflow: hidden; z-index: -1; }
+
     .placeholder-text { color: #06C755; text-align: center; font-size: 0.95rem; font-weight: bold; }
     .thumb-wrap { position: relative; width: 100%; padding-top: 100%; border-radius: 8px; overflow: hidden; border: 1px solid #ddd; }
     .thumb-wrap img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
     .thumb-remove { position: absolute; top: 4px; right: 4px; background: rgba(220,53,69,0.9); color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.2rem; border: none; line-height: 1; padding: 0; }
-    
+
     .rx-card { border: 1px solid #20935A; border-radius: 12px; overflow: hidden; margin-bottom: 20px; background: #fff; }
     .rx-header { background-color: #20935A; color: white; padding: 12px 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
     .rx-header .badge { font-weight: bold; font-size: 0.9rem; }
@@ -52,7 +57,7 @@
     .rx-meta { font-size: 0.9rem; color: #555; margin-bottom: 4px; }
     .rx-date-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; margin-top: 10px; }
     .rx-return-box { background-color: #f8f9fa; padding: 10px 12px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; font-size: 0.95rem; margin-top: 12px; border-left: 4px solid #dc3545; }
-    
+
     .med-item { display: flex; align-items: flex-start; border-bottom: 1px dashed #eee; padding-bottom: 12px; margin-bottom: 12px; }
     .med-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
     .med-num { background-color: #20935A; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold; margin-right: 12px; flex-shrink: 0; }
@@ -69,7 +74,7 @@
 
 <div id="loading"><div class="spinner-border text-success" role="status"></div><p class="mt-3 text-secondary fw-bold" id="loadingText">系統連線中...</p></div>
 
-<div class="container"> 
+<div class="container">
   <div id="view-home">
     <div class="brand-header"><h1 class="brand-title">樂森藥局</h1><p class="brand-subtitle">Lawson Pharmacy Cloud</p></div>
     <div class="home-content">
@@ -100,10 +105,15 @@
       <p class="small text-muted mb-3">若您有多張實體處方箋，可以連續拍照上傳。若僅需綁定 LINE，請直接跳過拍照填寫資料送出即可！</p>
       <div id="cameraSection">
         <div class="row g-2 mb-2" id="previewGrid"></div>
-        <div class="preview-box shadow-sm" onclick="document.getElementById('fileInput').click()" id="uploadBtnBox">
-          <div class="placeholder-text" id="placeholder"><span style="font-size: 2rem;">📷</span><br>點此拍照 / 選照片<br><span class="small fw-normal text-muted">(無處方箋可略過)</span></div>
-        </div>
-        <input type="file" id="fileInput" accept="image/*" style="display: none;" onchange="handleFile(this)">
+
+        <!-- 🔥 修正重點：用 <label for> 直接包住 input，移除 onclick 的 JS 點擊 -->
+        <label for="fileInput" class="upload-label">
+          <div class="preview-box shadow-sm" id="uploadBtnBox">
+            <div class="placeholder-text" id="placeholder"><span style="font-size: 2rem;">📷</span><br>點此拍照 / 選照片<br><span class="small fw-normal text-muted">(無處方箋可略過)</span></div>
+          </div>
+        </label>
+        <!-- 🔥 修正：accept 用具體 MIME 型態、加 multiple；用 class 取代 display:none -->
+        <input type="file" id="fileInput" class="file-input-hidden" accept="image/jpeg,image/jpg,image/png,image/heic,image/heif,image/webp" multiple onchange="handleFile(this)">
       </div>
       <div class="mb-3 mt-2"><label class="form-label small fw-bold">領藥人姓名</label><input type="text" class="form-control" id="uName" placeholder="請輸入姓名"></div>
       <div class="mb-3"><label class="form-label small fw-bold">聯絡電話</label><input type="tel" class="form-control" id="uPhone" placeholder="請輸入手機號碼"></div>
@@ -146,11 +156,11 @@
 <script>
   // ⚠️ 請確認此為您最新的 Google Apps Script 發佈網址
   const GAS_URL = "https://script.google.com/macros/s/AKfycbyUXCejmkI52ZJVUN1K1t1j2ZvfdZMCgHsgB79okITgzn7to2sfte43R5I0GOQnFp1opQ/exec";
-  const LIFF_ID = "2008912977-DuJTm5u1"; 
+  const LIFF_ID = "2008912977-DuJTm5u1";
 
   let lineUserId = "", lineDisplayName = "", linePictureUrl = "";
-  let uploadedImages = []; 
-  
+  let uploadedImages = [];
+
   const NHI_DEPT_MAP = {
     "00":"不分科","01":"家醫科","02":"內科","03":"外科","04":"小兒科","05":"婦產科",
     "06":"骨科","07":"泌尿科","08":"耳鼻喉科","09":"眼科","10":"皮膚科","11":"神經科",
@@ -169,7 +179,7 @@
     let c = String(codeStr).trim().toUpperCase();
     let num = parseInt(c, 10);
     if (!isNaN(num) && num.toString() === c.replace(/^0+/, '')) { c = num < 10 ? "0" + num : String(num); }
-    return NHI_DEPT_MAP[c] ? NHI_DEPT_MAP[c] : c; 
+    return NHI_DEPT_MAP[c] ? NHI_DEPT_MAP[c] : c;
   }
 
   function sendToGAS(payload, timeout = 20000) {
@@ -190,7 +200,7 @@
   }
 
   window.onload = function() { initLiff(); };
-  
+
   function initLiff() {
     liff.init({ liffId: LIFF_ID }).then(() => {
       document.getElementById('loading').style.display = 'none';
@@ -198,17 +208,17 @@
         liff.getProfile().then(profile => {
           lineUserId = profile.userId; lineDisplayName = profile.displayName; linePictureUrl = profile.pictureUrl || "";
           document.getElementById('userNameDisplay').innerText = lineDisplayName;
-          document.getElementById('uName').value = lineDisplayName; 
+          document.getElementById('uName').value = lineDisplayName;
           if(profile.pictureUrl) document.getElementById('userThumb').src = profile.pictureUrl;
           document.getElementById('userInfo').classList.remove('hidden-mode');
-          
+
           const urlParams = new URLSearchParams(window.location.search);
           const mode = urlParams.get('mode');
           if (mode === 'quickbind') doQuickBind();
           else if (mode === 'upload') openUpload();
           else if (mode === 'status') openStatus();
           else if (mode === 'meds') openMedHistory();
-          else goHome(); 
+          else goHome();
         });
       } else { liff.login(); }
     }).catch(err => { alert("LINE 初始化失敗"); });
@@ -227,7 +237,7 @@
   }
 
   function closeLiffWindow() { liff.closeWindow(); }
-  function goHome() { 
+  function goHome() {
     document.getElementById('view-home').classList.remove('hidden-mode');
     document.getElementById('view-form').classList.add('hidden-mode');
     document.getElementById('view-status').classList.add('hidden-mode');
@@ -260,7 +270,7 @@
       if(!dStr) return null;
       let s = dStr.replace(/-/g, '/');
       let parts = s.split('/');
-      if(parts.length === 3) { let y = parseInt(parts[0]); if(y < 200) y += 1911; return new Date(y, parseInt(parts[1])-1, parseInt(parts[2])); } 
+      if(parts.length === 3) { let y = parseInt(parts[0]); if(y < 200) y += 1911; return new Date(y, parseInt(parts[1])-1, parseInt(parts[2])); }
       return new Date(s);
   }
   function _addDays(date, days) { let result = new Date(date); result.setDate(result.getDate() + days); return result; }
@@ -270,16 +280,16 @@
     const name = document.getElementById('qName').value.trim();
     const id = document.getElementById('qId').value.trim().toUpperCase();
     if (!name || !id) return alert("請填寫姓名與身分證");
-    
+
     document.getElementById('loading').style.display = 'flex';
     const resultDiv = document.getElementById('medHistoryResult');
-    
+
     sendToGAS({ action: "queryMed", name: name, id: id })
     .then(res => {
       document.getElementById('loading').style.display = 'none';
       if (res.status === 'success' && res.data.length > 0) {
         document.getElementById('medQueryForm').style.display = 'none';
-        
+
         const grouped = {};
         res.data.forEach(item => {
           let key = (item.rxDate || item.date.split(' ')[0]) + '_' + (item.hospital || '院所');
@@ -289,28 +299,25 @@
           if (parseInt(refillParts[1]) > grouped[key].totalRefills) grouped[key].totalRefills = parseInt(refillParts[1]);
           grouped[key].items.push(item);
         });
-        
+
         let html = `<div class="d-flex justify-content-between align-items-center mb-3 mt-2 px-1">
                       <div class="text-success fw-bold fs-5"><i class="bi bi-person-lines-fill"></i> ${name} 的藥歷</div>
                       <button class="btn btn-sm btn-outline-secondary px-3 rounded-pill" onclick="resetMedQuery()"><i class="bi bi-arrow-counterclockwise"></i> 重新查詢</button>
                     </div>`;
-        
-        // 獲取今天的日期 (用於比較是否過期)
+
         let today = new Date();
         today.setHours(0, 0, 0, 0);
-                    
+
         Object.keys(grouped).forEach((k, index) => {
-          let m = grouped[k]; 
+          let m = grouped[k];
           let rxDate = _parseDate(m.rxDateStr);
-          let isOpen = index === 0 ? 'open' : ''; 
-          
-          // 計算第二次領藥時間
+          let isOpen = index === 0 ? 'open' : '';
+
           let date2Obj = rxDate ? _addDays(rxDate, m.days) : null;
           let d2Start = rxDate ? _fmt(_addDays(rxDate, m.days - 10), 'MM/DD') : '-';
           let d2End = date2Obj ? _fmt(date2Obj, 'MM/DD') : '-';
           let d2Range = rxDate ? `${d2Start} ~ ${d2End}` : '-';
 
-          // 計算第三次領藥時間
           let date3Obj = rxDate ? _addDays(rxDate, m.days * 2) : null;
           let d3Start = rxDate ? _fmt(_addDays(rxDate, m.days * 2 - 10), 'MM/DD') : '-';
           let d3End = date3Obj ? _fmt(date3Obj, 'MM/DD') : '-';
@@ -318,14 +325,12 @@
 
           let retD = rxDate ? _fmt(_addDays(rxDate, m.days * m.totalRefills), 'YYYY-MM-DD') : '-';
 
-          // 🔥 引入時間感知判斷邏輯
           let refill2UI = '';
           if (m.totalRefills >= 2) {
             let r2Status = `<span class="text-danger fw-bold">${d2Range}</span>`;
             if (m.maxCurrentRefill >= 2) {
               r2Status = `<span class="text-success fw-bold me-2">${d2End}</span><span class="badge bg-success">✅ 已領取</span>`;
             } else if (date2Obj && date2Obj < today) {
-              // 時間已過，且沒有紀錄顯示已領取 -> 變灰色並加上刪除線
               r2Status = `<span class="text-muted fw-bold me-2"><del>${d2Range}</del></span><span class="badge bg-secondary">過期 / 他處領取</span>`;
             }
             refill2UI = `<div class="rx-date-row"><span class="text-muted">👉 第二次領藥：</span><div>${r2Status}</div></div>`;
@@ -337,7 +342,6 @@
             if (m.maxCurrentRefill >= 3) {
               r3Status = `<span class="text-success fw-bold me-2">${d3End}</span><span class="badge bg-success">✅ 已領取</span>`;
             } else if (date3Obj && date3Obj < today) {
-              // 時間已過，且沒有紀錄顯示已領取 -> 變灰色並加上刪除線
               r3Status = `<span class="text-muted fw-bold me-2"><del>${d3Range}</del></span><span class="badge bg-secondary">過期 / 他處領取</span>`;
             }
             refill3UI = `<div class="rx-date-row"><span class="text-muted">👉 第三次領藥：</span><div>${r3Status}</div></div>`;
@@ -386,7 +390,7 @@
             </div>
           </div>`;
         });
-        
+
         resultDiv.innerHTML = html;
       } else { alert("查無相符資料，請確認身分證是否正確"); }
     }).catch(() => { document.getElementById('loading').style.display = 'none'; alert("查詢失敗，網路逾時"); });
@@ -394,24 +398,54 @@
 
   function resetMedQuery() { document.getElementById('medQueryForm').style.display = 'block'; document.getElementById('medHistoryResult').innerHTML = ''; }
 
+  // 🔥 修正：改成 for 迴圈處理多檔；用 createObjectURL 在某些 LIFF 上更穩
   function handleFile(input) {
-    if (input.files && input.files[0]) {
-      const file = input.files[0];
-      document.getElementById('loading').style.display = 'flex';
+    if (!input.files || input.files.length === 0) return;
+    document.getElementById('loading').style.display = 'flex';
+
+    const files = Array.from(input.files);
+    let processed = 0;
+
+    files.forEach(file => {
       const reader = new FileReader();
       reader.onload = function(e) {
-        const img = new Image(); img.src = e.target.result;
+        const img = new Image();
         img.onload = function() {
           const canvas = document.createElement('canvas');
-          let w = img.width, h = img.height; if(w > 1200) { h *= 1200/w; w = 1200; }
+          let w = img.width, h = img.height;
+          if (w > 1200) { h = h * (1200 / w); w = 1200; }
           canvas.width = w; canvas.height = h;
           canvas.getContext('2d').drawImage(img, 0, 0, w, h);
           uploadedImages.push({ base64: canvas.toDataURL('image/jpeg', 0.8), fileName: file.name });
-          renderPreviews(); document.getElementById('loading').style.display = 'none';
+          processed++;
+          if (processed === files.length) {
+            renderPreviews();
+            document.getElementById('loading').style.display = 'none';
+            // 🔥 重要：清空 input.value，否則同一張照片無法第二次選取
+            input.value = '';
+          }
+        };
+        img.onerror = function() {
+          processed++;
+          if (processed === files.length) {
+            renderPreviews();
+            document.getElementById('loading').style.display = 'none';
+            input.value = '';
+            alert('部分圖片無法讀取，請改用 JPG/PNG 格式');
+          }
+        };
+        img.src = e.target.result;
+      };
+      reader.onerror = function() {
+        processed++;
+        if (processed === files.length) {
+          document.getElementById('loading').style.display = 'none';
+          input.value = '';
+          alert('讀取檔案失敗，請重試');
         }
       };
       reader.readAsDataURL(file);
-    }
+    });
   }
 
   function renderPreviews() {
