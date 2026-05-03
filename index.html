@@ -204,7 +204,10 @@
           
           const urlParams = new URLSearchParams(window.location.search);
           const mode = urlParams.get('mode');
-          if (mode === 'quickbind') doQuickBind();
+          if (mode === 'quickbind') {
+              // 進入快速綁定模式，自動發送綁定資料給後台
+              doQuickBind();
+          }
           else if (mode === 'upload') openUpload();
           else if (mode === 'status') openStatus();
           else if (mode === 'meds') openMedHistory();
@@ -216,14 +219,40 @@
 
   function doQuickBind() {
     document.getElementById('loading').style.display = 'flex';
-    sendToGAS({ action: "upload", name: lineDisplayName, lineUserId: lineUserId, isRegister: true, dept: "快速綁定", notify: "LINE通知" })
+    document.getElementById('loadingText').innerText = '藥局建檔中...';
+    
+    // 準備符合後台邏輯的資料包
+    const payload = {
+      action: "upload",
+      isRegister: true,        
+      dept: "快速綁定",         
+      lineUserId: lineUserId,
+      lineName: lineDisplayName,
+      linePic: linePictureUrl || "",
+      name: "新顧客",           
+      phone: "",
+      notify: "LINE通知"
+    };
+
+    sendToGAS(payload)
     .then(res => {
       document.getElementById('loading').style.display = 'none';
       if(res.status === 'success' || res.status === 'duplicate') {
         document.getElementById('view-home').classList.add('hidden-mode');
         document.getElementById('view-success').classList.remove('hidden-mode');
+        // 成功後延遲 2.5 秒自動關閉 LINE 網頁視窗
+        setTimeout(() => {
+            liff.closeWindow();
+        }, 2500);
       } else { alert("❌ 失敗：" + res.message); goHome(); }
     }).catch(() => { document.getElementById('loading').style.display = 'none'; alert("連線超時"); goHome(); });
+  }
+
+  function doLiffLogout() {
+      if (liff.isLoggedIn()) {
+          liff.logout();
+          window.location.reload();
+      }
   }
 
   function closeLiffWindow() { liff.closeWindow(); }
