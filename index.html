@@ -38,8 +38,11 @@
     .back-btn i { font-size: 1.2rem; margin-right: 5px; color: #06C755; }
     #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
     
-    .preview-box { width: 100%; height: 180px; background: #f8f9fa; border: 2px dashed #06C755; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; position: relative; margin-bottom: 15px; margin-top: 0; }
-    .placeholder-text { color: #06C755; text-align: center; font-size: 0.95rem; font-weight: bold; }
+    /* 🌟 手機相容性核心修正：確保 preview-box 具有定位基準，並將 input 覆蓋其上 */
+    .preview-box { width: 100%; height: 180px; background: #f8f9fa; border: 2px dashed #06C755; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; position: relative; margin-bottom: 15px; }
+    .file-input-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; z-index: 10; cursor: pointer; }
+    .placeholder-text { color: #06C755; text-align: center; font-size: 0.95rem; font-weight: bold; pointer-events: none; }
+    
     .thumb-wrap { position: relative; width: 100%; padding-top: 100%; border-radius: 8px; overflow: hidden; border: 1px solid #ddd; }
     .thumb-wrap img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
     .thumb-remove { position: absolute; top: 4px; right: 4px; background: rgba(220,53,69,0.9); color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.2rem; border: none; line-height: 1; padding: 0; }
@@ -120,15 +123,14 @@
       <div id="cameraSection">
         <div class="row g-2 mb-2" id="previewGrid"></div>
         
-        <label for="fileInput" class="preview-box shadow-sm m-0" id="uploadBtnBox">
+        <!-- 🌟 核心修正：將 input 直接疊在 div 上面，保證 100% 點擊觸發且繞過系統限制 -->
+        <div class="preview-box shadow-sm m-0" id="uploadBtnBox">
+          <input type="file" id="fileInput" class="file-input-overlay" accept="image/*" onchange="handleFile(this)">
           <div class="placeholder-text" id="placeholder">
             <span style="font-size: 2rem;">📷</span><br>點此拍照 / 選照片<br>
             <span class="small fw-normal text-muted">(無處方箋可略過)</span>
           </div>
-        </label>
-        <!-- 🌟 核心修正 1：改用 opacity: 0 取代 display: none，避免被瀏覽器阻擋 -->
-        <!-- 🌟 核心修正 2：恢復 accept="image/*"，讓手機可以自由選取相簿各種格式 -->
-        <input type="file" id="fileInput" accept="image/*" style="position: absolute; opacity: 0; width: 1px; height: 1px; z-index: -1;" onchange="handleFile(this)">
+        </div>
       </div>
       
       <div class="mb-3 mt-3"><label class="form-label small fw-bold">領藥人姓名</label><input type="text" class="form-control" id="uName" placeholder="請輸入姓名"></div>
@@ -170,7 +172,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  // ⚠️ 確保此為您最新的 Google Apps Script 網頁應用程式網址 (Web App URL)
+  // ⚠️ 請確認此處填寫的是正確的 Web App URL
   const GAS_URL = "https://script.google.com/macros/s/AKfycbyUXCejmkI52ZJVUN1K1t1j2ZvfdZMCgHsgB79okITgzn7to2sfte43R5I0GOQnFp1opQ/exec";
   const LIFF_ID = "2008912977-DuJTm5u1"; 
 
@@ -445,49 +447,70 @@
 
   function resetMedQuery() { document.getElementById('medQueryForm').style.display = 'block'; document.getElementById('medHistoryResult').innerHTML = ''; }
 
-  // 🌟 核心修正 3：使用 URL.createObjectURL 解決手機載入大照片會記憶體崩潰的問題
+  // 🌟 回歸最穩健的 FileReader 讀取法，並加上記憶體防護
   function handleFile(input) {
     if (input.files && input.files[0]) {
       const file = input.files[0];
       
+      if (!file.type.match('image.*')) {
+          alert('請選擇有效的圖片檔案！');
+          input.value = '';
+          return;
+      }
+      
       document.getElementById('loading').style.display = 'flex';
       document.getElementById('loadingText').innerText = '照片處理中...';
       
-      const img = new Image(); 
-      img.onload = function() {
-        try {
-          const canvas = document.createElement('canvas');
-          let w = img.width, h = img.height; 
-          
-          // 壓縮圖片
-          if(w > 1200) { h = Math.floor(h * 1200 / w); w = 1200; }
-          canvas.width = w; canvas.height = h;
-          
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, w, h);
-          
-          uploadedImages.push({ base64: canvas.toDataURL('image/jpeg', 0.8), fileName: file.name });
-          renderPreviews(); 
-          
-          // 釋放記憶體
-          URL.revokeObjectURL(img.src);
-          
+      const reader = new FileReader();
+      
+      reader.onload = function(e) {
+        const img = new Image(); 
+        img.onload = function() {
+          try {
+            const canvas = document.createElement('canvas');
+            let w = img.width, h = img.height; 
+            
+            // 壓縮寬高，避免記憶體爆掉
+            const MAX_SIZE = 1200;
+            if (w > MAX_SIZE || h > MAX_SIZE) {
+                if (w > h) { h = Math.floor(h * MAX_SIZE / w); w = MAX_SIZE; }
+                else { w = Math.floor(w * MAX_SIZE / h); h = MAX_SIZE; }
+            }
+            
+            canvas.width = w; 
+            canvas.height = h;
+            
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, w, h);
+            
+            // 將壓縮品質調整為 0.7，兼顧清晰與體積
+            uploadedImages.push({ base64: canvas.toDataURL('image/jpeg', 0.7), fileName: file.name });
+            renderPreviews(); 
+            
+            document.getElementById('loading').style.display = 'none';
+            input.value = ''; // 清空 input
+          } catch(err) {
+            document.getElementById('loading').style.display = 'none';
+            alert("照片處理發生錯誤，請嘗試截圖後上傳。");
+            input.value = '';
+          }
+        };
+        img.onerror = function() {
           document.getElementById('loading').style.display = 'none';
-          input.value = ''; // 清空欄位
-        } catch(err) {
-          document.getElementById('loading').style.display = 'none';
-          alert("照片處理發生錯誤，請嘗試截圖後上傳。");
+          alert("無法解析此照片，請嘗試換一張或將照片截圖後上傳。");
           input.value = '';
-        }
+        };
+        
+        img.src = e.target.result;
       };
-      img.onerror = function() {
+      
+      reader.onerror = function() {
         document.getElementById('loading').style.display = 'none';
-        alert("照片解析失敗，可能是不支援的格式。建議將照片截圖後，再上傳該截圖。");
+        alert("讀取檔案失敗。");
         input.value = '';
       };
       
-      // 這是解決閃退與卡死的關鍵！比 FileReader 快且節省記憶體
-      img.src = URL.createObjectURL(file);
+      reader.readAsDataURL(file);
     }
   }
 
