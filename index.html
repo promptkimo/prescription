@@ -1,542 +1,537 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>樂森 SELECT - 資料管理中心</title>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>樂森藥局 雲服務</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
-    :root { --lawson-green: #7BC35A; --lawson-dark: #333333; --lawson-hover: #6eb14d; }
-    body { font-family: 'PingFang TC', sans-serif; background-color: #f9fafb; color: var(--lawson-dark); }
-    .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(5px); border: 1px solid rgba(230, 230, 230, 0.7); }
-    .btn-lawson { background-color: var(--lawson-green); color: white; transition: all 0.2s; cursor: pointer; }
-    .btn-lawson:hover { background-color: var(--lawson-hover); transform: translateY(-1px); }
-    .btn-outline { border: 2px solid var(--lawson-green); color: var(--lawson-green); transition: all 0.2s; background: white; }
-    .btn-outline:hover { background-color: var(--lawson-green); color: white; }
-    .tab-active { border-bottom: 4px solid var(--lawson-green); color: var(--lawson-green); font-weight: bold; }
-    .tab-inactive { border-bottom: 4px solid transparent; color: #6b7280; }
-    .spinner { border: 3px solid #f3f3f3; border-top: 3px solid var(--lawson-green); border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    .animate-fade { animation: fadeIn 0.3s ease-in-out; }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    body { background-color: #fcfcfc; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+    .container { max-width: 600px; padding: 0; flex-grow: 1; display: flex; flex-direction: column; margin: 0 auto; width: 100%; height: 100%; background: #ffffff; box-shadow: 0 0 20px rgba(0,0,0,0.02); }
+    .hidden-mode { display: none !important; } 
+    #view-home { height: 100%; display: flex; flex-direction: column; overflow: hidden; }
+    .brand-header { background: #ffffff; padding: 30px 20px 10px; text-align: center; margin-bottom: 5px; flex-shrink: 0; }
+    .brand-title { font-weight: 900; font-size: 1.8rem; letter-spacing: 2px; margin-bottom: 3px; color: #06C755; } 
+    .brand-subtitle { font-size: 0.85rem; color: #6c757d; margin-bottom: 0; font-weight: 500; letter-spacing: 1px; }
+    .home-content { display: flex; flex-direction: column; flex-grow: 1; padding: 0 0 30px 0; min-height: 0; }
+    .home-content-wrapper { max-width: 360px; width: 100%; margin: 0 auto; padding: 0 15px; box-sizing: border-box; }
     
-    #companyPicker { display: none; max-height: 250px; overflow-y: auto; z-index: 999; }
-    .picker-item { cursor: pointer; padding: 12px 15px; border-bottom: 1px solid #f3f4f6; transition: background-color 0.2s; }
-    .picker-item:hover { background-color: #f0f9eb; color: var(--lawson-green); font-weight: bold; }
+    .user-card { background: #f8f9fa; padding: 10px 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #f0f2f5; display: flex; justify-content: space-between; align-items: center; width: 100%; box-sizing: border-box; }
+    .user-avatar { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; margin-right: 12px; border: 2px solid #06C755; }
     
-    .auth-card { border: 2px solid #e2e8f0; border-radius: 1rem; padding: 1.5rem; background-color: #f8fafc; min-height: 380px; display: flex; flex-direction: column; justify-content: center; }
+    .home-btn-group { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; width: 100%; justify-items: center; }
+    .menu-btn { background: transparent !important; border: none !important; box-shadow: none !important; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1); outline: none; cursor: pointer; padding: 0; width: 100%; }
+    .menu-btn:active { transform: scale(0.96); opacity: 0.9; }
+    .menu-icon { width: 105px; height: 105px; margin-bottom: 8px; object-fit: contain; filter: drop-shadow(0 6px 12px rgba(0,0,0,0.06)); }
+    .menu-btn span { font-size: 1.05rem; font-weight: 800; letter-spacing: 0.5px; color: #444; text-align: center; line-height: 1.3; }
     
-    /* 📚 逐玉隨堂考 */
-    .quiz-opt { padding: 0.75rem 1rem; border: 2px solid #e2e8f0; border-radius: 0.75rem; background: white; color: #475569; font-weight: bold; cursor: pointer; transition: all 0.2s; text-align: left; font-size: 0.95rem; width: 100%; margin-bottom: 0.5rem; }
-    .quiz-opt:hover { background: #f0f9eb; border-color: var(--lawson-green); color: var(--lawson-green); }
-    .quiz-opt.wrong { background: #fef2f2; border-color: #ef4444; color: #ef4444; }
-    .quiz-opt.correct { background: var(--lawson-green); border-color: var(--lawson-green); color: white; }
-    .progress-bar { height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; margin-bottom: 1rem; }
-    .progress-fill { height: 100%; background: var(--lawson-green); width: 0%; transition: width 0.3s; }
-    
-    /* 🌟 明星九宮格 */
-    .star-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-    .star-item { width: 100%; aspect-ratio: 1/1; overflow: hidden; border-radius: 0.75rem; border: 3px solid transparent; cursor: pointer; transition: all 0.2s; background: #e2e8f0; position: relative; }
-    .star-item:hover { transform: scale(1.05); border-color: var(--lawson-green); z-index: 5; }
-    .star-item img { width: 100%; height: 100%; object-fit: cover; }
-    .star-item.correct { border-color: var(--lawson-green); transform: scale(1.1); z-index: 10; border-width: 4px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3); }
-    .star-item.wrong { border-color: #ef4444; opacity: 0.4; filter: grayscale(100%); transform: scale(0.95); }
-    .fallback-name { display: none; width: 100%; height: 100%; align-items: center; justify-content: center; background: #cbd5e1; color: #334155; font-weight: bold; font-size: 0.85rem; text-align: center; }
+    .main-btn { grid-column: 1 / -1; width: 100%; background: #ffffff !important; border: 1px solid #eef0f2 !important; border-radius: 16px; padding: 12px 10px 15px 10px; box-shadow: 0 6px 20px rgba(6, 199, 85, 0.08) !important; display: flex; flex-direction: column; align-items: center; box-sizing: border-box; }
+    .menu-banner { width: 100%; height: auto; object-fit: contain; margin-bottom: 8px; }
+    .main-btn-text { font-size: 1.2rem; font-weight: 900; color: #333; letter-spacing: 0.5px; }
 
-    /* 其他小遊戲 */
-    .slider-container { position: relative; width: 100%; height: 50px; background-color: #f1f5f9; border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center; user-select: none; border: 1px solid #e2e8f0; }
-    .slider-bg { position: absolute; left: 0; top: 0; height: 100%; background-color: #dcfce7; width: 0; }
-    .slider-thumb { position: absolute; left: 4px; top: 4px; width: 42px; height: 40px; background-color: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; cursor: grab; z-index: 20; color: #94a3b8; }
-    .slider-unlocked .slider-bg { background-color: var(--lawson-green); width: 100% !important; }
-    .slider-unlocked .slider-thumb { color: var(--lawson-green); left: calc(100% - 46px); }
-    .emoji-btn { font-size: 2rem; padding: 0.5rem; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 0.75rem; cursor: pointer; transition: all 0.2s; }
-    .emoji-btn:hover { background: #f1f5f9; transform: scale(1.05); }
-    input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
-    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 24px; width: 24px; border-radius: 50%; background: var(--lawson-green); cursor: pointer; margin-top: -8px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-    input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 8px; cursor: pointer; background: #e2e8f0; border-radius: 4px; }
-    .seq-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; }
-    .seq-btn { font-size: 1.5rem; font-weight: bold; background: white; border: 2px solid #e2e8f0; border-radius: 0.75rem; padding: 0.75rem 0; cursor: pointer; transition: all 0.2s; color: #64748b;}
-    .seq-btn.active { background: var(--lawson-green); border-color: var(--lawson-green); color: white; }
-    .mole-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 0 auto; width: 180px; }
-    .mole-hole { width: 54px; height: 54px; background: #cbd5e1; border-radius: 50%; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; cursor: crosshair; border: 4px solid #94a3b8; box-shadow: inset 0 4px 6px rgba(0,0,0,0.3); }
-    .mole { font-size: 32px; position: absolute; bottom: -50px; transition: bottom 0.15s ease-out; user-select: none; }
-    .mole.up { bottom: 0px; }
-    #pacCanvas { background-color: #111827; border-radius: 8px; border: 4px solid #1e293b; display: block; margin: 0 auto; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
-    .d-pad { display: grid; grid-template-columns: repeat(3, 40px); grid-template-rows: repeat(2, 40px); gap: 6px; justify-content: center; margin-top: 12px; }
-    .d-btn { background: #f1f5f9; border-radius: 8px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 0 #cbd5e1; cursor: pointer; transition: all 0.1s; user-select: none; }
-    .d-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #cbd5e1; background: #e2e8f0; }
+    .sub-view { flex-grow: 1; padding: 15px 15px 30px 15px; overflow-y: auto; height: 100%; }
+    .back-btn-container { margin-bottom: 15px; position: sticky; top: 0; z-index: 10; background: #ffffff; padding-top: 10px; padding-bottom: 10px; border-bottom: 1px solid #f0f2f5; }
+    .back-btn { font-size: 1rem; font-weight: bold; color: #495057; padding: 8px 18px; background: #f8f9fa; border-radius: 50px; display: inline-flex; align-items: center; border: none; transition: 0.2s; }
+    .back-btn i { font-size: 1.2rem; margin-right: 5px; color: #06C755; }
+    #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+    
+    .thumb-wrap { position: relative; width: 100%; padding-top: 100%; border-radius: 8px; overflow: hidden; border: 1px solid #ddd; }
+    .thumb-wrap img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
+    .thumb-remove { position: absolute; top: 4px; right: 4px; background: rgba(220,53,69,0.9); color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.2rem; border: none; line-height: 1; padding: 0; }
+    
+    .rx-card { border: 1px solid #20935A; border-radius: 12px; overflow: hidden; margin-bottom: 20px; background: #fff; }
+    .rx-header { background-color: #20935A; color: white; padding: 12px 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+    .rx-header .badge { font-weight: bold; font-size: 0.9rem; }
+    .rx-progress-box { border: 2px solid #17A2B8; border-radius: 8px; padding: 15px; margin-bottom: 15px; }
+    .rx-progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+    .rx-meta { font-size: 0.9rem; color: #555; margin-bottom: 4px; }
+    .rx-date-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; margin-top: 10px; }
+    .rx-return-box { background-color: #f8f9fa; padding: 10px 12px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; font-size: 0.95rem; margin-top: 12px; border-left: 4px solid #dc3545; }
+    
+    .med-item { display: flex; align-items: flex-start; border-bottom: 1px dashed #eee; padding-bottom: 12px; margin-bottom: 12px; }
+    .med-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    .med-num { background-color: #20935A; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold; margin-right: 12px; flex-shrink: 0; }
+    .med-info { flex-grow: 1; }
+    .med-name { font-weight: bold; font-size: 0.95rem; color: #333; margin-bottom: 6px; line-height: 1.3; }
+    .med-tags { display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; flex-wrap: wrap; gap: 4px; }
+    .tag-box { border: 1px solid #ddd; background: #fdfdfd; border-radius: 4px; padding: 2px 6px; color: #666; }
+    .rx-body-collapse { display: none; padding: 15px; }
+    .rx-body-collapse.open { display: block; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    #view-success { text-align: center; }
+    .success-icon { display: none; color: #06C755; font-size: 5rem; margin-bottom: 15px; }
   </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-center relative p-4">
+<body>
 
-  <!-- 🔒 登入閘門 -->
-  <div id="view-login" class="w-full max-w-md animate-fade z-10">
-    <div class="glass rounded-3xl shadow-2xl p-6 border border-gray-100 text-center">
-      <img src="https://promptkimo.github.io/lawsonselect_new/logo.png" alt="樂森SELECT Logo" class="h-16 mx-auto mb-4 object-contain">
-      <h2 class="text-xl font-bold mb-1 text-gray-800">資料管理中心</h2>
-      <p class="text-xs text-gray-400 mb-4">請完成安全驗證後登入</p>
-      
-      <div id="loginError" class="hidden mb-4 text-xs text-red-600 bg-red-50 p-3 rounded-lg border border-red-100 font-bold"></div>
-      
-      <div class="space-y-3 text-left">
-        <div>
-          <label class="block text-xs font-bold text-gray-600 mb-1">帳號 Account</label>
-          <input type="text" id="loginAccount" class="w-full border-2 border-gray-100 rounded-xl px-4 py-2 focus:border-lawson outline-none text-sm">
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-gray-600 mb-1">密碼 Password</label>
-          <input type="password" id="loginPassword" class="w-full border-2 border-gray-100 rounded-xl px-4 py-2 focus:border-lawson outline-none text-sm">
-        </div>
-        
-        <div class="pt-2 border-t border-gray-100 mt-2">
-          <!-- 🔀 驗證模式切換選單 -->
-          <select id="authMethod" onchange="changeAuthMethod()" class="w-full border-2 border-gray-100 rounded-xl px-4 py-2 focus:border-lawson outline-none text-gray-600 text-xs mb-3 font-bold bg-gray-50">
-            <option value="zhuyu_quiz">📚 逐玉大會考 (連對 10 題通關)</option>
-            <option value="star_img">🌟 國際巨星盲猜 (代理防死圖版)</option>
-            <option value="pacman">🟡 街機小精靈吃豆豆</option>
-            <option value="whack">🔥 地獄級打地鼠</option>
-            <option value="slider">👉 智慧滑動解鎖</option>
-            <option value="emoji">🍎 表情符號抓小偷</option>
-            <option value="rotate">🔄 角度轉轉樂</option>
-            <option value="sequence">👆 順序點擊密碼</option>
-            <option value="math">🧮 趣味數學計算</option>
-            <option value="captcha">🔠 圖形數字驗證</option>
-          </select>
+<div id="loading">
+  <div class="spinner-border text-success" role="status"></div>
+  <p class="mt-3 text-secondary fw-bold" id="loadingText">系統連線中...</p>
+</div>
 
-          <!-- 遊戲卡片區域 -->
-          <div id="authZhuyu_quiz" class="auth-card" style="display: flex;">
-            <div class="flex justify-between items-center mb-1">
-                <span id="quizTitle" class="text-xs font-bold text-gray-500">進度：0 / 10</span>
-                <span id="quizStatus" class="text-[10px] font-bold text-red-400">錯1題即歸零</span>
+<div class="container"> 
+  <div id="view-home">
+    <div class="brand-header">
+      <h1 class="brand-title">樂森藥局</h1>
+      <p class="brand-subtitle">Lawson Pharmacy Cloud</p>
+    </div>
+    <div class="home-content">
+      <div class="home-content-wrapper">
+        <div class="user-card hidden-mode" id="userInfo">
+          <div class="d-flex align-items-center">
+            <img id="userThumb" src="https://placehold.co/50" class="user-avatar">
+            <div class="ms-2">
+              <div class="small text-muted">LINE 帳號</div>
+              <div class="fw-bold text-dark" id="userNameDisplay">訪客</div>
             </div>
-            <div class="progress-bar"><div id="quizProgress" class="progress-fill"></div></div>
-            <div id="quizQuestion" class="text-sm text-gray-800 mb-3 font-bold bg-white p-4 rounded-lg border border-gray-200 leading-relaxed min-h-[80px]">題目載入中...</div>
-            <div id="quizOptions" class="flex flex-col"></div>
           </div>
-          <div id="authStar_img" class="auth-card text-center" style="display:none;"><div id="starTitle" class="text-sm font-bold text-gray-700 mb-3">載入中...</div><div id="starGrid" class="star-grid"></div></div>
-          <div id="authPacman" class="auth-card text-center" style="display:none;"><div id="pacmanTitle" class="font-bold text-gray-700 mb-2">吃光豆豆 🟡，閃避幽靈 👻</div><canvas id="pacCanvas" width="200" height="200"></canvas><div class="d-pad"><div class="d-btn" style="grid-column: 2; grid-row: 1;" onclick="movePacman(0, -1)"><svg width="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 15l7-7 7 7"></path></svg></div><div class="d-btn" style="grid-column: 1; grid-row: 2;" onclick="movePacman(-1, 0)"><svg width="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"></path></svg></div><div class="d-btn" style="grid-column: 2; grid-row: 2;" onclick="movePacman(0, 1)"><svg width="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7"></path></svg></div><div class="d-btn" style="grid-column: 3; grid-row: 2;" onclick="movePacman(1, 0)"><svg width="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"></path></svg></div></div></div>
-          <div id="authWhack" class="auth-card text-center" style="display:none;"><div id="whackTitle" class="font-bold text-gray-700 mb-3">🔥 閃避炸彈，打中 5 隻 🐹</div><div class="mole-grid"><div class="mole-hole" onmousedown="hitMole(0)" ontouchstart="hitMole(0)"><div class="mole" id="mole_0">🐹</div></div><div class="mole-hole" onmousedown="hitMole(1)" ontouchstart="hitMole(1)"><div class="mole" id="mole_1">🐹</div></div><div class="mole-hole" onmousedown="hitMole(2)" ontouchstart="hitMole(2)"><div class="mole" id="mole_2">🐹</div></div><div class="mole-hole" onmousedown="hitMole(3)" ontouchstart="hitMole(3)"><div class="mole" id="mole_3">🐹</div></div><div class="mole-hole" onmousedown="hitMole(4)" ontouchstart="hitMole(4)"><div class="mole" id="mole_4">🐹</div></div><div class="mole-hole" onmousedown="hitMole(5)" ontouchstart="hitMole(5)"><div class="mole" id="mole_5">🐹</div></div><div class="mole-hole" onmousedown="hitMole(6)" ontouchstart="hitMole(6)"><div class="mole" id="mole_6">🐹</div></div><div class="mole-hole" onmousedown="hitMole(7)" ontouchstart="hitMole(7)"><div class="mole" id="mole_7">🐹</div></div><div class="mole-hole" onmousedown="hitMole(8)" ontouchstart="hitMole(8)"><div class="mole" id="mole_8">🐹</div></div></div></div>
-          <div id="authSlider" class="auth-card" style="display:none; justify-content: center;"><div class="slider-container w-full"><div id="sliderBg" class="slider-bg"></div><span id="sliderText" class="relative z-10 text-xs font-bold text-gray-500">請向右滑動解鎖 👉</span><div id="sliderThumb" class="slider-thumb"><svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></div></div></div>
-          <div id="authEmoji" class="auth-card text-center" style="display:none;"><div id="emojiQuestion" class="font-bold text-gray-700 mb-4">請找出：?</div><div id="emojiGrid" class="flex justify-around gap-2 mb-2"></div><div id="emojiResult" class="hidden mt-2 font-bold text-green-600">✅ 驗證成功！</div></div>
-          <div id="authRotate" class="auth-card text-center" style="display:none;"><div class="font-bold text-gray-700 mb-6" id="rotateTitle">請把商標轉正 👇</div><div class="w-24 h-24 mx-auto mb-6 bg-white rounded-full flex items-center justify-center shadow-inner overflow-hidden border-2 border-gray-200"><img src="https://promptkimo.github.io/lawsonselect_new/logo.png" id="rotateImg" class="w-16 object-contain" style="transform: rotate(0deg);"></div><input type="range" id="rotateSlider" min="-180" max="180" value="0" oninput="handleRotate()" onchange="checkRotate()"></div>
-          <div id="authSequence" class="auth-card text-center" style="display:none;"><div id="seqTitle" class="font-bold text-gray-700 mb-4">請依序點擊 1 ➔ 2 ➔ 3 ➔ 4</div><div id="seqGrid" class="seq-grid"></div></div>
-          <div id="authMath" class="auth-card" style="display:none; justify-content: center;"><div class="flex items-center gap-3"><div id="mathQuestion" class="w-1/2 border-2 border-gray-200 rounded-xl px-4 py-3 bg-gray-50 text-center font-bold text-lg text-gray-700"></div><input type="number" id="loginMathAns" class="w-1/2 border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-lawson outline-none text-center font-bold" placeholder="輸入答案"></div></div>
-          <div id="authCaptcha" class="auth-card" style="display:none; justify-content: center;"><div class="flex gap-3"><input type="text" id="loginCaptcha" class="w-1/2 border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-lawson outline-none uppercase text-center font-bold tracking-widest" placeholder="驗證碼" maxlength="4"><canvas id="captchaCanvas" width="120" height="48" class="w-1/2 hover:opacity-80 transition" title="點擊換圖" onclick="drawCaptcha()"></canvas></div></div>
+          <button class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="doLiffLogout()">登出</button>
         </div>
-
-        <button id="btnLogin" onclick="handleLogin()" class="w-full btn-lawson font-bold py-3 rounded-xl shadow-md mt-4 text-lg">安全登入</button>
+        <div class="home-btn-group">
+          <!-- 點擊此按鈕時會觸發 openUpload()，進行防禦檢查 -->
+          <button class="menu-btn main-btn" onclick="openUpload()">
+            <img src="5.png" class="menu-banner" alt="處方上傳" onerror="this.style.display='none'">
+            <span class="main-btn-text">處方上傳 / Line綁定領藥通知</span>
+          </button>
+          <button class="menu-btn" onclick="openStatus()">
+            <img src="3.png" class="menu-icon" alt="狀態查詢" onerror="this.style.display='none'">
+            <span>領藥狀態查詢</span>
+          </button>
+          <button class="menu-btn" onclick="openMedHistory()">
+            <img src="4.png" class="menu-icon" alt="雲端藥歷" onerror="this.style.display='none'">
+            <span>雲端藥歷查詢</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- 📂 主系統區 (資料管理中心) -->
-  <div id="view-main" class="w-full max-w-5xl mx-auto hidden animate-fade p-4 md:p-8">
-    <header class="flex flex-col items-center mb-8 pb-6 border-b border-gray-200">
-      <img src="https://promptkimo.github.io/lawsonselect_new/logo.png" alt="樂森SELECT Logo" class="h-16 md:h-20 mb-3 object-contain">
-      <h1 class="text-3xl font-bold">資料管理中心</h1>
-    </header>
-
-    <div class="flex justify-center mb-8 border-b-2 border-gray-100">
-      <button onclick="switchTab('search')" id="tab-search" class="px-10 py-4 tab-active text-lg transition">🔍 系統檢索</button>
-      <button onclick="switchTab('stats')" id="tab-stats" class="px-10 py-4 tab-inactive text-lg transition">⚙️ 管理與設定後台</button>
-    </div>
-
-    <!-- 檢索功能區 -->
-    <div id="view-search">
-      <div class="glass rounded-3xl shadow-lg p-6 md:p-8 mb-8 relative">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 relative">
-          <select id="searchType" onchange="handleTypeChange()" class="md:col-span-1 border-2 border-gray-100 rounded-2xl px-4 py-3 focus:border-lawson outline-none transition bg-white text-gray-700">
-            <optgroup label="🩺 處方箋">
-              <option value="name">病人姓名</option>
-              <option value="hospital">醫療院所</option>
-              <option value="prescriptionScanDate">🗂️ 掃描日期 (對帳用)</option>
-              <option value="all">綜合搜尋</option>
-            </optgroup>
-            <optgroup label="📦 進貨單">
-              <option value="company">🏢 廠商名稱</option>
-              <option value="purchaseDate">📅 進貨日期</option>
-              <option value="purchaseScanDate">🖨️ 掃描日期</option>
-            </optgroup>
-          </select>
-          
-          <div class="md:col-span-2 relative">
-            <div class="flex gap-2 w-full h-full">
-              <input type="text" id="searchValue" placeholder="請輸入關鍵字..." class="flex-1 w-full border-2 border-gray-200 rounded-2xl px-6 py-3 focus:border-lawson outline-none transition">
-              <button id="btnBrowseList" onclick="togglePicker(event)" type="button" class="hidden btn-outline px-4 rounded-xl text-sm font-bold shadow-sm whitespace-nowrap">📋 瀏覽清單</button>
-            </div>
-            <div id="companyPicker" class="absolute left-0 right-0 top-full mt-2 bg-white border border-gray-200 rounded-xl shadow-2xl animate-fade glass"></div>
-          </div>
-          
-          <button onclick="doSearch()" type="button" class="md:col-span-1 btn-lawson font-bold py-3 px-6 rounded-2xl shadow hover:shadow-md transition active:scale-95 text-lg">開始搜尋</button>
-        </div>
-      </div>
-      <div id="statusBox" class="hidden mb-6 p-4 rounded-2xl text-center shadow-inner border border-gray-100"></div>
-      <div id="resultArea" class="space-y-5">
-        <div class="text-center text-gray-400 py-24 bg-white rounded-3xl border border-gray-100 shadow-sm">樂森隨時準備好為您檢索資料</div>
-      </div>
-    </div>
-
-    <!-- 效能與設定後台 -->
-    <div id="view-stats" class="hidden">
-      <div class="bg-white rounded-3xl shadow-lg p-8 border border-gray-100 text-center">
-        <h2 class="text-2xl font-bold mb-8 pb-4 border-b border-gray-100 flex items-center gap-3">🤖 AI 模型效能分析報告</h2>
-        <div id="statsLoading" class="text-center py-10 text-gray-500 font-medium"><div class="spinner mr-2"></div>正在拉取數據...</div>
-        <div id="statsArea" class="grid grid-cols-1 md:grid-cols-2 gap-8 hidden mb-12"></div>
-
-        <div class="mt-12 pt-8 border-t-2 border-gray-100 text-left">
-          <div class="flex flex-col md:flex-row justify-between items-center mb-6">
-            <div><h3 class="text-xl font-bold text-gray-800">🏢 廠商名稱合併與校正</h3></div>
-          </div>
-          <div class="bg-gray-50 p-6 rounded-2xl border border-gray-200">
-            <div class="flex flex-col md:flex-row gap-4 items-end">
-              <div class="flex-1 w-full">
-                <label class="block text-sm font-bold text-gray-600 mb-2">❌ 要被整併的錯字/別名</label>
-                <input type="text" id="mergeFrom" list="globalCompanyList" class="w-full border-2 border-gray-200 rounded-xl px-4 py-2 focus:border-lawson outline-none" placeholder="例如：裕利(股)公司">
-              </div>
-              <div class="flex-1 w-full">
-                <label class="block text-sm font-bold text-gray-600 mb-2">✅ 標準名稱 (保留這個)</label>
-                <input type="text" id="mergeTo" list="globalCompanyList" class="w-full border-2 border-gray-200 rounded-xl px-4 py-2 focus:border-lawson outline-none" placeholder="例如：裕利">
-              </div>
-              <button onclick="execMerge()" id="btnMerge" class="btn-lawson font-bold py-2 px-8 rounded-xl shadow-sm h-[44px]">執行合併</button>
-            </div>
-            <div id="mergeStatus" class="mt-4 text-sm font-bold hidden"></div>
-            
-            <div class="mt-8 pt-6 border-t border-gray-200">
-              <div class="flex justify-between items-center mb-4">
-                <h4 class="text-md font-bold text-gray-700">📋 合併規則歷史紀錄</h4>
-                <button onclick="loadMergeHistory()" class="text-sm btn-outline px-3 py-1 rounded-lg">重新整理</button>
-              </div>
-              <div id="mergeHistoryLoading" class="text-sm text-gray-500 hidden"><div class="spinner mr-2"></div>載入紀錄中...</div>
-              <div id="mergeHistoryArea" class="space-y-2 max-h-60 overflow-y-auto pr-2">
-                <div class="text-center text-gray-400 py-4 text-sm">尚無紀錄</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="mt-12 pt-8 border-t-2 border-gray-100 text-left">
-          <div class="flex flex-col md:flex-row justify-between items-center mb-6">
-            <div><h3 class="text-xl font-bold text-gray-800">⚙️ 自訂 AI 模型接力順位</h3></div>
-            <button onclick="saveModelSettings()" class="mt-4 md:mt-0 btn-lawson font-bold py-3 px-8 rounded-xl shadow-sm text-sm">儲存並套用</button>
-          </div>
-          <div id="modelConfigArea" class="grid grid-cols-1 md:grid-cols-5 gap-4 bg-gray-50 p-6 rounded-2xl border border-gray-200"><div class="text-center text-gray-500 py-6 col-span-5"><div class="spinner"></div></div></div>
-        </div>
+  <div id="view-form" class="hidden-mode sub-view">
+    <div class="back-btn-container"><button class="back-btn" onclick="goHome()"><i class="bi bi-chevron-left"></i> 返回主畫面</button></div>
+    <div class="card p-4 shadow-sm border-0 bg-light">
+      <h5 class="fw-bold text-success mb-2"><i class="bi bi-person-lines-fill"></i> 建立領藥檔案</h5>
+      <p class="small text-muted mb-3">請點擊下方選擇相片。若僅需綁定 LINE，可不傳照片直接送出！</p>
+      
+      <div id="cameraSection" class="mb-3">
+        <div class="row g-2 mb-2" id="previewGrid"></div>
         
-        <datalist id="globalCompanyList"></datalist>
+        <div class="p-3 border rounded bg-white text-center shadow-sm">
+          <label class="form-label text-success fw-bold mb-2">📷 請選擇處方照片</label>
+          <!-- 保持最乾淨的 input -->
+          <input type="file" id="fileInput" accept="image/*" class="form-control" onchange="handleFile(this)">
+          <div class="text-muted small mt-2">(無處方箋可略過)</div>
+        </div>
       </div>
+      
+      <div class="mb-3 mt-3"><label class="form-label small fw-bold">領藥人姓名</label><input type="text" class="form-control" id="uName" placeholder="請輸入姓名"></div>
+      <div class="mb-3"><label class="form-label small fw-bold">聯絡電話</label><input type="tel" class="form-control" id="uPhone" placeholder="請輸入手機號碼"></div>
+      <div class="form-check mb-4"><input class="form-check-input" type="checkbox" id="privacyConsentUpload"><label class="form-check-label text-muted small" for="privacyConsentUpload">我已同意隱私權保護與服務條款，並授權藥局建檔通知。</label></div>
+      <button class="btn btn-success w-100 fw-bold py-2 shadow-sm fs-5" onclick="submitData()">確認送出資料</button>
     </div>
   </div>
 
-  <script>
-    // ==========================================
-    // ✨ 核心修復：Google Drive 縮圖轉換與圖片壓縮
-    // ==========================================
+  <div id="view-status" class="hidden-mode sub-view">
+    <div class="back-btn-container"><button class="back-btn" onclick="goHome()"><i class="bi bi-chevron-left"></i> 返回主畫面</button></div>
+    <div class="card p-4 shadow-sm border-0">
+      <h5 class="fw-bold text-info mb-3"><i class="bi bi-card-checklist"></i> 領藥狀態查詢</h5>
+      <div id="uploadHistoryList"></div>
+    </div>
+  </div>
+
+  <div id="view-meds" class="hidden-mode sub-view">
+    <div class="back-btn-container"><button class="back-btn" onclick="goHome()"><i class="bi bi-chevron-left"></i> 返回主畫面</button></div>
+    <div id="medQueryForm">
+      <div class="card p-4 shadow-sm border-0 bg-light">
+        <h5 class="fw-bold text-dark mb-3"><i class="bi bi-cloud-arrow-up"></i> 雲端藥歷查詢</h5>
+        <p class="small text-muted mb-4">請輸入【領藥人姓名】與【身分證字號】進行安全驗證。</p>
+        <div class="mb-3"><label class="form-label small fw-bold text-primary">領藥人姓名</label><input type="text" class="form-control" id="qName" placeholder="請輸入姓名"></div>
+        <div class="mb-4"><label class="form-label small fw-bold text-danger">身分證字號</label><input type="text" class="form-control text-uppercase" id="qId" placeholder="例如：A123456789"></div>
+        <button class="btn btn-dark w-100 fw-bold py-2 mb-2 shadow-sm" onclick="queryMedHistory()"><i class="bi bi-search"></i> 安全查詢</button>
+      </div>
+    </div>
+    <div id="medHistoryResult"></div>
+  </div>
+
+  <div id="view-success" class="hidden-mode sub-view d-flex flex-column justify-content-center align-items-center text-center">
+    <i class="bi bi-check-circle-fill text-success mb-3" style="font-size: 5rem;"></i>
+    <h3 class="fw-bold text-dark" id="successTitle">操作成功</h3>
+    <p class="text-muted mb-5" id="successDesc">藥局已收到您的資訊。</p>
+    <button class="btn btn-success btn-lg rounded-pill px-5 fw-bold shadow-sm" onclick="closeLiffWindow()">關閉視窗</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // ⚠️ 你的 Google Apps Script URL
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbyUXCejmkI52ZJVUN1K1t1j2ZvfdZMCgHsgB79okITgzn7to2sfte43R5I0GOQnFp1opQ/exec";
+  const LIFF_ID = "2008912977-DuJTm5u1"; 
+
+  let lineUserId = "", lineDisplayName = "", linePictureUrl = "";
+  let uploadedImages = []; 
+  
+  const NHI_DEPT_MAP = {
+    "00":"不分科","01":"家醫科","02":"內科","03":"外科","04":"小兒科","05":"婦產科",
+    "06":"骨科","07":"泌尿科","08":"耳鼻喉科","09":"眼科","10":"皮膚科","11":"神經科",
+    "12":"精神科","13":"復健科","14":"整形外科","15":"職業醫學科","22":"急診醫學科",
+    "23":"牙科","39":"牙科","40":"牙科","60":"中醫科","81":"麻醉科"
+  };
+
+  function translateDept(codeStr) {
+    if (!codeStr) return "一般科";
+    let c = String(codeStr).trim().toUpperCase();
+    let num = parseInt(c, 10);
+    if (!isNaN(num) && num.toString() === c.replace(/^0+/, '')) { c = num < 10 ? "0" + num : String(num); }
+    return NHI_DEPT_MAP[c] ? NHI_DEPT_MAP[c] : c; 
+  }
+
+  function sendToGAS(payload, timeout = 20000) {
+      return new Promise((resolve, reject) => {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => { controller.abort(); reject(new Error("timeout")); }, timeout);
+          fetch(GAS_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+              body: JSON.stringify(payload),
+              redirect: 'follow',
+              signal: controller.signal
+          })
+          .then(response => response.json())
+          .then(data => { clearTimeout(timeoutId); resolve(data); })
+          .catch(err => { clearTimeout(timeoutId); reject(err); });
+      });
+  }
+
+  window.onload = function() { initLiff(); };
+  
+  function initLiff() {
+    liff.init({ liffId: LIFF_ID }).then(() => {
+      document.getElementById('loading').style.display = 'none';
+      if (liff.isLoggedIn()) {
+        liff.getProfile().then(profile => {
+          lineUserId = profile.userId; 
+          lineDisplayName = profile.displayName; 
+          linePictureUrl = profile.pictureUrl || "";
+          
+          document.getElementById('userNameDisplay').innerText = lineDisplayName;
+          document.getElementById('uName').value = lineDisplayName; 
+          if(profile.pictureUrl) document.getElementById('userThumb').src = profile.pictureUrl;
+          document.getElementById('userInfo').classList.remove('hidden-mode');
+          
+          const urlParams = new URLSearchParams(window.location.search);
+          const mode = urlParams.get('mode');
+          
+          if (mode === 'quickbind') {
+              doQuickBind(); 
+          }
+          // 我們先預留這三個 mode 的處理，方便如果之後是在 Safari 開啟也能直接跳轉
+          else if (mode === 'upload') openUpload();
+          else if (mode === 'status') openStatus();
+          else if (mode === 'meds') openMedHistory();
+          else goHome(); 
+        });
+      } else { liff.login(); }
+    }).catch(err => { alert("LINE 初始化失敗"); });
+  }
+
+  function doQuickBind() {
+    document.getElementById('loading').style.display = 'flex';
+    document.getElementById('loadingText').innerText = '藥局建檔中...';
     
-    /**
-     * 攔截並轉換 Google Drive 網址為縮圖 API 網址 (解決破圖問題)
-     */
-    function getDriveImageUrl(url) {
-      if (!url) return '';
-      // 提取 Google Drive 檔案 ID
-      const match = url.match(/[-\w]{25,}/);
-      if (match && match[0]) {
-        // sz=w400 代表請求寬度 400px 的縮圖，提升載入速度
-        return `https://drive.google.com/thumbnail?id=${match[0]}&sz=w400`;
+    const payload = {
+      action: "upload",
+      isRegister: true,        
+      dept: "快速綁定",         
+      name: lineDisplayName, 
+      lineUserId: lineUserId,
+      lineName: lineDisplayName, 
+      linePic: linePictureUrl || "", 
+      phone: "",
+      notify: "LINE通知"
+    };
+
+    sendToGAS(payload)
+    .then(res => {
+      document.getElementById('loading').style.display = 'none';
+      if(res.status === 'success' || res.status === 'duplicate') {
+        document.getElementById('view-home').classList.add('hidden-mode');
+        document.getElementById('successTitle').innerText = "建檔請求已送出！";
+        document.getElementById('successDesc').innerText = "藥局已收到您的資訊，稍後請告知櫃台人員您的姓名。\n\n(畫面將自動關閉)";
+        document.getElementById('view-success').classList.remove('hidden-mode');
+        setTimeout(() => { liff.closeWindow(); }, 2500);
+      } else { alert("❌ 失敗：" + res.message); goHome(); }
+    }).catch(() => { document.getElementById('loading').style.display = 'none'; alert("連線超時"); goHome(); });
+  }
+
+  function doLiffLogout() {
+      if (liff.isLoggedIn()) {
+          liff.logout();
+          window.location.reload();
       }
-      return url; 
+  }
+
+  function closeLiffWindow() { liff.closeWindow(); }
+  
+  function goHome() { 
+    document.getElementById('view-home').classList.remove('hidden-mode');
+    document.getElementById('view-form').classList.add('hidden-mode');
+    document.getElementById('view-status').classList.add('hidden-mode');
+    document.getElementById('view-meds').classList.add('hidden-mode');
+    document.getElementById('view-success').classList.add('hidden-mode');
+  }
+
+  // 🌟 核心防禦機制：當使用者點擊「處方上傳」時，檢查並跳脫 LINE
+  function openUpload() { 
+    // 檢查是否在 LINE App 內部，且為 iOS 系統
+    if (liff.isInClient() && liff.getOS() === 'ios') {
+        // 提示使用者即將開啟外部瀏覽器
+        alert("🛡️ 因 Apple iOS 系統最新規範，LINE 內部無法直接存取您的相簿。\n\n系統將自動為您開啟「Safari 瀏覽器」以完成上傳！");
+        
+        // 取得目前網址，並加上 ?mode=upload 參數，讓 Safari 打開時直接跳到表單頁面
+        let targetUrl = window.location.origin + window.location.pathname + "?mode=upload";
+        
+        // 使用 liff.openWindow 且設定 external: true 強制跳脫 LINE
+        liff.openWindow({
+            url: targetUrl,
+            external: true
+        });
+        return; // 終止在 LINE 裡面的後續動作
     }
+    
+    // 如果不是 iOS 的 LINE 內部，就正常顯示表單
+    goHome(); 
+    document.getElementById('view-home').classList.add('hidden-mode'); 
+    document.getElementById('view-form').classList.remove('hidden-mode'); 
+  }
 
-    /**
-     * 前端 Canvas 圖片壓縮工具 (解決手機上傳過慢問題)
-     * @param {File} file - 使用者上傳的圖片檔案
-     * @param {function} callback - 完成後回傳 Base64 字串
-     */
-    function compressImage(file, callback) {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = function(event) {
-        const img = new Image();
-        img.src = event.target.result;
-        img.onload = function() {
-          const MAX_WIDTH = 1200; // 限制最大寬度
-          const MAX_HEIGHT = 1200; // 限制最大高度
-          let width = img.width;
-          let height = img.height;
+  function openStatus() { goHome(); document.getElementById('view-home').classList.add('hidden-mode'); document.getElementById('view-status').classList.remove('hidden-mode'); fetchUploadHistory(); }
+  function openMedHistory() { goHome(); document.getElementById('view-home').classList.add('hidden-mode'); document.getElementById('view-meds').classList.remove('hidden-mode'); resetMedQuery(); }
 
-          if (width > height) {
-            if (width > MAX_WIDTH) { height = Math.round((height *= MAX_WIDTH / width)); width = MAX_WIDTH; }
-          } else {
-            if (height > MAX_HEIGHT) { width = Math.round((width *= MAX_HEIGHT / height)); height = MAX_HEIGHT; }
+  function fetchUploadHistory() {
+    document.getElementById('uploadHistoryList').innerHTML = '<div class="text-center py-4">讀取中...</div>';
+    sendToGAS({ action: "history", lineUserId: lineUserId })
+    .then(res => {
+      const container = document.getElementById('uploadHistoryList'); container.innerHTML = '';
+      if (!res.history || res.history.length === 0) { container.innerHTML = '<p class="text-center py-4 text-muted">尚無紀錄</p>'; return; }
+      res.history.forEach(item => {
+        let statusColor = item.status === '已收單處理' ? 'bg-success' : 'bg-warning text-dark';
+        container.innerHTML += `<div class="card p-2 mb-2 shadow-sm border-0 flex-row align-items-center bg-light">
+          <img src="${item.img}" style="width:50px;height:50px;object-fit:cover;border-radius:5px;margin-right:10px;">
+          <div class="flex-grow-1"><div class="fw-bold small">${item.date}</div><div class="text-muted small">${translateDept(item.dept)}</div></div>
+          <span class="badge ${statusColor} small">${item.status}</span>
+        </div>`;
+      });
+    }).catch(() => { document.getElementById('uploadHistoryList').innerHTML = '連線失敗'; });
+  }
+
+  function _parseDate(dStr) {
+      if(!dStr) return null;
+      let s = dStr.replace(/-/g, '/');
+      let parts = s.split('/');
+      if(parts.length === 3) { let y = parseInt(parts[0]); if(y < 200) y += 1911; return new Date(y, parseInt(parts[1])-1, parseInt(parts[2])); } 
+      return new Date(s);
+  }
+  function _addDays(date, days) { let result = new Date(date); result.setDate(result.getDate() + days); return result; }
+  function _fmt(date, format) { if(!date || isNaN(date.getTime())) return '-'; let y = date.getFullYear(); let m = String(date.getMonth() + 1).padStart(2, '0'); let d = String(date.getDate()).padStart(2, '0'); return format === 'MM/DD' ? m + '/' + d : y + '-' + m + '-' + d; }
+
+  function queryMedHistory() {
+    const name = document.getElementById('qName').value.trim();
+    const id = document.getElementById('qId').value.trim().toUpperCase();
+    if (!name || !id) return alert("請填寫姓名與身分證");
+    
+    document.getElementById('loading').style.display = 'flex';
+    const resultDiv = document.getElementById('medHistoryResult');
+    
+    sendToGAS({ action: "queryMed", name: name, id: id })
+    .then(res => {
+      document.getElementById('loading').style.display = 'none';
+      if (res.status === 'success' && res.data.length > 0) {
+        document.getElementById('medQueryForm').style.display = 'none';
+        
+        const grouped = {};
+        res.data.forEach(item => {
+          let key = (item.rxDate || item.date.split(' ')[0]) + '_' + (item.hospital || '院所');
+          if (!grouped[key]) grouped[key] = { rxDateStr: item.rxDate || item.date.split(' ')[0], hospital: item.hospital || '未載明', dept: item.dept, days: parseInt(item.days)||28, totalRefills: 1, maxCurrentRefill: 1, items: [] };
+          let refillParts = item.refill ? item.refill.split('/') : [1,1];
+          if (parseInt(refillParts[0]) > grouped[key].maxCurrentRefill) grouped[key].maxCurrentRefill = parseInt(refillParts[0]);
+          if (parseInt(refillParts[1]) > grouped[key].totalRefills) grouped[key].totalRefills = parseInt(refillParts[1]);
+          grouped[key].items.push(item);
+        });
+        
+        let html = `<div class="d-flex justify-content-between align-items-center mb-3 mt-2 px-1">
+                      <div class="text-success fw-bold fs-5"><i class="bi bi-person-lines-fill"></i> ${name} 的藥歷</div>
+                      <button class="btn btn-sm btn-outline-secondary px-3 rounded-pill" onclick="resetMedQuery()"><i class="bi bi-arrow-counterclockwise"></i> 重新查詢</button>
+                    </div>`;
+        
+        let today = new Date();
+        today.setHours(0, 0, 0, 0);
+                    
+        Object.keys(grouped).forEach((k, index) => {
+          let m = grouped[k]; 
+          let rxDate = _parseDate(m.rxDateStr);
+          let isOpen = index === 0 ? 'open' : ''; 
+          
+          let date2Obj = rxDate ? _addDays(rxDate, m.days) : null;
+          let d2Start = rxDate ? _fmt(_addDays(rxDate, m.days - 10), 'MM/DD') : '-';
+          let d2End = date2Obj ? _fmt(date2Obj, 'MM/DD') : '-';
+          let d2Range = rxDate ? `${d2Start} ~ ${d2End}` : '-';
+
+          let date3Obj = rxDate ? _addDays(rxDate, m.days * 2) : null;
+          let d3Start = rxDate ? _fmt(_addDays(rxDate, m.days * 2 - 10), 'MM/DD') : '-';
+          let d3End = date3Obj ? _fmt(date3Obj, 'MM/DD') : '-';
+          let d3Range = rxDate ? `${d3Start} ~ ${d3End}` : '-';
+
+          let retD = rxDate ? _fmt(_addDays(rxDate, m.days * m.totalRefills), 'YYYY-MM-DD') : '-';
+
+          let refill2UI = '';
+          if (m.totalRefills >= 2) {
+            let r2Status = `<span class="text-danger fw-bold">${d2Range}</span>`;
+            if (m.maxCurrentRefill >= 2) {
+              r2Status = `<span class="text-success fw-bold me-2">${d2End}</span><span class="badge bg-success">✅ 已領取</span>`;
+            } else if (date2Obj && date2Obj < today) {
+              r2Status = `<span class="text-muted fw-bold me-2"><del>${d2Range}</del></span><span class="badge bg-secondary">過期 / 他處領取</span>`;
+            }
+            refill2UI = `<div class="rx-date-row"><span class="text-muted">👉 第二次領藥：</span><div>${r2Status}</div></div>`;
           }
 
-          const canvas = document.createElement('canvas');
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, width, height);
-
-          // 壓縮為 70% 品質的 JPEG
-          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
-          const pureBase64 = compressedBase64.split(',')[1];
-          callback(pureBase64);
-        };
-      };
-    }
-
-    // ==========================================
-    // 🔒 系統狀態變數宣告
-    // ==========================================
-    let currentAuthMethod = "zhuyu_quiz";
-    let whackInterval, ghostInterval, pacAnimInterval;
-    
-    // 遊戲解鎖狀態
-    let isQuizUnlocked = false, quizCount = 0, currentQ = null, currentQuizSet = [];
-    let isStarUnlocked = false;
-    let isPacmanUnlocked = false, mapData = [], pac = { x: 1, y: 1, dir: 0 }, ghost = { x: 8, y: 8 }, mouthOpen = 0, dotCount = 0;
-    let isWhackUnlocked = false, whackScore = 0, activeMoles = {};
-    let isSliderUnlocked = false, isDragging = false, startX = 0;
-    let isEmojiUnlocked = false, targetEmoji = "";
-    let isRotateUnlocked = false, rotateTargetAngle = 0;
-    let isSeqUnlocked = false, seqCurrentStep = 1;
-    let currentCaptcha = "", currentMathAns = 0;
-
-    // ==========================================
-    // 🎲 遊戲與登入邏輯區塊 (維持不變)
-    // ==========================================
-    
-    /* --- 📚 1. 逐玉大會考 --- */
-    const zhuyuBank = [{q: "樊長玉最初聲稱的營生是？", a: "殺豬屠戶", w: ["開客棧", "走鏢行", "賣胭脂"]}, {q: "謝征真實身分與爵位是？", a: "武安侯", w: ["指揮使", "長信王世子", "帶刀侍衛"]}, {q: "謝征入贅後化名？", a: "言正", w: ["謝七", "安旭", "李四"]}, {q: "樊長玉的獨門武器？", a: "殺豬刀", w: ["紅纓槍", "軟劍", "雙環"]}, {q: "謝征身邊的軍師是誰？", a: "公孫鄞", w: ["魏嚴", "隨元淮", "宋硯"]}, {q: "樊長玉的父親真實身分是？", a: "謝家舊部武將", w: ["太傅", "知府", "宗親"]}, {q: "錦州慘案的幕後黑手是？", a: "魏嚴", w: ["謝臨山", "賀敬元", "齊昇"]}, {q: "長玉救下謝征後達成了什麼協議？", a: "招贅假婚", w: ["異姓兄妹", "主僕契約", "拜師學藝"]}, {q: "長玉的親生妹妹叫？", a: "樊長寧", w: ["俞淺淺", "齊姝", "梨花"]}, {q: "大結局中，謝征成為了？", a: "攝政王", w: ["大將軍", "皇帝", "隱居"]}];
-    function initQuiz() { isQuizUnlocked = false; quizCount = 0; currentQuizSet = [...zhuyuBank].sort(() => 0.5 - Math.random()).slice(0, 10); updateQuizProgress(); renderQuiz(); }
-    function renderQuiz() { const qBox = document.getElementById('quizQuestion'), optBox = document.getElementById('quizOptions'); if (quizCount >= 10) { isQuizUnlocked = true; document.getElementById('quizTitle').innerText = "✅ 挑戰成功！"; qBox.innerHTML = "<div class='text-green-600 text-center py-6'>鐵粉認證！已解鎖權限。</div>"; optBox.innerHTML = ''; return; } document.getElementById('quizTitle').innerText = `連對進度：${quizCount} / 10`; currentQ = currentQuizSet[quizCount]; qBox.innerHTML = `<span class="text-gray-500 mr-1">Q:</span> ${currentQ.q}`; let options = [...currentQ.w, currentQ.a].sort(() => 0.5 - Math.random()); optBox.innerHTML = options.map(opt => `<button type="button" class="quiz-opt" onclick="checkQuiz(this, '${opt}')">${opt}</button>`).join(''); }
-    function checkQuiz(btn, ans) { if(isQuizUnlocked) return; document.querySelectorAll('.quiz-opt').forEach(b => b.disabled = true); if (ans === currentQ.a) { btn.classList.add('correct'); quizCount++; updateQuizProgress(); setTimeout(renderQuiz, 500); } else { btn.classList.add('wrong'); document.querySelectorAll('.quiz-opt').forEach(b => { if(b.innerText === currentQ.a) b.classList.add('correct'); }); setTimeout(() => { alert("❌ 答錯退回原點！"); initQuiz(); }, 1000); } }
-    function updateQuizProgress() { document.getElementById('quizProgress').style.width = `${(quizCount/10) * 100}%`; }
-
-    /* --- 🌟 2. 國際巨星盲猜 --- */
-    const proxyUrl = "https://wsrv.nl/?url=";
-    const starRoster = [{ name: "威爾史密斯", url: "upload.wikimedia.org/wikipedia/commons/3/3f/TechCrunch_Disrupt_2019_%2848834434641%29_%28cropped%29.jpg" }, { name: "雷神索爾", url: "upload.wikimedia.org/wikipedia/commons/e/e8/Chris_Hemsworth_by_Gage_Skidmore_2_%28cropped%29.jpg" }, { name: "史嘉蕾", url: "upload.wikimedia.org/wikipedia/commons/6/60/Scarlett_Johansson_by_Gage_Skidmore_2_%28cropped%29.jpg" }];
-    function initStar() { isStarUnlocked = false; const grid = document.getElementById('starGrid'); let target = starRoster[Math.floor(Math.random() * starRoster.length)]; document.getElementById('starTitle').innerHTML = `請選出「<span class="text-blue-600 font-black mx-1">${target.name}</span>」`; let pool = starRoster.map(s => ({ ...s, target: s.name === target.name })).sort(() => 0.5 - Math.random()); grid.innerHTML = pool.map(s => `<div class="star-item" onclick="checkStar(${s.target}, this)"><img src="${proxyUrl}${s.url}&w=200&h=200&fit=cover" crossorigin="anonymous" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="fallback-name">${s.name}</div></div>`).join(''); }
-    function checkStar(isT, el) { if(isStarUnlocked) return; if(isT) { isStarUnlocked = true; el.classList.add('correct'); document.getElementById('starTitle').innerText = "✅ 驗證成功！"; document.querySelectorAll('.star-item').forEach(x => { if(x !== el) x.classList.add('wrong'); }); } else { el.classList.add('wrong'); setTimeout(initStar, 800); } }
-
-    /* --- 👉 3. 滑動解鎖 --- */
-    function initSlider() { isSliderUnlocked = false; const c = document.getElementById('authSlider').querySelector('.slider-container'), t = document.getElementById('sliderThumb'), b = document.getElementById('sliderBg'); if(c) c.classList.remove('slider-unlocked'); if(t) t.style.transform = 'translateX(0)'; if(b) b.style.width = '0'; document.getElementById('sliderText').innerText = "請向右滑動解鎖 👉"; }
-    const st = document.getElementById('sliderThumb');
-    if(st) { st.addEventListener('mousedown', (e) => { if(isSliderUnlocked) return; isDragging = true; startX = e.clientX; st.style.transition = 'none'; }); }
-    document.addEventListener('mousemove', (e) => { if(!isDragging || isSliderUnlocked) return; let moveX = e.clientX - startX; moveX = Math.max(0, Math.min(moveX, 250)); st.style.transform = `translateX(${moveX}px)`; document.getElementById('sliderBg').style.width = `${moveX+20}px`; if(moveX > 240) { isSliderUnlocked = true; isDragging = false; document.getElementById('authSlider').querySelector('.slider-container').classList.add('slider-unlocked'); document.getElementById('sliderText').innerText = "✅ 驗證成功"; st.style.transition = 'transform 0.3s ease'; } });
-    document.addEventListener('mouseup', () => { if(isDragging && !isSliderUnlocked) { isDragging = false; initSlider(); } else if(st) { isDragging = false; st.style.transition = 'transform 0.3s ease'; } });
-
-    // 其他簡化版小遊戲初始化 (表情、轉轉樂、順序、數學、Captcha)
-    function initEmoji() { isEmojiUnlocked = false; document.getElementById('emojiResult').classList.add('hidden'); document.getElementById('emojiGrid').classList.remove('hidden'); let shuf = ['🐶','🐱','🐭','🐹'].sort(() => 0.5 - Math.random()); targetEmoji = shuf[Math.floor(Math.random() * 4)]; document.getElementById('emojiQuestion').innerHTML = `請點擊：<span class="text-2xl ml-1">${targetEmoji}</span>`; document.getElementById('emojiGrid').innerHTML = shuf.map(em => `<button type="button" class="emoji-btn" onclick="checkEmoji('${em}')">${em}</button>`).join(''); } 
-    function checkEmoji(sel) { if(isEmojiUnlocked) return; if(sel === targetEmoji) { isEmojiUnlocked = true; document.getElementById('emojiGrid').classList.add('hidden'); document.getElementById('emojiResult').classList.remove('hidden'); } else { initEmoji(); } }
-    function initRotate() { isRotateUnlocked = false; document.getElementById('rotateTitle').innerHTML = "請把商標轉正 👇"; rotateTargetAngle = Math.floor(Math.random() * 260) + 50; document.getElementById('rotateImg').style.transform = `rotate(${rotateTargetAngle}deg)`; document.getElementById('rotateSlider').value = 0; document.getElementById('rotateSlider').disabled = false; } 
-    function handleRotate() { if(isRotateUnlocked) return; let val = parseInt(document.getElementById('rotateSlider').value); document.getElementById('rotateImg').style.transform = `rotate(${rotateTargetAngle + val}deg)`; } 
-    function checkRotate() { if(isRotateUnlocked) return; let val = parseInt(document.getElementById('rotateSlider').value); let fA = Math.abs((rotateTargetAngle + val) % 360); if(fA > 180) fA = 360 - fA; if(fA < 15) { isRotateUnlocked = true; document.getElementById('rotateTitle').innerHTML = "✅ 驗證成功！"; document.getElementById('rotateImg').style.transform = `rotate(0deg)`; document.getElementById('rotateSlider').disabled = true; } else { initRotate(); } }
-    function initSequence() { isSeqUnlocked = false; seqCurrentStep = 1; document.getElementById('seqTitle').innerHTML = "請依序點擊 1 ➔ 2 ➔ 3 ➔ 4"; let nums = [1, 2, 3, 4].sort(() => 0.5 - Math.random()); document.getElementById('seqGrid').innerHTML = nums.map(n => `<button type="button" id="seqBtn_${n}" class="seq-btn" onclick="checkSeq(${n})">${n}</button>`).join(''); } 
-    function checkSeq(num) { if(isSeqUnlocked) return; if(num === seqCurrentStep) { document.getElementById(`seqBtn_${num}`).classList.add('active'); seqCurrentStep++; if(seqCurrentStep > 4) { isSeqUnlocked = true; document.getElementById('seqTitle').innerHTML = "✅ 驗證成功！"; } } else { initSequence(); } }
-    function generateMath() { const n1 = Math.floor(Math.random() * 9) + 1; const n2 = Math.floor(Math.random() * 9) + 1; currentMathAns = n1 + n2; document.getElementById('mathQuestion').innerText = `${n1} + ${n2} = ?`; document.getElementById('loginMathAns').value = ''; }
-    function drawCaptcha() { const canvas = document.getElementById('captchaCanvas'); if(!canvas) return; const ctx = canvas.getContext('2d'); ctx.clearRect(0, 0, canvas.width, canvas.height); const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ'; currentCaptcha = ''; for(let i=0; i<4; i++) currentCaptcha += chars[Math.floor(Math.random() * chars.length)]; ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.font = 'bold 28px Arial'; ctx.textBaseline = 'middle'; for(let i=0; i<4; i++) { ctx.save(); ctx.translate(20+i*25, 24); ctx.rotate((Math.random()-0.5)*0.4); ctx.fillStyle = '#334155'; ctx.fillText(currentCaptcha[i], -10, 0); ctx.restore(); } document.getElementById('loginCaptcha').value = ''; }
-    
-    function initPacman() { document.getElementById('pacmanTitle').innerText = "僅供展示"; isPacmanUnlocked = true;}
-    function initWhack() { document.getElementById('whackTitle').innerText = "僅供展示"; isWhackUnlocked = true;}
-
-    // 🔀 切換與登入對接
-    function changeAuthMethod() {
-      currentAuthMethod = document.getElementById('authMethod').value;
-      ['authZhuyu_quiz','authStar_img','authPacman','authWhack','authSlider','authEmoji','authRotate','authSequence','authMath','authCaptcha'].forEach(id => {
-        const el = document.getElementById(id); if(el) el.style.display = 'none';
-      });
-      const targetEl = document.getElementById('auth' + currentAuthMethod.charAt(0).toUpperCase() + currentAuthMethod.slice(1));
-      if(targetEl) targetEl.style.display = (currentAuthMethod === 'zhuyu_quiz' || currentAuthMethod === 'slider' || currentAuthMethod === 'math' || currentAuthMethod === 'captcha' ? 'flex' : 'block');
-
-      if(currentAuthMethod === "zhuyu_quiz") initQuiz();
-      if(currentAuthMethod === "star_img") initStar();
-      if(currentAuthMethod === "slider") initSlider();
-      if(currentAuthMethod === "emoji") initEmoji();
-      if(currentAuthMethod === "rotate") initRotate();
-      if(currentAuthMethod === "sequence") initSequence();
-      if(currentAuthMethod === "math") generateMath();
-      if(currentAuthMethod === "captcha") drawCaptcha();
-    }
-
-    function handleLogin() {
-      const acc = document.getElementById('loginAccount').value.trim();
-      const pass = document.getElementById('loginPassword').value.trim();
-      const err = document.getElementById('loginError');
-      const btn = document.getElementById('btnLogin');
-      err.classList.add('hidden');
-
-      if(!acc || !pass) { err.innerText = "請輸入帳號與密碼！"; err.classList.remove('hidden'); return; }
-
-      // 檢查通關狀態
-      if(currentAuthMethod === "zhuyu_quiz" && !isQuizUnlocked) { err.innerText = "請先完成大會考！"; err.classList.remove('hidden'); return; }
-      if(currentAuthMethod === "slider" && !isSliderUnlocked) { err.innerText = "請滑動解鎖！"; err.classList.remove('hidden'); return; }
-      if(currentAuthMethod === "math" && parseInt(document.getElementById('loginMathAns').value) !== currentMathAns) { err.innerText = "數學答案錯誤！"; err.classList.remove('hidden'); generateMath(); return; }
-      if(currentAuthMethod === "captcha" && document.getElementById('loginCaptcha').value.trim().toUpperCase() !== currentCaptcha) { err.innerText = "圖形驗證碼錯誤！"; err.classList.remove('hidden'); drawCaptcha(); return; }
-
-      btn.innerHTML = `<div class="spinner border-white"></div> 驗證中...`;
-      btn.disabled = true;
-
-      if(typeof google !== 'undefined') {
-          google.script.run.withSuccessHandler(res => {
-            if(res.success) {
-              document.getElementById('view-login').style.display = 'none';
-              document.getElementById('view-main').classList.remove('hidden');
-              initSystem(); 
-            } else {
-              err.innerText = res.message; err.classList.remove('hidden');
-              btn.innerHTML = "安全登入"; btn.disabled = false;
+          let refill3UI = '';
+          if (m.totalRefills >= 3) {
+            let r3Status = `<span class="text-danger fw-bold">${d3Range}</span>`;
+            if (m.maxCurrentRefill >= 3) {
+              r3Status = `<span class="text-success fw-bold me-2">${d3End}</span><span class="badge bg-success">✅ 已領取</span>`;
+            } else if (date3Obj && date3Obj < today) {
+              r3Status = `<span class="text-muted fw-bold me-2"><del>${d3Range}</del></span><span class="badge bg-secondary">過期 / 他處領取</span>`;
             }
-          }).verifyLogin(acc, pass);
-      } else {
-          // 本地環境測試
-          setTimeout(() => {
-              document.getElementById('view-login').style.display = 'none';
-              document.getElementById('view-main').classList.remove('hidden');
-          }, 800);
-      }
-    }
+            refill3UI = `<div class="rx-date-row"><span class="text-muted">👉 第三次領藥：</span><div>${r3Status}</div></div>`;
+          }
 
-    window.onload = () => { initQuiz(); };
+          let medsHtml = m.items.map((med, idx) => `
+            <div class="med-item">
+                <div class="med-num">${idx + 1}</div>
+                <div class="med-info">
+                    <div class="med-name">${med.drug || '-'}</div>
+                    <div class="med-tags">
+                        <div>
+                            <span class="tag-box">每次 <strong class="text-dark">${med.dosage || '-'}</strong></span>
+                            <span class="tag-box">開立 <strong class="text-dark">${med.days || '-'} 天</strong></span>
+                        </div>
+                        <div class="text-success fw-bold">總量: ${med.total || '-'}</div>
+                    </div>
+                </div>
+            </div>
+          `).join('');
 
-    // ==========================================
-    // 🔍 系統檢索與結果渲染 (已套用破圖修復)
-    // ==========================================
-    function initSystem() { 
-      if(typeof google === 'undefined') return;
-      google.script.run.withSuccessHandler(function(list) { 
-        const picker = document.getElementById('companyPicker'), dl = document.getElementById('globalCompanyList'); 
-        let html = ''; if(dl) dl.innerHTML = ''; 
-        list.forEach(name => { 
-          html += `<div class="picker-item" onclick="selectCompany('${name}')">${name}</div>`; 
-          if(dl) { let opt = document.createElement('option'); opt.value = name; dl.appendChild(opt); }
-        }); 
-        if(picker) picker.innerHTML = html; 
-      }).getUniqueCompanies(); 
-    }
-    
-    function togglePicker(e) { e.stopPropagation(); const p = document.getElementById('companyPicker'); if(p) p.style.display = (p.style.display === 'block') ? 'none' : 'block'; }
-    function selectCompany(name) { document.getElementById('searchValue').value = name; document.getElementById('companyPicker').style.display = 'none'; doSearch(); }
-    
-    function handleTypeChange() { 
-      const type = document.getElementById('searchType').value, input = document.getElementById('searchValue'), btn = document.getElementById('btnBrowseList'); 
-      document.getElementById('companyPicker').style.display = 'none'; 
-      if (type === 'company') { btn.classList.remove('hidden'); input.type = 'text'; input.placeholder = '輸入或點擊瀏覽清單...'; } 
-      else if (type.includes('Date')) { btn.classList.add('hidden'); input.type = 'date'; input.placeholder = ''; } 
-      else { btn.classList.add('hidden'); input.type = 'text'; input.placeholder = '請輸入關鍵字...'; } 
-    }
-    
-    window.addEventListener('click', function(e) { const p = document.getElementById('companyPicker'), btn = document.getElementById('btnBrowseList'); if (p && btn && e.target !== btn && !p.contains(e.target)) p.style.display = 'none'; });
-    
-    function switchTab(tabName) { 
-      document.getElementById('tab-search').className = tabName === 'search' ? 'px-10 py-4 tab-active text-lg transition' : 'px-10 py-4 tab-inactive text-lg transition'; 
-      document.getElementById('tab-stats').className = tabName === 'stats' ? 'px-10 py-4 tab-active text-lg transition' : 'px-10 py-4 tab-inactive text-lg transition'; 
-      document.getElementById('view-search').className = tabName === 'search' ? 'block' : 'hidden'; 
-      document.getElementById('view-stats').className = tabName === 'stats' ? 'block' : 'hidden'; 
-      if (tabName === 'stats') { loadStats(); loadModelConfig(); loadMergeHistory(); } 
-    }
-    
-    function doSearch() { 
-      const type = document.getElementById('searchType').value; let value = document.getElementById('searchValue').value; if (!value) return; 
-      if (type.includes('Date')) value = value.replace(/-/g, '/'); 
-      const sb = document.getElementById('statusBox'); sb.className = "block bg-white border border-gray-100 text-gray-700 mb-6 p-4 rounded-2xl text-center shadow-inner"; sb.innerHTML = `<div class="spinner mr-2"></div>正在搜尋「${value}」...`; document.getElementById('resultArea').innerHTML = ""; 
-      if(typeof google !== 'undefined') google.script.run.withSuccessHandler(renderResults).searchAll({type, value}); 
-    }
-    
-    /**
-     * ✨ 渲染搜尋結果 (加入 Drive 縮圖顯示與防破圖機制)
-     */
-    function renderResults(res) { 
-      document.getElementById('statusBox').className = "hidden"; const area = document.getElementById('resultArea'); 
-      if (!res || res.length === 0) { area.innerHTML = `<div class="bg-white p-16 rounded-3xl text-center text-gray-400 shadow-sm border border-gray-100">📭 找不到相關資料</div>`; return; } 
+          html += `
+          <div class="rx-card shadow-sm">
+            <div class="rx-header" onclick="this.nextElementSibling.classList.toggle('open')">
+              <span><i class="bi bi-folder2-open"></i> 處方日：${m.rxDateStr}</span>
+              <span class="badge bg-white text-success px-2 py-1">${translateDept(m.dept)}</span>
+            </div>
+            <div class="rx-body-collapse ${isOpen}">
+              <div class="rx-progress-box">
+                <div class="rx-progress-header">
+                  <span class="fw-bold text-dark"><i class="bi bi-file-earmark-medical text-info"></i> 慢箋領藥進度</span>
+                  <span class="badge bg-info text-white px-2 py-1">目前進度: ${m.maxCurrentRefill}/${m.totalRefills}</span>
+                </div>
+                <div class="rx-meta"><i class="bi bi-building"></i> 醫療院所：<strong>${m.hospital}</strong></div>
+                <div class="rx-meta mb-3"><i class="bi bi-calendar-event"></i> 處方天數：<strong>${m.days} 天</strong></div>
+                ${refill2UI}
+                ${refill3UI}
+                <div class="rx-return-box shadow-sm">
+                  <span class="text-dark fw-bold"><i class="bi bi-hospital"></i> 預約回診日</span>
+                  <span class="text-danger fw-bold fs-6">${retD}</span>
+                </div>
+              </div>
+              <div style="padding-top: 5px;">
+                ${medsHtml}
+              </div>
+            </div>
+          </div>`;
+        });
+        
+        resultDiv.innerHTML = html;
+      } else { alert("查無相符資料，請確認身分證是否正確"); }
+    }).catch(() => { document.getElementById('loading').style.display = 'none'; alert("查詢失敗，網路逾時"); });
+  }
+
+  function resetMedQuery() { document.getElementById('medQueryForm').style.display = 'block'; document.getElementById('medHistoryResult').innerHTML = ''; }
+
+  function handleFile(input) {
+    try {
+      if (!input.files || input.files.length === 0) return;
       
-      let html = ""; 
-      res.forEach(item => { 
-        const isPur = item.category === '進貨單';
-        const themeColor = isPur ? 'var(--lawson-green)' : 'var(--lawson-dark)'; 
+      const file = input.files[0];
+
+      document.getElementById('loading').style.display = 'flex';
+      document.getElementById('loadingText').innerText = '讀取照片中...';
+      
+      const reader = new FileReader();
+      
+      reader.onload = function(e) {
+        uploadedImages.push({ base64: e.target.result, fileName: file.name });
+        renderPreviews(); 
+        document.getElementById('loading').style.display = 'none';
+        input.value = ''; 
+      };
+      
+      reader.onerror = function() {
+        document.getElementById('loading').style.display = 'none';
+        alert("❌ 讀取檔案失敗。");
+        input.value = '';
+      };
+      
+      reader.readAsDataURL(file);
+      
+    } catch (globalError) {
+      alert("❌ 發生錯誤：" + globalError.message);
+      document.getElementById('loading').style.display = 'none';
+      input.value = '';
+    }
+  }
+
+  function renderPreviews() {
+    const grid = document.getElementById('previewGrid'); grid.innerHTML = '';
+    uploadedImages.forEach((img, i) => {
+      grid.innerHTML += `<div class="col-4"><div class="thumb-wrap"><img src="${img.base64}"><button class="thumb-remove" onclick="uploadedImages.splice(${i},1);renderPreviews();">×</button></div></div>`;
+    });
+  }
+
+  function submitData() {
+    const name = document.getElementById('uName').value.trim();
+    const phone = document.getElementById('uPhone').value.trim();
+    if (!name || phone.length < 9) return alert("請填寫正確資料");
+    if (!document.getElementById('privacyConsentUpload').checked) return alert("請同意條款");
+    
+    document.getElementById('loading').style.display = 'flex';
+    document.getElementById('loadingText').innerText = '資料上傳中...';
+    
+    sendToGAS({ 
+      action: "upload", 
+      name: name, 
+      phone: phone, 
+      lineUserId: lineUserId, 
+      lineName: lineDisplayName, 
+      linePic: linePictureUrl || "", 
+      fileDataArray: uploadedImages.map(i=>i.base64), 
+      isRegister: false, 
+      dept: "一般", 
+      notify: "LINE通知" 
+    })
+    .then(res => {
+      document.getElementById('loading').style.display = 'none';
+      if(res.status === 'success') { 
+        document.getElementById('view-home').classList.add('hidden-mode');
+        document.getElementById('successTitle').innerText = "上傳成功！";
+        document.getElementById('successDesc').innerText = "藥局已收到您的處方單。\n\n(畫面將自動關閉)";
+        document.getElementById('view-success').classList.remove('hidden-mode');
         
-        // 呼叫上方寫好的轉換工具，獲取縮圖網址
-        const thumbUrl = getDriveImageUrl(item.url);
-        
-        html += `
-        <div class="bg-white p-6 rounded-2xl shadow-sm border-l-8 flex flex-col md:flex-row justify-between items-center hover:shadow-md transition gap-4" style="border-color: ${themeColor};">
-          <!-- ✅ 新增：圖片縮圖區塊 -->
-          <div class="w-24 h-24 flex-shrink-0 bg-gray-100 rounded-xl overflow-hidden border border-gray-200">
-            <img src="${thumbUrl}" alt="檔案縮圖" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/150?text=無縮圖'">
-          </div>
-          
-          <div class="w-full flex-1">
-            <span class="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full mb-3 inline-block" style="background-color: ${isPur?'#f0f9eb':'#f3f4f6'}; color: ${isPur?'#67c23a':'#6b7280'};">${item.category}</span>
-            <h3 class="text-2xl font-bold mb-1">${item.name}</h3>
-            <p class="text-gray-600 font-medium">${item.subInfo}</p>
-            <p class="text-sm text-gray-400 mt-2 border-t border-gray-100 pt-2">📅 日期: ${item.date}</p>
-          </div>
-          
-          <a href="${item.url}" target="_blank" class="block text-center btn-lawson font-bold py-3 px-8 rounded-xl shadow whitespace-nowrap">查看原檔</a>
-        </div>`; 
-      }); 
-      area.innerHTML = html; 
-    }
-    
-    // ==========================================
-    // ⚙️ 系統設定與合併管理 (維持不變)
-    // ==========================================
-    function execMerge() { 
-      const fName = document.getElementById('mergeFrom').value.trim(), tName = document.getElementById('mergeTo').value.trim(), status = document.getElementById('mergeStatus'); status.classList.remove('hidden'); 
-      if(!fName || !tName) { status.innerText = "❌ 請填寫兩個欄位"; status.className = "mt-4 text-sm font-bold text-red-500 block"; return; } 
-      if(fName === tName) { status.innerText = "❌ 名稱相同，不需合併"; status.className = "mt-4 text-sm font-bold text-red-500 block"; return; } 
-      if(!confirm(`確定合併？\n\n歷史舊資料將被全數更新！`)) return; 
-      const btn = document.getElementById('btnMerge'); btn.innerHTML = `<div class="spinner"></div>`; btn.disabled = true; status.innerText = "清洗中..."; status.className = "mt-4 text-sm font-bold text-blue-500 block"; 
-      if(typeof google !== 'undefined') google.script.run.withSuccessHandler(res => { 
-        btn.innerText = "執行合併"; btn.disabled = false; 
-        if(res.success) { status.innerText = res.message; status.className = "mt-4 text-sm font-bold text-green-600 block"; document.getElementById('mergeFrom').value = ""; document.getElementById('mergeTo').value = ""; initSystem(); loadMergeHistory(); } 
-        else { status.innerText = res.message; status.className = "mt-4 text-sm font-bold text-red-500 block"; } 
-      }).mergeCompany(fName, tName); 
-    }
-    
-    function loadMergeHistory() {
-      const loading = document.getElementById('mergeHistoryLoading'), area = document.getElementById('mergeHistoryArea');
-      loading.classList.remove('hidden'); area.innerHTML = '';
-      if(typeof google !== 'undefined') { google.script.run.withSuccessHandler(renderMergeHistory).getMergeHistory(); }
-    }
-
-    function renderMergeHistory(records) {
-      document.getElementById('mergeHistoryLoading').classList.add('hidden'); const area = document.getElementById('mergeHistoryArea');
-      if (!records || records.length === 0) { area.innerHTML = `<div class="text-center text-gray-400 py-4 text-sm">尚無紀錄</div>`; return; }
-      let html = '';
-      records.forEach(r => { html += `<div class="flex justify-between items-center p-3 bg-white border border-gray-200 rounded-xl shadow-sm mb-2"><div class="text-sm font-bold text-gray-800"><span class="text-red-500 line-through">${r.from}</span> ➔ <span class="text-green-600">${r.to}</span><div class="text-xs text-gray-400 mt-1">${r.date}</div></div><button onclick="undoMerge('${r.id}', '${r.from}')" class="text-xs bg-red-50 text-red-600 hover:bg-red-100 font-bold py-2 px-4 rounded-lg">撤銷 / 刪除</button></div>`; });
-      area.innerHTML = html;
-    }
-
-    function undoMerge(id, from) {
-      if(!confirm(`確定要刪除「${from}」的合併規則嗎？`)) return;
-      document.getElementById('mergeHistoryLoading').classList.remove('hidden');
-      if(typeof google !== 'undefined') {
-        google.script.run.withSuccessHandler(res => {
-          if(res.success) { alert('✅ 規則已成功刪除！'); loadMergeHistory(); } 
-          else { alert('❌ 刪除失敗：' + res.message); document.getElementById('mergeHistoryLoading').classList.add('hidden'); }
-        }).undoMergeCompany(id);
-      }
-    }
-
-    function loadStats() { document.getElementById('statsLoading').className = "block text-center py-10 text-gray-500 animate-pulse"; document.getElementById('statsArea').className = "hidden"; if(typeof google !== 'undefined') google.script.run.withSuccessHandler(renderStats).getAiStats(); }
-    function renderStats(res) { 
-      document.getElementById('statsLoading').className = "hidden"; const area = document.getElementById('statsArea'); area.className = "grid grid-cols-1 md:grid-cols-2 gap-8 block"; 
-      if (!res || res.length === 0) { area.innerHTML = `<div class="col-span-2 text-center text-gray-400 py-10 bg-gray-50 rounded-2xl">尚無數據。</div>`; return; } 
-      area.innerHTML = res.map(item => `<div class="border border-gray-100 rounded-3xl p-7 hover:shadow-xl transition text-left bg-white"><h3 class="text-xl font-bold mb-5 pb-4 border-b border-gray-100">${item.model}</h3><div class="space-y-3"><div class="flex justify-between"><span>總次數</span><span class="font-bold">${item.total}次</span></div><div class="flex justify-between"><span>成功率</span><span class="font-bold" style="color:${parseFloat(item.successRate)>90?'var(--lawson-green)':'#f56c6c'}">${item.successRate}%</span></div><div class="flex justify-between pt-4 mt-4 border-t border-gray-100"><span>平均速度</span><span class="text-2xl font-black text-lawson-green">${item.avgTime}s</span></div></div></div>`).join(''); 
-    }
-    
-    function loadModelConfig() { if(typeof google !== 'undefined') google.script.run.withSuccessHandler(res => { if(res.success) { google.script.run.withSuccessHandler(active => { renderModelConfig(res.models, active); }).getActiveModels(); } }).checkMyAvailableModels(); }
-    function renderModelConfig(avail, active) { 
-      let html = ""; for(let i=0; i<5; i++) { 
-        let cVal = active[i] || "", opt = `<option value="">-- 不使用 --</option>`; let combined = [...new Set([...avail, ...active])].filter(m => m); 
-        combined.forEach(m => { opt += `<option value="${m}" ${m === cVal ? "selected" : ""}>${m}</option>`; }); 
-        html += `<div class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 text-left"><label class="block text-xs font-bold text-gray-500 mb-2">🏅 第 ${i+1} 順位</label><select id="modelPriority_${i}" class="w-full border-2 border-gray-200 rounded-lg px-2 py-2 text-xs outline-none focus:border-lawson bg-gray-50">${opt}</select></div>`; 
-      } document.getElementById('modelConfigArea').innerHTML = html; 
-    }
-    function saveModelSettings() { 
-      let sel = []; for(let i=0; i<5; i++) { let v = document.getElementById(`modelPriority_${i}`).value; if(v && !sel.includes(v)) sel.push(v); } 
-      if(sel.length === 0) return alert("請至少選擇一個模型。"); 
-      if(typeof google !== 'undefined') google.script.run.withSuccessHandler(() => { alert("設定已套用。"); loadStats(); }).saveActiveModels(sel); 
-    }
-  </script>
+        setTimeout(() => { liff.closeWindow(); }, 2500);
+      } else { alert(res.message); }
+    }).catch(() => { document.getElementById('loading').style.display = 'none'; alert("連線失敗"); });
+  }
+</script>
 </body>
 </html>
