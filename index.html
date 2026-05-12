@@ -93,15 +93,16 @@
         </div>
         <div class="home-btn-group">
           <!-- 點擊此按鈕時會觸發 openUpload()，進行防禦檢查 -->
-          <button class="menu-btn main-btn" onclick="openUpload()">
+          <button class="menu-btn main-btn" onclick="openUpload()" style="grid-column: 1 / -1;">
             <img src="5.png" class="menu-banner" alt="處方上傳" onerror="this.style.display='none'">
             <span class="main-btn-text">處方上傳 / Line綁定領藥通知</span>
           </button>
-          <button class="menu-btn" onclick="openStatus()">
+          <!-- ★ 暫時隱藏：之後要恢復，把 style="display:none" 拿掉即可 -->
+          <button class="menu-btn" onclick="openStatus()" style="display:none;">
             <img src="3.png" class="menu-icon" alt="狀態查詢" onerror="this.style.display='none'">
             <span>領藥狀態查詢</span>
           </button>
-          <button class="menu-btn" onclick="openMedHistory()">
+          <button class="menu-btn" onclick="openMedHistory()" style="display:none;">
             <img src="4.png" class="menu-icon" alt="雲端藥歷" onerror="this.style.display='none'">
             <span>雲端藥歷查詢</span>
           </button>
@@ -217,7 +218,7 @@
           linePictureUrl = profile.pictureUrl || "";
           
           document.getElementById('userNameDisplay').innerText = lineDisplayName;
-          document.getElementById('uName').value = lineDisplayName; 
+          // ★ 領藥人姓名欄位保持空白，由使用者自己輸入（避免誤把 LINE 暱稱當成領藥人本名）
           if(profile.pictureUrl) document.getElementById('userThumb').src = profile.pictureUrl;
           document.getElementById('userInfo').classList.remove('hidden-mode');
           
