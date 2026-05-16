@@ -111,6 +111,51 @@
     </div>
   </div>
 
+  <div id="view-quickbind-confirm" class="hidden-mode sub-view">
+    <div class="back-btn-container"><button class="back-btn" onclick="goHome()"><i class="bi bi-chevron-left"></i> 返回主畫面</button></div>
+    <div class="card p-4 shadow-sm border-0 bg-light text-center">
+      <div class="mb-3">
+        <i class="bi bi-line text-success" style="font-size:3rem;"></i>
+        <h4 class="fw-bold text-success mt-2 mb-1">綁定 LINE 領藥通知</h4>
+        <div class="text-muted small">請先確認以下資訊</div>
+      </div>
+      
+      <!-- 帳號預覽：讓使用者確認自己用的是哪個 LINE 帳號 -->
+      <div class="d-flex align-items-center justify-content-center bg-white rounded-3 shadow-sm p-3 mb-3">
+        <img id="qbThumb" src="" style="width:60px; height:60px; border-radius:50%; object-fit:cover; border:2px solid #06C755; flex-shrink:0;" onerror="this.style.display='none'">
+        <div class="ms-3 text-start" style="min-width:0;">
+          <div class="text-muted small">您正在用這個 LINE 帳號綁定</div>
+          <div class="fw-bold fs-5 text-truncate" id="qbName">—</div>
+        </div>
+      </div>
+      
+      <!-- 好處說明 -->
+      <div class="bg-white rounded-3 p-3 mb-3 text-start shadow-sm">
+        <div class="fw-bold text-success mb-2"><i class="bi bi-check-circle-fill"></i> 綁定後可獲得：</div>
+        <div class="small ps-2" style="line-height:1.8;">
+          ✦ 藥師會主動用 LINE 通知您領藥時間<br>
+          ✦ 不再擔心忘記回診領藥<br>
+          ✦ 日後上傳處方箋更便利
+        </div>
+      </div>
+      
+      <!-- 提示 -->
+      <div class="alert alert-warning small p-2 mb-3 text-start">
+        <i class="bi bi-info-circle-fill"></i> 綁定後請<strong>告知櫃台藥師您的姓名</strong>以完成建檔。
+      </div>
+      
+      <!-- 按鈕 -->
+      <div class="d-grid gap-2">
+        <button class="btn btn-success btn-lg fw-bold shadow-sm py-3" onclick="doQuickBind()">
+          <i class="bi bi-check2-circle"></i> 確認綁定
+        </button>
+        <button class="btn btn-outline-secondary fw-bold py-2" onclick="goHome()">
+          取消 / 我只是不小心點到
+        </button>
+      </div>
+    </div>
+  </div>
+
   <div id="view-form" class="hidden-mode sub-view">
     <div class="back-btn-container"><button class="back-btn" onclick="goHome()"><i class="bi bi-chevron-left"></i> 返回主畫面</button></div>
     <div class="card p-4 shadow-sm border-0 bg-light">
@@ -226,7 +271,8 @@
           const mode = urlParams.get('mode');
           
           if (mode === 'quickbind') {
-              doQuickBind(); 
+              // ★ 改為跳到確認頁，避免誤按；使用者確認後才會真正執行 doQuickBind
+              showQuickBindConfirm();
           }
           // 我們先預留這三個 mode 的處理，方便如果之後是在 Safari 開啟也能直接跳轉
           else if (mode === 'upload') openUpload();
@@ -238,7 +284,28 @@
     }).catch(err => { alert("LINE 初始化失敗"); });
   }
 
+  // ★ 顯示一鍵綁定的確認頁，避免使用者誤按圖文選單造成意外綁定
+  function showQuickBindConfirm() {
+    document.getElementById('view-home').classList.add('hidden-mode');
+    document.getElementById('view-form').classList.add('hidden-mode');
+    document.getElementById('view-status').classList.add('hidden-mode');
+    document.getElementById('view-meds').classList.add('hidden-mode');
+    document.getElementById('view-success').classList.add('hidden-mode');
+    
+    // 把 LINE 帳號資訊帶到確認頁上，讓使用者確認綁的是不是自己
+    document.getElementById('qbName').innerText = lineDisplayName || '(未取得名稱)';
+    if (linePictureUrl) {
+      var t = document.getElementById('qbThumb');
+      t.src = linePictureUrl;
+      t.style.display = '';
+    }
+    
+    document.getElementById('view-quickbind-confirm').classList.remove('hidden-mode');
+  }
+
   function doQuickBind() {
+    // 點下「確認綁定」後先把確認頁收起來，再顯示 loading
+    document.getElementById('view-quickbind-confirm').classList.add('hidden-mode');
     document.getElementById('loading').style.display = 'flex';
     document.getElementById('loadingText').innerText = '藥局建檔中...';
     
@@ -282,6 +349,7 @@
     document.getElementById('view-status').classList.add('hidden-mode');
     document.getElementById('view-meds').classList.add('hidden-mode');
     document.getElementById('view-success').classList.add('hidden-mode');
+    document.getElementById('view-quickbind-confirm').classList.add('hidden-mode'); // ★ 新增：確認頁也要收起來
   }
 
   // 🌟 核心防禦機制：當使用者點擊「處方上傳」時，檢查並跳脫 LINE
