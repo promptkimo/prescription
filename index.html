@@ -64,6 +64,66 @@
 
     #view-success { text-align: center; }
     .success-icon { display: none; color: #06C755; font-size: 5rem; margin-bottom: 15px; }
+    
+    /* ★ 語言切換按鈕 */
+    .lang-switcher { position: absolute; top: 12px; right: 12px; display: flex; gap: 4px; z-index: 100; background: rgba(255,255,255,0.95); border-radius: 20px; padding: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
+    .lang-switcher button { background: transparent; border: none; padding: 4px 10px; border-radius: 14px; font-size: 0.78rem; font-weight: bold; color: #888; cursor: pointer; }
+    .lang-switcher button.active { background: #06C755; color: white; }
+    
+    /* ★ 拍照指引卡 */
+    .photo-tips-card { border: 1px dashed #06C755; border-radius: 10px; background: #F0FAF4; margin-bottom: 14px; overflow: hidden; }
+    .photo-tips-card summary { padding: 10px 14px; font-weight: bold; color: #2E7D32; cursor: pointer; font-size: 0.95rem; list-style: none; display: flex; justify-content: space-between; align-items: center; }
+    .photo-tips-card summary::-webkit-details-marker { display: none; }
+    .photo-tips-card summary::after { content: "▼"; font-size: 0.7rem; transition: transform 0.2s; }
+    .photo-tips-card[open] summary::after { transform: rotate(180deg); }
+    .photo-tips-body { padding: 0 14px 12px; font-size: 0.88rem; color: #555; }
+    .photo-tips-body ul { padding-left: 18px; margin-bottom: 8px; }
+    .photo-tips-body li { margin-bottom: 4px; }
+    .photo-tips-illust { display: flex; justify-content: space-around; gap: 10px; padding: 8px 0; }
+    .photo-tips-illust .tip-box { flex: 1; text-align: center; font-size: 0.75rem; padding: 8px 4px; border-radius: 6px; }
+    .photo-tips-illust .good { background: #E8F5E9; color: #2E7D32; border: 1px solid #C8E6C9; }
+    .photo-tips-illust .bad { background: #FFEBEE; color: #C62828; border: 1px solid #FFCDD2; }
+    
+    /* ★ 警告 modal */
+    .quality-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .quality-overlay.hidden-mode { display: none !important; }
+    .quality-card { background: white; border-radius: 14px; padding: 24px 20px; max-width: 340px; width: 100%; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.18); }
+    .quality-card .qicon { font-size: 3rem; margin-bottom: 8px; }
+    .quality-card h5 { font-weight: bold; margin-bottom: 8px; color: #E65100; }
+    .quality-card p { color: #555; margin-bottom: 18px; font-size: 0.92rem; }
+    .quality-card .btn-row { display: flex; gap: 8px; }
+    .quality-card .btn-row button { flex: 1; padding: 10px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; }
+    .quality-card .btn-use { background: #f0f0f0; color: #555; }
+    .quality-card .btn-retake { background: #06C755; color: white; }
+    
+    /* ★ 領藥狀態徽章 */
+    .status-card { border-radius: 10px; padding: 12px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; background: white; border: 1px solid #eee; }
+    .status-card img { width: 56px; height: 56px; object-fit: cover; border-radius: 8px; flex-shrink: 0; }
+    .status-card .info { flex: 1; min-width: 0; }
+    .status-card .info .date { font-size: 0.78rem; color: #888; }
+    .status-card .info .dept { font-weight: bold; color: #333; font-size: 0.95rem; }
+    .status-card .info .extra { font-size: 0.75rem; color: #999; margin-top: 2px; }
+    .status-badge { padding: 4px 10px; border-radius: 12px; font-size: 0.78rem; font-weight: bold; white-space: nowrap; }
+    .status-badge.processing { background: #FFF3E0; color: #E65100; }
+    .status-badge.received { background: #E8F5E9; color: #2E7D32; }
+    .status-badge.ready { background: #E3F2FD; color: #1976D2; }
+    .status-badge.picked_up { background: #ECEFF1; color: #607D8B; }
+    
+    /* ★ 藥局資訊卡（成功頁用） */
+    .pharmacy-card { background: linear-gradient(135deg, #f8fffa 0%, #e8f5e9 100%); border-radius: 14px; padding: 16px; margin: 16px auto; max-width: 320px; text-align: left; border: 1px solid #c8e6c9; box-shadow: 0 4px 14px rgba(6,199,85,0.08); }
+    .pharmacy-card h6 { font-weight: bold; color: #2E7D32; margin-bottom: 10px; font-size: 1rem; display: flex; align-items: center; gap: 6px; }
+    .pharmacy-card .row-item { font-size: 0.85rem; color: #444; margin-bottom: 6px; display: flex; gap: 8px; }
+    .pharmacy-card .row-item .label { color: #888; min-width: 50px; }
+    .pharmacy-card .row-item .val { font-weight: 500; flex: 1; }
+    .pharmacy-card .call-btn { display: block; margin-top: 10px; background: #06C755; color: white; text-align: center; padding: 10px; border-radius: 8px; text-decoration: none; font-weight: bold; }
+    .pharmacy-card .call-btn:hover { color: white; }
+    
+    /* ★ 成功頁的暖心數字 */
+    .today-count-banner { background: #FFF8E1; border: 1px solid #FFE082; color: #F57C00; padding: 12px 16px; border-radius: 10px; margin: 14px auto; max-width: 320px; font-size: 0.95rem; }
+    .today-count-banner .big { font-size: 1.5rem; font-weight: bold; color: #E65100; }
+    
+    /* ★ 送出鎖定倒數提示 */
+    .submit-locked-tip { font-size: 0.82rem; color: #999; text-align: center; margin-top: 8px; }
   </style>
 </head>
 <body>
@@ -74,10 +134,17 @@
 </div>
 
 <div class="container"> 
+  <!-- ★ 語言切換器（右上角懸浮） -->
+  <div class="lang-switcher" id="langSwitcher">
+    <button data-lang="zh-TW" onclick="applyLang('zh-TW')" class="active">中</button>
+    <button data-lang="vi" onclick="applyLang('vi')">VI</button>
+    <button data-lang="id" onclick="applyLang('id')">ID</button>
+  </div>
+
   <div id="view-home">
     <div class="brand-header">
       <h1 class="brand-title">樂森藥局</h1>
-      <p class="brand-subtitle">Lawson Pharmacy Cloud</p>
+      <p class="brand-subtitle" data-i18n="brand.subtitle">Lawson Pharmacy Cloud</p>
     </div>
     <div class="home-content">
       <div class="home-content-wrapper">
@@ -85,26 +152,25 @@
           <div class="d-flex align-items-center">
             <img id="userThumb" src="https://placehold.co/50" class="user-avatar">
             <div class="ms-2">
-              <div class="small text-muted">LINE 帳號</div>
+              <div class="small text-muted" data-i18n="home.line_account">LINE 帳號</div>
               <div class="fw-bold text-dark" id="userNameDisplay">訪客</div>
             </div>
           </div>
-          <button class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="doLiffLogout()">登出</button>
+          <button class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="doLiffLogout()" data-i18n="nav.logout">登出</button>
         </div>
         <div class="home-btn-group">
-          <!-- 點擊此按鈕時會觸發 openUpload()，進行防禦檢查 -->
           <button class="menu-btn main-btn" onclick="openUpload()" style="grid-column: 1 / -1;">
             <img src="5.png" class="menu-banner" alt="處方上傳" onerror="this.style.display='none'">
-            <span class="main-btn-text">處方上傳 / Line綁定領藥通知</span>
+            <span class="main-btn-text" data-i18n="home.button.upload">處方上傳 / Line綁定領藥通知</span>
           </button>
-          <!-- ★ 暫時隱藏：之後要恢復，把 style="display:none" 拿掉即可 -->
-          <button class="menu-btn" onclick="openStatus()" style="display:none;">
+          <!-- ★ 領藥狀態查詢已啟用 -->
+          <button class="menu-btn" onclick="openStatus()">
             <img src="3.png" class="menu-icon" alt="狀態查詢" onerror="this.style.display='none'">
-            <span>領藥狀態查詢</span>
+            <span data-i18n="home.button.status">領藥狀態查詢</span>
           </button>
           <button class="menu-btn" onclick="openMedHistory()" style="display:none;">
             <img src="4.png" class="menu-icon" alt="雲端藥歷" onerror="this.style.display='none'">
-            <span>雲端藥歷查詢</span>
+            <span data-i18n="home.button.meds">雲端藥歷查詢</span>
           </button>
         </div>
       </div>
@@ -157,56 +223,117 @@
   </div>
 
   <div id="view-form" class="hidden-mode sub-view">
-    <div class="back-btn-container"><button class="back-btn" onclick="goHome()"><i class="bi bi-chevron-left"></i> 返回主畫面</button></div>
+    <div class="back-btn-container"><button class="back-btn" onclick="goHome()"><i class="bi bi-chevron-left"></i> <span data-i18n="back">返回主畫面</span></button></div>
     <div class="card p-4 shadow-sm border-0 bg-light">
-      <h5 class="fw-bold text-success mb-2"><i class="bi bi-person-lines-fill"></i> 建立領藥檔案</h5>
-      <p class="small text-muted mb-3">請點擊下方選擇相片。若僅需綁定 LINE，可不傳照片直接送出！</p>
+      <h5 class="fw-bold text-success mb-2"><i class="bi bi-person-lines-fill"></i> <span data-i18n="upload.title">建立領藥檔案</span></h5>
+      <p class="small text-muted mb-3" data-i18n="upload.hint">請點擊下方選擇相片。若僅需綁定 LINE，可不傳照片直接送出！</p>
+      
+      <!-- ★ 拍照指引（可摺疊） -->
+      <details class="photo-tips-card">
+        <summary><span data-i18n="upload.tips.title">📸 如何拍出清晰處方箋</span></summary>
+        <div class="photo-tips-body">
+          <ul>
+            <li data-i18n="upload.tips.1">把處方箋平放在桌面或穩定平面</li>
+            <li data-i18n="upload.tips.2">在自然光或明亮處拍攝</li>
+            <li data-i18n="upload.tips.3">整張處方箋完整入鏡</li>
+            <li data-i18n="upload.tips.4">避免手指遮擋與閃光反光</li>
+          </ul>
+          <div class="photo-tips-illust">
+            <div class="tip-box good">✓ <span data-i18n="upload.tips.good">清晰平整</span></div>
+            <div class="tip-box bad">✗ <span data-i18n="upload.tips.bad1">模糊歪斜</span></div>
+            <div class="tip-box bad">✗ <span data-i18n="upload.tips.bad2">過暗反光</span></div>
+          </div>
+        </div>
+      </details>
       
       <div id="cameraSection" class="mb-3">
         <div class="row g-2 mb-2" id="previewGrid"></div>
         
         <div class="p-3 border rounded bg-white text-center shadow-sm">
-          <label class="form-label text-success fw-bold mb-2">📷 請選擇處方照片</label>
-          <!-- 保持最乾淨的 input -->
+          <label class="form-label text-success fw-bold mb-2" data-i18n="upload.photo.label">📷 請選擇處方照片</label>
           <input type="file" id="fileInput" accept="image/*" class="form-control" onchange="handleFile(this)">
-          <div class="text-muted small mt-2">(無處方箋可略過)</div>
+          <div class="text-muted small mt-2" data-i18n="upload.photo.hint">(無處方箋可略過)</div>
         </div>
       </div>
       
-      <div class="mb-3 mt-3"><label class="form-label small fw-bold">領藥人姓名</label><input type="text" class="form-control" id="uName" placeholder="請輸入姓名"></div>
-      <div class="mb-3"><label class="form-label small fw-bold">聯絡電話</label><input type="tel" class="form-control" id="uPhone" placeholder="請輸入手機號碼"></div>
-      <div class="form-check mb-4"><input class="form-check-input" type="checkbox" id="privacyConsentUpload"><label class="form-check-label text-muted small" for="privacyConsentUpload">我已同意隱私權保護與服務條款，並授權藥局建檔通知。</label></div>
-      <button class="btn btn-success w-100 fw-bold py-2 shadow-sm fs-5" onclick="submitData()">確認送出資料</button>
+      <div class="mb-3 mt-3"><label class="form-label small fw-bold" data-i18n="upload.name.label">領藥人姓名</label><input type="text" class="form-control" id="uName" data-i18n-ph="upload.name.ph" placeholder="請輸入姓名"></div>
+      <div class="mb-3"><label class="form-label small fw-bold" data-i18n="upload.phone.label">聯絡電話</label><input type="tel" class="form-control" id="uPhone" data-i18n-ph="upload.phone.ph" placeholder="請輸入手機號碼"></div>
+      <div class="form-check mb-4"><input class="form-check-input" type="checkbox" id="privacyConsentUpload"><label class="form-check-label text-muted small" for="privacyConsentUpload" data-i18n="upload.consent">我已同意隱私權保護與服務條款，並授權藥局建檔通知。</label></div>
+      <button id="submitBtn" class="btn btn-success w-100 fw-bold py-2 shadow-sm fs-5" onclick="submitData()"><span data-i18n="upload.submit">確認送出資料</span></button>
+      <div id="submitLockTip" class="submit-locked-tip" style="display:none;"></div>
     </div>
   </div>
 
   <div id="view-status" class="hidden-mode sub-view">
-    <div class="back-btn-container"><button class="back-btn" onclick="goHome()"><i class="bi bi-chevron-left"></i> 返回主畫面</button></div>
+    <div class="back-btn-container"><button class="back-btn" onclick="goHome()"><i class="bi bi-chevron-left"></i> <span data-i18n="back">返回主畫面</span></button></div>
     <div class="card p-4 shadow-sm border-0">
-      <h5 class="fw-bold text-info mb-3"><i class="bi bi-card-checklist"></i> 領藥狀態查詢</h5>
+      <h5 class="fw-bold text-info mb-3"><i class="bi bi-card-checklist"></i> <span data-i18n="status.title">領藥狀態查詢</span></h5>
       <div id="uploadHistoryList"></div>
     </div>
   </div>
 
   <div id="view-meds" class="hidden-mode sub-view">
-    <div class="back-btn-container"><button class="back-btn" onclick="goHome()"><i class="bi bi-chevron-left"></i> 返回主畫面</button></div>
+    <div class="back-btn-container"><button class="back-btn" onclick="goHome()"><i class="bi bi-chevron-left"></i> <span data-i18n="back">返回主畫面</span></button></div>
     <div id="medQueryForm">
       <div class="card p-4 shadow-sm border-0 bg-light">
-        <h5 class="fw-bold text-dark mb-3"><i class="bi bi-cloud-arrow-up"></i> 雲端藥歷查詢</h5>
-        <p class="small text-muted mb-4">請輸入【領藥人姓名】與【身分證字號】進行安全驗證。</p>
-        <div class="mb-3"><label class="form-label small fw-bold text-primary">領藥人姓名</label><input type="text" class="form-control" id="qName" placeholder="請輸入姓名"></div>
-        <div class="mb-4"><label class="form-label small fw-bold text-danger">身分證字號</label><input type="text" class="form-control text-uppercase" id="qId" placeholder="例如：A123456789"></div>
-        <button class="btn btn-dark w-100 fw-bold py-2 mb-2 shadow-sm" onclick="queryMedHistory()"><i class="bi bi-search"></i> 安全查詢</button>
+        <h5 class="fw-bold text-dark mb-3"><i class="bi bi-cloud-arrow-up"></i> <span data-i18n="med.title">雲端藥歷查詢</span></h5>
+        <p class="small text-muted mb-4" data-i18n="med.desc">請輸入【領藥人姓名】與【身分證字號】進行安全驗證。</p>
+        <div class="mb-3"><label class="form-label small fw-bold text-primary" data-i18n="med.name">領藥人姓名</label><input type="text" class="form-control" id="qName" placeholder="請輸入姓名"></div>
+        <div class="mb-4"><label class="form-label small fw-bold text-danger" data-i18n="med.id">身分證字號</label><input type="text" class="form-control text-uppercase" id="qId" placeholder="例如：A123456789"></div>
+        <button class="btn btn-dark w-100 fw-bold py-2 mb-2 shadow-sm" onclick="queryMedHistory()"><i class="bi bi-search"></i> <span data-i18n="med.search">安全查詢</span></button>
       </div>
     </div>
     <div id="medHistoryResult"></div>
   </div>
 
+  <!-- ★ 成功頁重寫：暖心提示 + 藥局資訊卡 -->
   <div id="view-success" class="hidden-mode sub-view d-flex flex-column justify-content-center align-items-center text-center">
-    <i class="bi bi-check-circle-fill text-success mb-3" style="font-size: 5rem;"></i>
-    <h3 class="fw-bold text-dark" id="successTitle">操作成功</h3>
-    <p class="text-muted mb-5" id="successDesc">藥局已收到您的資訊。</p>
-    <button class="btn btn-success btn-lg rounded-pill px-5 fw-bold shadow-sm" onclick="closeLiffWindow()">關閉視窗</button>
+    <i class="bi bi-check-circle-fill text-success mb-2" style="font-size: 4.5rem;"></i>
+    <h3 class="fw-bold text-dark mb-1" id="successTitle" data-i18n="success.title">上傳成功！</h3>
+    <p class="text-muted mb-2" id="successDesc" data-i18n="success.desc">藥局已收到您的處方單</p>
+    
+    <!-- 今日上傳數暖心提示 -->
+    <div class="today-count-banner" id="todayCountBanner" style="display:none;">
+      <div class="big" id="todayCountText">您是今日第 1 位上傳病患</div>
+      <div data-i18n="success.estimate" style="margin-top:4px;">藥師預計 30 分鐘內處理完成</div>
+    </div>
+    
+    <!-- 藥局資訊卡 -->
+    <div class="pharmacy-card" id="pharmacyCard">
+      <h6><i class="bi bi-shop"></i> <span id="pharmacyName">樂森藥局</span></h6>
+      <div class="row-item"><span class="label" data-i18n="pharmacy.addr">地址</span><span class="val" id="pharmacyAddr">—</span></div>
+      <div class="row-item"><span class="label" data-i18n="pharmacy.phone">電話</span><span class="val" id="pharmacyPhone">—</span></div>
+      <div class="row-item"><span class="label" data-i18n="pharmacy.hours">營業</span><span class="val" id="pharmacyHours">—</span></div>
+      <a href="#" id="pharmacyCallBtn" class="call-btn"><i class="bi bi-telephone-fill"></i> <span data-i18n="success.call">撥打藥局</span></a>
+    </div>
+    
+    <button class="btn btn-outline-secondary rounded-pill px-5 fw-bold mt-2" onclick="closeLiffWindow()"><span data-i18n="success.close">關閉視窗</span></button>
+  </div>
+</div>
+
+<!-- ★ 照片品質警告 modal -->
+<div id="qualityWarningModal" class="quality-overlay hidden-mode">
+  <div class="quality-card">
+    <div class="qicon">⚠️</div>
+    <h5 id="qualityWarnTitle" data-i18n="photo.warn.title">照片不夠清晰</h5>
+    <p id="qualityWarnDesc" data-i18n="photo.warn.tip">建議重拍以提高 AI 辨識準確度</p>
+    <div class="btn-row">
+      <button class="btn-use" onclick="useAnyway()"><span data-i18n="photo.warn.use">仍要使用</span></button>
+      <button class="btn-retake" onclick="retakePhoto()"><span data-i18n="photo.warn.retake">重新拍攝</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- ★ 重複上傳警告 modal -->
+<div id="duplicateWarningModal" class="quality-overlay hidden-mode">
+  <div class="quality-card">
+    <div class="qicon">📋</div>
+    <h5 style="color:#FB8C00;" data-i18n="dup.warn.title">處方似乎已上傳</h5>
+    <p data-i18n="dup.warn.msg">剛剛已經上傳過相同的處方箋了，確定要再次上傳嗎？</p>
+    <div class="btn-row">
+      <button class="btn-use" onclick="cancelDuplicateUpload()"><span data-i18n="dup.warn.cancel">取消</span></button>
+      <button class="btn-retake" onclick="confirmDuplicateUpload()"><span data-i18n="dup.warn.confirm">仍要上傳</span></button>
+    </div>
   </div>
 </div>
 
@@ -215,6 +342,334 @@
   // ⚠️ 你的 Google Apps Script URL
   const GAS_URL = "https://script.google.com/macros/s/AKfycbyUXCejmkI52ZJVUN1K1t1j2ZvfdZMCgHsgB79okITgzn7to2sfte43R5I0GOQnFp1opQ/exec";
   const LIFF_ID = "2008912977-DuJTm5u1"; 
+
+  // ★ 藥局資訊
+  const PHARMACY_INFO = {
+    name: '樂森藥局',
+    address: '台南市北區和緯路二段336號',
+    phone: '06-2511338',
+    hours: '週一到週六 早上9:00-晚上10:00'
+  };
+
+  // ★ 多語言翻譯字典（中 / 越南 / 印尼）
+  const TRANSLATIONS = {
+    'zh-TW': {
+      'brand.subtitle': 'Lawson Pharmacy Cloud',
+      'nav.logout': '登出', 'home.line_account': 'LINE 帳號',
+      'home.button.upload': '處方上傳 / Line綁定領藥通知',
+      'home.button.status': '領藥狀態查詢', 'home.button.meds': '雲端藥歷查詢',
+      'back': '返回主畫面',
+      'upload.title': '建立領藥檔案',
+      'upload.hint': '請點擊下方選擇相片。若僅需綁定 LINE，可不傳照片直接送出！',
+      'upload.tips.title': '📸 如何拍出清晰處方箋',
+      'upload.tips.1': '把處方箋平放在桌面或穩定平面',
+      'upload.tips.2': '在自然光或明亮處拍攝',
+      'upload.tips.3': '整張處方箋完整入鏡',
+      'upload.tips.4': '避免手指遮擋與閃光反光',
+      'upload.tips.good': '清晰平整', 'upload.tips.bad1': '模糊歪斜', 'upload.tips.bad2': '過暗反光',
+      'upload.photo.label': '📷 請選擇處方照片',
+      'upload.photo.hint': '(無處方箋可略過)',
+      'upload.name.label': '領藥人姓名', 'upload.name.ph': '請輸入姓名',
+      'upload.phone.label': '聯絡電話', 'upload.phone.ph': '請輸入手機號碼',
+      'upload.consent': '我已同意隱私權保護與服務條款，並授權藥局建檔通知。',
+      'upload.submit': '確認送出資料',
+      'photo.warn.title': '照片不夠清晰', 'photo.warn.dark.title': '照片偏暗',
+      'photo.warn.tip': '建議重拍以提高 AI 辨識準確度',
+      'photo.warn.use': '仍要使用', 'photo.warn.retake': '重新拍攝',
+      'dup.warn.title': '處方似乎已上傳',
+      'dup.warn.msg': '剛剛已經上傳過相同的處方箋了，確定要再次上傳嗎？',
+      'dup.warn.confirm': '仍要上傳', 'dup.warn.cancel': '取消',
+      'err.fill': '請填寫正確資料', 'err.consent': '請同意隱私權條款',
+      'err.connection': '連線失敗', 'err.file_read': '讀取檔案失敗',
+      'status.title': '領藥狀態查詢',
+      'status.loading': '讀取中...', 'status.empty': '目前沒有上傳紀錄',
+      'status.processing': '處理中', 'status.received': '已收到',
+      'status.ready': '可領取', 'status.picked': '已領取',
+      'status.picked_at': '領藥時間',
+      'success.title': '上傳成功！', 'success.desc': '藥局已收到您的處方單',
+      'success.count': '您是今日第 {n} 位上傳病患',
+      'success.estimate': '藥師預計 30 分鐘內處理完成',
+      'success.call': '撥打藥局', 'success.close': '關閉視窗',
+      'pharmacy.addr': '地址', 'pharmacy.phone': '電話', 'pharmacy.hours': '營業',
+      'submit.locked': '✅ 已送出，{s} 秒後才能再上傳'
+    },
+    'vi': {
+      'brand.subtitle': 'Hiệu Thuốc Lawson · Dịch Vụ Đám Mây',
+      'nav.logout': 'Đăng xuất', 'home.line_account': 'Tài khoản LINE',
+      'home.button.upload': 'Tải lên đơn thuốc / Liên kết LINE',
+      'home.button.status': 'Tra cứu trạng thái nhận thuốc',
+      'home.button.meds': 'Lịch sử dùng thuốc',
+      'back': 'Về trang chính',
+      'upload.title': 'Tạo hồ sơ nhận thuốc',
+      'upload.hint': 'Vui lòng chọn ảnh đơn thuốc. Nếu chỉ liên kết LINE, có thể gửi không kèm ảnh.',
+      'upload.tips.title': '📸 Cách chụp đơn thuốc rõ ràng',
+      'upload.tips.1': 'Đặt đơn thuốc phẳng trên mặt bàn',
+      'upload.tips.2': 'Chụp dưới ánh sáng tự nhiên hoặc nơi sáng',
+      'upload.tips.3': 'Đảm bảo toàn bộ đơn thuốc trong khung hình',
+      'upload.tips.4': 'Tránh ngón tay che và phản chiếu đèn flash',
+      'upload.tips.good': 'Rõ phẳng', 'upload.tips.bad1': 'Mờ nghiêng', 'upload.tips.bad2': 'Quá tối / Lóa',
+      'upload.photo.label': '📷 Vui lòng chọn ảnh đơn thuốc',
+      'upload.photo.hint': '(Có thể bỏ qua nếu không có đơn thuốc)',
+      'upload.name.label': 'Họ tên người nhận thuốc', 'upload.name.ph': 'Nhập họ tên',
+      'upload.phone.label': 'Số điện thoại liên hệ', 'upload.phone.ph': 'Nhập số di động',
+      'upload.consent': 'Tôi đồng ý điều khoản bảo vệ quyền riêng tư và cho phép hiệu thuốc lập hồ sơ thông báo.',
+      'upload.submit': 'Xác nhận gửi',
+      'photo.warn.title': 'Ảnh không đủ rõ', 'photo.warn.dark.title': 'Ảnh quá tối',
+      'photo.warn.tip': 'Nên chụp lại để tăng độ chính xác nhận dạng AI',
+      'photo.warn.use': 'Vẫn dùng', 'photo.warn.retake': 'Chụp lại',
+      'dup.warn.title': 'Đơn thuốc dường như đã được tải lên',
+      'dup.warn.msg': 'Bạn vừa tải lên đơn thuốc tương tự. Bạn có chắc muốn tải lại không?',
+      'dup.warn.confirm': 'Vẫn tải lên', 'dup.warn.cancel': 'Huỷ',
+      'err.fill': 'Vui lòng điền đúng thông tin', 'err.consent': 'Vui lòng đồng ý điều khoản',
+      'err.connection': 'Lỗi kết nối', 'err.file_read': 'Đọc tệp thất bại',
+      'status.title': 'Tra cứu trạng thái nhận thuốc',
+      'status.loading': 'Đang tải...', 'status.empty': 'Chưa có lịch sử tải lên',
+      'status.processing': 'Đang xử lý', 'status.received': 'Đã nhận',
+      'status.ready': 'Có thể nhận thuốc', 'status.picked': 'Đã nhận thuốc',
+      'status.picked_at': 'Thời gian nhận',
+      'success.title': 'Tải lên thành công!',
+      'success.desc': 'Hiệu thuốc đã nhận được đơn thuốc của bạn',
+      'success.count': 'Bạn là bệnh nhân thứ {n} tải lên hôm nay',
+      'success.estimate': 'Dược sĩ dự kiến xử lý trong vòng 30 phút',
+      'success.call': 'Gọi hiệu thuốc', 'success.close': 'Đóng cửa sổ',
+      'pharmacy.addr': 'Địa chỉ', 'pharmacy.phone': 'Điện thoại', 'pharmacy.hours': 'Giờ mở cửa',
+      'submit.locked': '✅ Đã gửi, có thể gửi lại sau {s} giây'
+    },
+    'id': {
+      'brand.subtitle': 'Apotek Lawson · Layanan Cloud',
+      'nav.logout': 'Keluar', 'home.line_account': 'Akun LINE',
+      'home.button.upload': 'Unggah Resep / Hubungkan LINE',
+      'home.button.status': 'Cek Status Pengambilan Obat',
+      'home.button.meds': 'Riwayat Penggunaan Obat',
+      'back': 'Kembali ke Beranda',
+      'upload.title': 'Buat Berkas Pengambilan Obat',
+      'upload.hint': 'Silakan pilih foto resep. Jika hanya menghubungkan LINE, dapat dikirim tanpa foto.',
+      'upload.tips.title': '📸 Cara Memfoto Resep dengan Jelas',
+      'upload.tips.1': 'Letakkan resep di atas permukaan yang rata',
+      'upload.tips.2': 'Foto di tempat dengan cahaya cukup',
+      'upload.tips.3': 'Pastikan seluruh resep masuk dalam frame',
+      'upload.tips.4': 'Hindari jari menutupi dan pantulan cahaya',
+      'upload.tips.good': 'Jelas Rata', 'upload.tips.bad1': 'Buram Miring', 'upload.tips.bad2': 'Gelap / Silau',
+      'upload.photo.label': '📷 Silakan Pilih Foto Resep',
+      'upload.photo.hint': '(Bisa dilewati jika tidak ada resep)',
+      'upload.name.label': 'Nama Penerima Obat', 'upload.name.ph': 'Masukkan nama',
+      'upload.phone.label': 'Nomor Telepon', 'upload.phone.ph': 'Masukkan nomor HP',
+      'upload.consent': 'Saya setuju dengan kebijakan privasi dan memberikan izin apotek untuk membuat berkas notifikasi.',
+      'upload.submit': 'Konfirmasi Kirim',
+      'photo.warn.title': 'Foto Kurang Jelas', 'photo.warn.dark.title': 'Foto Terlalu Gelap',
+      'photo.warn.tip': 'Disarankan foto ulang untuk meningkatkan akurasi AI',
+      'photo.warn.use': 'Tetap Pakai', 'photo.warn.retake': 'Foto Ulang',
+      'dup.warn.title': 'Resep Sepertinya Sudah Diunggah',
+      'dup.warn.msg': 'Anda baru saja mengunggah resep yang sama. Yakin ingin mengunggah lagi?',
+      'dup.warn.confirm': 'Tetap Unggah', 'dup.warn.cancel': 'Batal',
+      'err.fill': 'Silakan isi data dengan benar', 'err.consent': 'Silakan setujui ketentuan',
+      'err.connection': 'Koneksi gagal', 'err.file_read': 'Gagal membaca file',
+      'status.title': 'Cek Status Pengambilan Obat',
+      'status.loading': 'Memuat...', 'status.empty': 'Belum ada riwayat unggahan',
+      'status.processing': 'Memproses', 'status.received': 'Diterima',
+      'status.ready': 'Siap Diambil', 'status.picked': 'Sudah Diambil',
+      'status.picked_at': 'Waktu Pengambilan',
+      'success.title': 'Unggah Berhasil!',
+      'success.desc': 'Apotek telah menerima resep Anda',
+      'success.count': 'Anda pasien ke-{n} yang mengunggah hari ini',
+      'success.estimate': 'Apoteker akan memproses dalam 30 menit',
+      'success.call': 'Telepon Apotek', 'success.close': 'Tutup',
+      'pharmacy.addr': 'Alamat', 'pharmacy.phone': 'Telepon', 'pharmacy.hours': 'Jam Buka',
+      'submit.locked': '✅ Sudah dikirim, bisa kirim lagi setelah {s} detik'
+    }
+  };
+
+  function getCurrentLang() {
+    return localStorage.getItem('preferredLang') || 'zh-TW';
+  }
+  
+  function t(key, vars) {
+    var lang = getCurrentLang();
+    var txt = (TRANSLATIONS[lang] && TRANSLATIONS[lang][key]) || (TRANSLATIONS['zh-TW'][key] || key);
+    if (vars) {
+      Object.keys(vars).forEach(function(k) {
+        txt = txt.replace(new RegExp('\\{' + k + '\\}', 'g'), vars[k]);
+      });
+    }
+    return txt;
+  }
+  
+  function applyLang(lang) {
+    if (!TRANSLATIONS[lang]) lang = 'zh-TW';
+    localStorage.setItem('preferredLang', lang);
+    document.documentElement.setAttribute('lang', lang);
+    // 切換按鈕 active 狀態
+    document.querySelectorAll('#langSwitcher button').forEach(function(btn) {
+      btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
+    });
+    // 套用 data-i18n
+    document.querySelectorAll('[data-i18n]').forEach(function(el) {
+      var key = el.getAttribute('data-i18n');
+      var txt = TRANSLATIONS[lang][key];
+      if (txt) el.textContent = txt;
+    });
+    // 套用 data-i18n-ph（placeholder）
+    document.querySelectorAll('[data-i18n-ph]').forEach(function(el) {
+      var key = el.getAttribute('data-i18n-ph');
+      var txt = TRANSLATIONS[lang][key];
+      if (txt) el.setAttribute('placeholder', txt);
+    });
+  }
+
+  // ★ 拍照品質檢測：把 base64 畫到 canvas，計算亮度與模糊度
+  async function checkPhotoQuality(base64) {
+    return new Promise(function(resolve) {
+      var img = new Image();
+      img.onload = function() {
+        try {
+          var canvas = document.createElement('canvas');
+          var maxDim = 300; // 下採樣加速
+          var scale = Math.min(maxDim / img.width, maxDim / img.height, 1);
+          canvas.width = Math.floor(img.width * scale);
+          canvas.height = Math.floor(img.height * scale);
+          var ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          var data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+          var w = canvas.width, h = canvas.height;
+          
+          // 亮度：平均灰階
+          var totalBright = 0;
+          var pixels = w * h;
+          for (var i = 0; i < data.length; i += 4) {
+            totalBright += data[i] * 0.299 + data[i+1] * 0.587 + data[i+2] * 0.114;
+          }
+          var avgBright = totalBright / pixels;
+          
+          // 模糊度：拉普拉斯運算子變異數（中心像素 - 上下左右）
+          function gray(idx) { return data[idx] * 0.299 + data[idx+1] * 0.587 + data[idx+2] * 0.114; }
+          var lapSum = 0, lapSumSq = 0, count = 0;
+          for (var y = 1; y < h - 1; y++) {
+            for (var x = 1; x < w - 1; x++) {
+              var c = (y * w + x) * 4;
+              var center = gray(c);
+              var top = gray(((y-1) * w + x) * 4);
+              var bottom = gray(((y+1) * w + x) * 4);
+              var left = gray((y * w + (x-1)) * 4);
+              var right = gray((y * w + (x+1)) * 4);
+              var lap = 4 * center - top - bottom - left - right;
+              lapSum += lap;
+              lapSumSq += lap * lap;
+              count++;
+            }
+          }
+          var lapMean = lapSum / count;
+          var lapVar = lapSumSq / count - lapMean * lapMean;
+          
+          resolve({
+            brightness: avgBright,
+            blurScore: lapVar,
+            isTooDark: avgBright < 70,
+            isBlurry: lapVar < 80
+          });
+        } catch(e) { resolve({ error: true }); }
+      };
+      img.onerror = function() { resolve({ error: true }); };
+      img.src = base64;
+    });
+  }
+  
+  // ★ 重複上傳偵測：用 base64 前後段做簡單 hash，存 localStorage 24 小時
+  function hashImageData(base64) {
+    // 取前 300 字元與後 300 字元做 simple hash
+    var sample = base64.substring(0, 300) + base64.substring(base64.length - 300);
+    var hash = 0;
+    for (var i = 0; i < sample.length; i++) {
+      hash = ((hash << 5) - hash) + sample.charCodeAt(i);
+      hash |= 0;
+    }
+    return String(hash);
+  }
+  
+  function getRecentUploads() {
+    try {
+      var raw = localStorage.getItem('recentUploads');
+      var arr = raw ? JSON.parse(raw) : [];
+      var cutoff = Date.now() - 24 * 3600 * 1000;
+      return arr.filter(function(item) { return item.ts > cutoff; });
+    } catch(e) { return []; }
+  }
+  
+  function isDuplicateUpload(hashes) {
+    var recent = getRecentUploads();
+    return hashes.some(function(h) {
+      return recent.some(function(r) { return r.hash === h; });
+    });
+  }
+  
+  function recordUploads(hashes) {
+    var recent = getRecentUploads();
+    var now = Date.now();
+    hashes.forEach(function(h) { recent.push({ hash: h, ts: now }); });
+    localStorage.setItem('recentUploads', JSON.stringify(recent));
+  }
+  
+  // ★ 拍照品質警告 / 重複上傳的 modal callback
+  var _pendingPhotoBase64 = null, _pendingPhotoFileName = null;
+  function showQualityWarning(quality) {
+    var modal = document.getElementById('qualityWarningModal');
+    var title = document.getElementById('qualityWarnTitle');
+    var desc = document.getElementById('qualityWarnDesc');
+    if (quality.isTooDark) {
+      title.textContent = t('photo.warn.dark.title');
+    } else {
+      title.textContent = t('photo.warn.title');
+    }
+    desc.textContent = t('photo.warn.tip');
+    modal.classList.remove('hidden-mode');
+  }
+  function useAnyway() {
+    if (_pendingPhotoBase64) {
+      uploadedImages.push({ base64: _pendingPhotoBase64, fileName: _pendingPhotoFileName });
+      renderPreviews();
+    }
+    _pendingPhotoBase64 = null;
+    document.getElementById('qualityWarningModal').classList.add('hidden-mode');
+  }
+  function retakePhoto() {
+    _pendingPhotoBase64 = null;
+    document.getElementById('qualityWarningModal').classList.add('hidden-mode');
+    document.getElementById('fileInput').click();
+  }
+  
+  // 重複上傳 modal callback
+  var _pendingSubmitFn = null;
+  function showDuplicateWarning(onConfirm) {
+    _pendingSubmitFn = onConfirm;
+    document.getElementById('duplicateWarningModal').classList.remove('hidden-mode');
+  }
+  function confirmDuplicateUpload() {
+    document.getElementById('duplicateWarningModal').classList.add('hidden-mode');
+    if (_pendingSubmitFn) { var fn = _pendingSubmitFn; _pendingSubmitFn = null; fn(); }
+  }
+  function cancelDuplicateUpload() {
+    _pendingSubmitFn = null;
+    document.getElementById('duplicateWarningModal').classList.add('hidden-mode');
+  }
+  
+  // ★ 送出鎖定（60 秒）
+  function startSubmitLock() {
+    var btn = document.getElementById('submitBtn');
+    var tip = document.getElementById('submitLockTip');
+    var remaining = 60;
+    btn.disabled = true;
+    tip.style.display = 'block';
+    tip.textContent = t('submit.locked', { s: remaining });
+    var timer = setInterval(function() {
+      remaining--;
+      if (remaining <= 0) {
+        clearInterval(timer);
+        btn.disabled = false;
+        tip.style.display = 'none';
+      } else {
+        tip.textContent = t('submit.locked', { s: remaining });
+      }
+    }, 1000);
+  }
 
   let lineUserId = "", lineDisplayName = "", linePictureUrl = "";
   let uploadedImages = []; 
@@ -251,7 +706,11 @@
       });
   }
 
-  window.onload = function() { initLiff(); };
+  window.onload = function() { 
+    // ★ 先套用上次選擇的語言（影響所有 i18n 元素）
+    applyLang(getCurrentLang());
+    initLiff(); 
+  };
   
   function initLiff() {
     liff.init({ liffId: LIFF_ID }).then(() => {
@@ -380,20 +839,37 @@
   function openMedHistory() { goHome(); document.getElementById('view-home').classList.add('hidden-mode'); document.getElementById('view-meds').classList.remove('hidden-mode'); resetMedQuery(); }
 
   function fetchUploadHistory() {
-    document.getElementById('uploadHistoryList').innerHTML = '<div class="text-center py-4">讀取中...</div>';
+    document.getElementById('uploadHistoryList').innerHTML = '<div class="text-center py-4">' + t('status.loading') + '</div>';
     sendToGAS({ action: "history", lineUserId: lineUserId })
     .then(res => {
       const container = document.getElementById('uploadHistoryList'); container.innerHTML = '';
-      if (!res.history || res.history.length === 0) { container.innerHTML = '<p class="text-center py-4 text-muted">尚無紀錄</p>'; return; }
+      if (!res.history || res.history.length === 0) { 
+        container.innerHTML = '<p class="text-center py-4 text-muted">' + t('status.empty') + '</p>'; 
+        return; 
+      }
       res.history.forEach(item => {
-        let statusColor = item.status === '已收單處理' ? 'bg-success' : 'bg-warning text-dark';
-        container.innerHTML += `<div class="card p-2 mb-2 shadow-sm border-0 flex-row align-items-center bg-light">
-          <img src="${item.img}" style="width:50px;height:50px;object-fit:cover;border-radius:5px;margin-right:10px;">
-          <div class="flex-grow-1"><div class="fw-bold small">${item.date}</div><div class="text-muted small">${translateDept(item.dept)}</div></div>
-          <span class="badge ${statusColor} small">${item.status}</span>
-        </div>`;
+        // 用後端傳回的 statusKey 對應顏色徽章與多語言文字
+        var sk = item.statusKey || 'received';
+        var statusText = t('status.' + sk) || item.status;
+        var extra = '';
+        if (sk === 'picked_up' && item.pickedAt) {
+          extra = '<div class="extra">' + t('status.picked_at') + '：' + item.pickedAt + '</div>';
+        }
+        container.innerHTML += 
+          '<div class="status-card">' +
+            '<img src="' + (item.img || 'https://placehold.co/56') + '">' +
+            '<div class="info">' +
+              '<div class="date">' + (item.date || '') + '</div>' +
+              '<div class="dept">' + translateDept(item.dept) + '</div>' +
+              extra +
+            '</div>' +
+            '<span class="status-badge ' + sk + '">' + statusText + '</span>' +
+          '</div>';
       });
-    }).catch(() => { document.getElementById('uploadHistoryList').innerHTML = '連線失敗'; });
+    }).catch(() => { 
+      document.getElementById('uploadHistoryList').innerHTML = 
+        '<div class="text-center py-4 text-danger">' + t('err.connection') + '</div>'; 
+    });
   }
 
   function _parseDate(dStr) {
@@ -539,23 +1015,37 @@
       
       const reader = new FileReader();
       
-      reader.onload = function(e) {
-        uploadedImages.push({ base64: e.target.result, fileName: file.name });
-        renderPreviews(); 
+      reader.onload = async function(e) {
+        var base64 = e.target.result;
+        var fileName = file.name;
         document.getElementById('loading').style.display = 'none';
-        input.value = ''; 
+        input.value = '';
+        
+        // ★ 品質檢測（非阻擋，有問題彈 modal 讓使用者決定）
+        try {
+          var quality = await checkPhotoQuality(base64);
+          if (!quality.error && (quality.isBlurry || quality.isTooDark)) {
+            _pendingPhotoBase64 = base64;
+            _pendingPhotoFileName = fileName;
+            showQualityWarning(quality);
+            return;
+          }
+        } catch(qErr) {}
+        
+        uploadedImages.push({ base64: base64, fileName: fileName });
+        renderPreviews(); 
       };
       
       reader.onerror = function() {
         document.getElementById('loading').style.display = 'none';
-        alert("❌ 讀取檔案失敗。");
+        alert("❌ " + t('err.file_read'));
         input.value = '';
       };
       
       reader.readAsDataURL(file);
       
     } catch (globalError) {
-      alert("❌ 發生錯誤：" + globalError.message);
+      alert("❌ " + globalError.message);
       document.getElementById('loading').style.display = 'none';
       input.value = '';
     }
@@ -571,9 +1061,23 @@
   function submitData() {
     const name = document.getElementById('uName').value.trim();
     const phone = document.getElementById('uPhone').value.trim();
-    if (!name || phone.length < 9) return alert("請填寫正確資料");
-    if (!document.getElementById('privacyConsentUpload').checked) return alert("請同意條款");
+    if (!name || phone.length < 9) return alert(t('err.fill'));
+    if (!document.getElementById('privacyConsentUpload').checked) return alert(t('err.consent'));
     
+    // ★ 重複上傳偵測
+    if (uploadedImages.length > 0) {
+      var hashes = uploadedImages.map(function(img) { return hashImageData(img.base64); });
+      if (isDuplicateUpload(hashes)) {
+        showDuplicateWarning(function() { _doSubmit(name, phone, hashes); });
+        return;
+      }
+      _doSubmit(name, phone, hashes);
+    } else {
+      _doSubmit(name, phone, []);
+    }
+  }
+  
+  function _doSubmit(name, phone, hashes) {
     document.getElementById('loading').style.display = 'flex';
     document.getElementById('loadingText').innerText = '資料上傳中...';
     
@@ -592,14 +1096,47 @@
     .then(res => {
       document.getElementById('loading').style.display = 'none';
       if(res.status === 'success') { 
-        document.getElementById('view-home').classList.add('hidden-mode');
-        document.getElementById('successTitle').innerText = "上傳成功！";
-        document.getElementById('successDesc').innerText = "藥局已收到您的處方單。\n\n(畫面將自動關閉)";
-        document.getElementById('view-success').classList.remove('hidden-mode');
+        // 記錄已上傳的 hash 避免短時間內重複
+        if (hashes && hashes.length > 0) recordUploads(hashes);
+        // 啟動 60 秒送出鎖
+        startSubmitLock();
         
-        setTimeout(() => { liff.closeWindow(); }, 2500);
+        showSuccessView(res.todayCount || 0);
       } else { alert(res.message); }
-    }).catch(() => { document.getElementById('loading').style.display = 'none'; alert("連線失敗"); });
+    }).catch(() => { 
+      document.getElementById('loading').style.display = 'none'; 
+      alert(t('err.connection')); 
+    });
+  }
+  
+  // ★ 顯示成功頁（含暖心提示）
+  function showSuccessView(todayCount) {
+    document.getElementById('view-home').classList.add('hidden-mode');
+    document.getElementById('view-form').classList.add('hidden-mode');
+    document.getElementById('view-success').classList.remove('hidden-mode');
+    
+    // 暖心提示：您是今日第 X 位
+    var banner = document.getElementById('todayCountBanner');
+    if (todayCount > 0) {
+      document.getElementById('todayCountText').textContent = t('success.count', { n: todayCount });
+      banner.style.display = '';
+    } else {
+      banner.style.display = 'none';
+    }
+    
+    // 藥局資訊
+    document.getElementById('pharmacyName').textContent = PHARMACY_INFO.name;
+    document.getElementById('pharmacyAddr').textContent = PHARMACY_INFO.address;
+    document.getElementById('pharmacyPhone').textContent = PHARMACY_INFO.phone;
+    document.getElementById('pharmacyHours').textContent = PHARMACY_INFO.hours;
+    document.getElementById('pharmacyCallBtn').setAttribute('href', 'tel:' + PHARMACY_INFO.phone.replace(/[^0-9+]/g, ''));
+    
+    // 拉長自動關閉時間（5 秒）讓使用者看完
+    setTimeout(function() { 
+      if (typeof liff !== 'undefined' && liff.closeWindow) {
+        // 不主動關閉，讓使用者自己按關閉視窗以避免錯過提示
+      }
+    }, 5000);
   }
 </script>
 </body>
