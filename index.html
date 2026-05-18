@@ -137,6 +137,7 @@
   <!-- ★ 語言切換器（右上角懸浮） -->
   <div class="lang-switcher" id="langSwitcher">
     <button data-lang="zh-TW" onclick="applyLang('zh-TW')" class="active">中</button>
+    <button data-lang="en" onclick="applyLang('en')">EN</button>
     <button data-lang="vi" onclick="applyLang('vi')">VI</button>
     <button data-lang="id" onclick="applyLang('id')">ID</button>
   </div>
@@ -434,6 +435,52 @@
       'success.call': 'Gọi hiệu thuốc', 'success.close': 'Đóng cửa sổ',
       'pharmacy.addr': 'Địa chỉ', 'pharmacy.phone': 'Điện thoại', 'pharmacy.hours': 'Giờ mở cửa',
       'submit.locked': '✅ Đã gửi, có thể gửi lại sau {s} giây'
+    },
+    'en': {
+      'brand.subtitle': 'Lawson Pharmacy · Cloud Service',
+      'nav.logout': 'Log Out', 'home.line_account': 'LINE Account',
+      'home.button.upload': 'Upload Prescription / Link LINE',
+      'home.button.status': 'Check Pickup Status',
+      'home.button.meds': 'Medication History',
+      'back': 'Back to Home',
+      'upload.title': 'Create Pickup Record',
+      'upload.hint': 'Please select your prescription photo. To only link LINE, you may submit without a photo.',
+      'upload.tips.title': '📸 How to Take a Clear Photo',
+      'upload.tips.1': 'Place the prescription flat on a stable surface',
+      'upload.tips.2': 'Take the photo in natural or bright lighting',
+      'upload.tips.3': 'Keep the entire prescription in the frame',
+      'upload.tips.4': 'Avoid finger blocking and flash glare',
+      'upload.tips.good': 'Clear & Flat',
+      'upload.tips.bad1': 'Blurry / Tilted',
+      'upload.tips.bad2': 'Too Dark / Glare',
+      'upload.photo.label': '📷 Select Prescription Photo',
+      'upload.photo.hint': '(May skip if no prescription)',
+      'upload.name.label': 'Patient Name', 'upload.name.ph': 'Enter name',
+      'upload.phone.label': 'Phone Number', 'upload.phone.ph': 'Enter mobile number',
+      'upload.consent': 'I agree to the privacy policy and authorize the pharmacy to create a record for notifications.',
+      'upload.submit': 'Submit',
+      'photo.warn.title': 'Photo Not Clear Enough',
+      'photo.warn.dark.title': 'Photo Too Dark',
+      'photo.warn.tip': 'We recommend retaking it to improve AI recognition accuracy',
+      'photo.warn.use': 'Use Anyway', 'photo.warn.retake': 'Retake',
+      'dup.warn.title': 'Prescription Already Uploaded',
+      'dup.warn.msg': 'You recently uploaded the same prescription. Are you sure you want to upload it again?',
+      'dup.warn.confirm': 'Upload Anyway', 'dup.warn.cancel': 'Cancel',
+      'err.fill': 'Please fill in the information correctly',
+      'err.consent': 'Please agree to the terms',
+      'err.connection': 'Connection failed', 'err.file_read': 'Failed to read file',
+      'status.title': 'Pickup Status Inquiry',
+      'status.loading': 'Loading...', 'status.empty': 'No upload records yet',
+      'status.processing': 'Processing', 'status.received': 'Received',
+      'status.ready': 'Ready for Pickup', 'status.picked': 'Picked Up',
+      'status.picked_at': 'Picked up at',
+      'success.title': 'Upload Successful!',
+      'success.desc': 'The pharmacy has received your prescription',
+      'success.count': 'You are patient #{n} to upload today',
+      'success.estimate': 'Pharmacist will process within 30 minutes',
+      'success.call': 'Call Pharmacy', 'success.close': 'Close',
+      'pharmacy.addr': 'Address', 'pharmacy.phone': 'Phone', 'pharmacy.hours': 'Hours',
+      'submit.locked': '✅ Submitted. Can submit again in {s} seconds'
     },
     'id': {
       'brand.subtitle': 'Apotek Lawson · Layanan Cloud',
