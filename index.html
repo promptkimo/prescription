@@ -65,10 +65,15 @@
     #view-success { text-align: center; }
     .success-icon { display: none; color: #06C755; font-size: 5rem; margin-bottom: 15px; }
     
-    /* ★ 語言切換按鈕 */
-    .lang-switcher { position: absolute; top: 12px; right: 12px; display: flex; gap: 4px; z-index: 100; background: rgba(255,255,255,0.95); border-radius: 20px; padding: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
-    .lang-switcher button { background: transparent; border: none; padding: 4px 10px; border-radius: 14px; font-size: 0.78rem; font-weight: bold; color: #888; cursor: pointer; }
-    .lang-switcher button.active { background: #06C755; color: white; }
+    /* ★ 語言切換按鈕（緊湊版：圖示按鈕，點開才展開選單） */
+    .lang-switcher { position: absolute; top: 10px; right: 10px; z-index: 100; }
+    .lang-toggle { background: rgba(255,255,255,0.95); border: 1px solid #06C755; color: #06C755; padding: 5px 11px; border-radius: 18px; font-size: 0.78rem; font-weight: bold; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.08); display: flex; align-items: center; gap: 4px; }
+    .lang-toggle:hover { background: #E8F5E9; }
+    .lang-menu { position: absolute; top: 100%; right: 0; margin-top: 4px; background: white; border-radius: 8px; box-shadow: 0 4px 14px rgba(0,0,0,0.15); padding: 4px 0; min-width: 130px; display: none; }
+    .lang-menu.show { display: block; }
+    .lang-menu button { display: block; width: 100%; text-align: left; padding: 9px 14px; background: none; border: none; cursor: pointer; font-size: 0.88rem; color: #555; }
+    .lang-menu button:hover { background: #f5f5f5; }
+    .lang-menu button.active { background: #E8F5E9; color: #06C755; font-weight: bold; }
     
     /* ★ 拍照指引卡 */
     .photo-tips-card { border: 1px dashed #06C755; border-radius: 10px; background: #F0FAF4; margin-bottom: 14px; overflow: hidden; }
@@ -126,14 +131,21 @@
     .submit-locked-tip { font-size: 0.82rem; color: #999; text-align: center; margin-top: 8px; }
     
     /* ★ 家人/本人 profile chips */
-    .profile-chips-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
-    .profile-chip { display: inline-flex; align-items: center; gap: 6px; background: #f0f0f0; border: 2px solid transparent; border-radius: 18px; padding: 6px 14px; cursor: pointer; font-size: 0.88rem; color: #555; user-select: none; transition: all 0.15s; }
-    .profile-chip.active { background: #E8F5E9; border-color: #06C755; color: #2E7D32; font-weight: bold; }
-    .profile-chip .del-btn { color: #C62828; opacity: 0.5; font-size: 0.7rem; padding: 0 2px; }
+    .quick-pick-label { font-size: 0.82rem; color: #2E7D32; margin-bottom: 6px; font-weight: bold; }
+    .profile-chips-row { display: flex; gap: 6px; flex-wrap: wrap; }
+    .profile-chip { display: inline-flex; align-items: center; gap: 6px; background: white; border: 2px solid #c8e6c9; border-radius: 20px; padding: 7px 12px; cursor: pointer; font-size: 0.85rem; color: #2E7D32; user-select: none; transition: all 0.15s; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+    .profile-chip:hover { background: #E8F5E9; border-color: #06C755; }
+    .profile-chip b { color: #06C755; }
+    .profile-chip .chip-name { color: #555; }
+    .profile-chip .chip-phone { color: #999; font-size: 0.75rem; }
+    .profile-chip .del-btn { color: #C62828; opacity: 0.4; font-size: 0.7rem; padding: 0 3px; margin-left: 2px; }
     .profile-chip .del-btn:hover { opacity: 1; }
-    .profile-chip.add { background: white; border: 2px dashed #B0BEC5; color: #607D8B; }
-    .profile-chip.add:hover { border-color: #06C755; color: #06C755; }
-    .profile-hint { font-size: 0.78rem; color: #888; margin-bottom: 10px; }
+    
+    /* ★ 關係選擇器（本人 / 非本人） */
+    .relation-toggle { display: flex; gap: 8px; }
+    .rel-opt { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 8px; border: 2px solid #ddd; border-radius: 10px; cursor: pointer; transition: all 0.15s; background: white; margin: 0; font-size: 0.92rem; color: #666; }
+    .rel-opt.active { border-color: #06C755; background: #E8F5E9; color: #06C755; font-weight: bold; }
+    .rel-opt input { margin: 0; cursor: pointer; }
     
     /* ★ 拍照/相簿兩顆按鈕 */
     .photo-action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
@@ -193,12 +205,19 @@
 </div>
 
 <div class="container"> 
-  <!-- ★ 語言切換器（右上角懸浮） -->
+  <!-- ★ 語言切換器（緊湊圖示按鈕，點開才展開選單） -->
   <div class="lang-switcher" id="langSwitcher">
-    <button data-lang="zh-TW" onclick="applyLang('zh-TW')" class="active">中</button>
-    <button data-lang="en" onclick="applyLang('en')">EN</button>
-    <button data-lang="vi" onclick="applyLang('vi')">VI</button>
-    <button data-lang="id" onclick="applyLang('id')">ID</button>
+    <button class="lang-toggle" onclick="toggleLangMenu(event)">
+      <i class="bi bi-globe2"></i>
+      <span id="currentLangLabel">中</span>
+      <i class="bi bi-chevron-down" style="font-size:0.7rem;"></i>
+    </button>
+    <div class="lang-menu" id="langMenu">
+      <button data-lang="zh-TW" onclick="applyLang('zh-TW');closeLangMenu();">中文</button>
+      <button data-lang="en" onclick="applyLang('en');closeLangMenu();">English</button>
+      <button data-lang="vi" onclick="applyLang('vi');closeLangMenu();">Tiếng Việt</button>
+      <button data-lang="id" onclick="applyLang('id');closeLangMenu();">Indonesia</button>
+    </div>
   </div>
 
   <div id="view-home">
@@ -288,9 +307,11 @@
       <h5 class="fw-bold text-success mb-2"><i class="bi bi-person-lines-fill"></i> <span data-i18n="upload.title">建立領藥檔案</span></h5>
       <p class="small text-muted mb-3" data-i18n="upload.hint">請點擊下方選擇相片。若僅需綁定 LINE，可不傳照片直接送出！</p>
       
-      <!-- ★ 病患/家人 profile chips（#1 自動帶入 + #5 多病患） -->
-      <div id="profileChipsRow" class="profile-chips-row" style="display:none;"></div>
-      <div id="profileHint" class="profile-hint" style="display:none;"></div>
+      <!-- ★ 上次紀錄快速帶入（只在有紀錄時顯示） -->
+      <div id="profileQuickPick" class="mb-3" style="display:none;">
+        <div class="quick-pick-label"><i class="bi bi-bookmark-fill text-success"></i> <span data-i18n="quick.pick.hint">上次紀錄，點選快速帶入</span></div>
+        <div id="profileChipsRow" class="profile-chips-row"></div>
+      </div>
       
       <!-- ★ 拍照指引（可摺疊） -->
       <details class="photo-tips-card">
@@ -331,6 +352,23 @@
       </div>
       
       <div class="mb-3 mt-3"><label class="form-label small fw-bold" data-i18n="upload.name.label">領藥人姓名</label><input type="text" class="form-control" id="uName" data-i18n-ph="upload.name.ph" placeholder="請輸入姓名"></div>
+      
+      <!-- ★ 關係選擇：本人 / 非本人（非本人時跳出關係名稱輸入） -->
+      <div class="mb-3">
+        <label class="form-label small fw-bold" data-i18n="relation.label">與領藥人關係</label>
+        <div class="relation-toggle">
+          <label class="rel-opt active" id="relOptSelf">
+            <input type="radio" name="relation" value="self" checked onchange="onRelationChange()">
+            <span data-i18n="relation.self">本人</span>
+          </label>
+          <label class="rel-opt" id="relOptOther">
+            <input type="radio" name="relation" value="other" onchange="onRelationChange()">
+            <span data-i18n="relation.other">非本人（代領）</span>
+          </label>
+        </div>
+        <input type="text" id="relationLabel" class="form-control mt-2" data-i18n-ph="relation.label.ph" placeholder="關係名稱（例如：爸爸、阿公、姪子）" style="display:none;" maxlength="10">
+      </div>
+      
       <div class="mb-3"><label class="form-label small fw-bold" data-i18n="upload.phone.label">聯絡電話</label><input type="tel" class="form-control" id="uPhone" data-i18n-ph="upload.phone.ph" placeholder="請輸入手機號碼"></div>
       <div class="form-check mb-4"><input class="form-check-input" type="checkbox" id="privacyConsentUpload"><label class="form-check-label text-muted small" for="privacyConsentUpload" data-i18n="upload.consent">我已同意隱私權保護與服務條款，並授權藥局建檔通知。</label></div>
       <button id="submitBtn" class="btn btn-success w-100 fw-bold py-2 shadow-sm fs-5" onclick="showSubmitConfirm()"><span data-i18n="upload.submit">確認送出資料</span></button>
@@ -396,27 +434,13 @@
 <div id="submitConfirmModal" class="confirm-overlay">
   <div class="confirm-card">
     <h5 data-i18n="confirm.title">請確認您的資料</h5>
-    <div class="confirm-row"><span class="label" data-i18n="confirm.profile">代誰領藥</span><span class="val" id="confirmProfile">本人</span></div>
+    <div class="confirm-row" id="confirmProfileRow" style="display:none;"><span class="label" data-i18n="confirm.profile">代誰領藥</span><span class="val" id="confirmProfile">本人</span></div>
     <div class="confirm-row"><span class="label" data-i18n="confirm.name">姓名</span><span class="val" id="confirmName"></span></div>
     <div class="confirm-row"><span class="label" data-i18n="confirm.phone">電話</span><span class="val" id="confirmPhone"></span></div>
     <div class="confirm-row"><span class="label" data-i18n="confirm.photos">照片</span><span class="val" id="confirmPhotos"></span></div>
     <div class="btn-row">
       <button class="btn-back" onclick="cancelSubmitConfirm()"><span data-i18n="confirm.back">回去修改</span></button>
       <button class="btn-confirm" onclick="confirmSubmit()"><span data-i18n="confirm.submit">確認送出</span></button>
-    </div>
-  </div>
-</div>
-
-<!-- ★ 新增家人 modal（#5） -->
-<div id="addFamilyModal" class="confirm-overlay">
-  <div class="add-fam-card">
-    <h5 data-i18n="family.add.title">新增家人領藥</h5>
-    <input type="text" id="famLabel" data-i18n-ph="family.add.label" placeholder="標籤（例如：媽媽）" maxlength="8">
-    <input type="text" id="famName" data-i18n-ph="family.add.name" placeholder="家人姓名">
-    <input type="tel" id="famPhone" data-i18n-ph="family.add.phone" placeholder="家人電話">
-    <div class="btn-row">
-      <button class="btn-back" onclick="cancelAddFamily()"><span data-i18n="confirm.back">取消</span></button>
-      <button class="btn-confirm" onclick="saveNewFamily()"><span data-i18n="family.add.save">儲存</span></button>
     </div>
   </div>
 </div>
@@ -515,7 +539,13 @@
       'family.add.save': '儲存',
       'family.del.confirm': '確定要刪除這個家人的記錄嗎？',
       'success.share': '分享給家人',
-      'share.copied': '✅ 連結已複製，可貼給家人'
+      'share.copied': '✅ 連結已複製，可貼給家人',
+      'quick.pick.hint': '上次紀錄，點選快速帶入',
+      'relation.label': '與領藥人關係',
+      'relation.self': '本人', 'relation.other': '非本人（代領）',
+      'relation.label.ph': '關係名稱（例如：爸爸、阿公、姪子）',
+      'relation.required': '請填寫關係名稱（例如：爸爸、阿公）',
+      'profile.del.confirm': '要刪除這筆紀錄嗎？'
     },
     'vi': {
       'brand.subtitle': 'Hiệu Thuốc Lawson · Dịch Vụ Đám Mây',
@@ -571,7 +601,13 @@
       'family.add.save': 'Lưu',
       'family.del.confirm': 'Xoá bản ghi người nhà này?',
       'success.share': 'Chia sẻ với người nhà',
-      'share.copied': '✅ Đã sao chép link'
+      'share.copied': '✅ Đã sao chép link',
+      'quick.pick.hint': 'Hồ sơ đã lưu — chạm để điền',
+      'relation.label': 'Quan hệ',
+      'relation.self': 'Bản thân', 'relation.other': 'Người khác (Đại diện)',
+      'relation.label.ph': 'Quan hệ (vd: Bố, Ông, Cháu)',
+      'relation.required': 'Vui lòng nhập tên quan hệ',
+      'profile.del.confirm': 'Xoá bản ghi này?'
     },
     'en': {
       'brand.subtitle': 'Lawson Pharmacy · Cloud Service',
@@ -630,7 +666,13 @@
       'family.add.save': 'Save',
       'family.del.confirm': 'Delete this family member record?',
       'success.share': 'Share with Family',
-      'share.copied': '✅ Link copied, you can paste to family'
+      'share.copied': '✅ Link copied, you can paste to family',
+      'quick.pick.hint': 'Saved entries — tap to fill',
+      'relation.label': 'Relationship',
+      'relation.self': 'Self', 'relation.other': 'Other (Pickup For)',
+      'relation.label.ph': 'Relation (e.g., Father, Grandpa, Nephew)',
+      'relation.required': 'Please enter the relationship name',
+      'profile.del.confirm': 'Delete this saved entry?'
     },
     'id': {
       'brand.subtitle': 'Apotek Lawson · Layanan Cloud',
@@ -686,7 +728,13 @@
       'family.add.save': 'Simpan',
       'family.del.confirm': 'Hapus catatan keluarga ini?',
       'success.share': 'Bagikan ke Keluarga',
-      'share.copied': '✅ Tautan disalin'
+      'share.copied': '✅ Tautan disalin',
+      'quick.pick.hint': 'Catatan tersimpan — sentuh untuk isi',
+      'relation.label': 'Hubungan',
+      'relation.self': 'Sendiri', 'relation.other': 'Orang Lain (Wakil)',
+      'relation.label.ph': 'Hubungan (mis: Ayah, Kakek, Keponakan)',
+      'relation.required': 'Mohon isi nama hubungan',
+      'profile.del.confirm': 'Hapus catatan ini?'
     }
   };
 
@@ -709,8 +757,11 @@
     if (!TRANSLATIONS[lang]) lang = 'zh-TW';
     localStorage.setItem('preferredLang', lang);
     document.documentElement.setAttribute('lang', lang);
-    // 切換按鈕 active 狀態
-    document.querySelectorAll('#langSwitcher button').forEach(function(btn) {
+    // 切換按鈕 active 狀態 + 更新當前語言 label
+    var labelMap = { 'zh-TW': '中', 'en': 'EN', 'vi': 'VI', 'id': 'ID' };
+    var curLabel = document.getElementById('currentLangLabel');
+    if (curLabel) curLabel.textContent = labelMap[lang] || '中';
+    document.querySelectorAll('#langMenu button').forEach(function(btn) {
       btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
     });
     // 套用 data-i18n
@@ -726,6 +777,19 @@
       if (txt) el.setAttribute('placeholder', txt);
     });
   }
+  
+  // ★ 語言選單開合
+  function toggleLangMenu(e) {
+    if (e) e.stopPropagation();
+    document.getElementById('langMenu').classList.toggle('show');
+  }
+  function closeLangMenu() {
+    document.getElementById('langMenu').classList.remove('show');
+  }
+  // 點擊外部關閉語言選單
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('#langSwitcher')) closeLangMenu();
+  });
 
   // ★ 拍照品質檢測：把 base64 畫到 canvas，計算亮度與模糊度
   async function checkPhotoQuality(base64) {
@@ -886,115 +950,124 @@
   let uploadedImages = []; 
   
   // ═══════════════════════════════════════════════════════════
-  // ★ Profile 系統（#1 自動帶入 + #5 多病患/家人模式）
+  // ★ Profile 系統（關係 + 姓名 + 電話的紀錄，可重複召回）
   // ═══════════════════════════════════════════════════════════
   function getProfiles() {
     try {
       var raw = localStorage.getItem('lawsonProfiles');
       var obj = raw ? JSON.parse(raw) : null;
-      if (!obj || !obj.profiles) return { profiles: [], activeId: null };
+      if (!obj || !Array.isArray(obj.profiles)) return { profiles: [] };
       return obj;
-    } catch(e) { return { profiles: [], activeId: null }; }
+    } catch(e) { return { profiles: [] }; }
   }
   
   function saveProfiles(obj) {
     try { localStorage.setItem('lawsonProfiles', JSON.stringify(obj)); } catch(e) {}
   }
   
-  function renderProfileChips() {
+  // ★ 渲染「上次紀錄」chip 列（只在有紀錄時顯示）
+  function renderProfileQuickPick() {
+    var wrap = document.getElementById('profileQuickPick');
     var row = document.getElementById('profileChipsRow');
-    var hint = document.getElementById('profileHint');
+    if (!wrap || !row) return;
     var data = getProfiles();
-    var profiles = data.profiles || [];
     
-    // 沒有 profile 就完全隱藏
-    if (profiles.length === 0) {
-      row.style.display = 'none';
-      hint.style.display = 'none';
+    if (data.profiles.length === 0) {
+      wrap.style.display = 'none';
       return;
     }
     
-    var html = profiles.map(function(p) {
-      var isActive = p.id === data.activeId;
-      var del = (p.id !== 'self') ? '<span class="del-btn" onclick="event.stopPropagation();deleteProfile(\'' + p.id + '\')" title="刪除">✕</span>' : '';
-      return '<div class="profile-chip' + (isActive ? ' active' : '') + '" onclick="switchProfile(\'' + p.id + '\')">' +
-        '<span>' + (p.id === 'self' ? '👤' : '👨‍👩‍👧') + ' ' + escapeHTML(p.label) + '</span>' + del +
+    var html = data.profiles.map(function(p) {
+      var icon = (p.relation === 'self') ? '👤' : '👨‍👩‍👧';
+      var phoneTail = p.phone ? '…' + p.phone.slice(-4) : '';
+      return '<div class="profile-chip" onclick="loadProfileById(\'' + p.id + '\')">' +
+        '<span>' + icon + ' <b>' + escapeHTML(p.label) + '</b> <span class="chip-name">' + escapeHTML(p.name) + '</span> <span class="chip-phone">' + phoneTail + '</span></span>' +
+        '<span class="del-btn" onclick="event.stopPropagation();deleteProfileById(\'' + p.id + '\')" title="刪除">✕</span>' +
       '</div>';
     }).join('');
-    html += '<div class="profile-chip add" onclick="openAddFamily()">' + t('profile.add') + '</div>';
     
     row.innerHTML = html;
-    row.style.display = 'flex';
-    hint.textContent = t('profile.hint.saved');
-    hint.style.display = 'block';
+    wrap.style.display = '';
   }
   
-  function switchProfile(id) {
+  // ★ 點選 chip 後把資料載入表單
+  function loadProfileById(id) {
     var data = getProfiles();
     var p = data.profiles.find(function(x) { return x.id === id; });
     if (!p) return;
-    data.activeId = id;
-    saveProfiles(data);
     document.getElementById('uName').value = p.name || '';
     document.getElementById('uPhone').value = p.phone || '';
-    renderProfileChips();
+    // 設定 relation radio
+    var rel = p.relation || 'self';
+    var selfRadio = document.querySelector('input[name="relation"][value="self"]');
+    var otherRadio = document.querySelector('input[name="relation"][value="other"]');
+    if (rel === 'self') { selfRadio.checked = true; } else { otherRadio.checked = true; }
+    document.getElementById('relationLabel').value = (rel === 'self') ? '' : (p.label || '');
+    onRelationChange();
   }
   
-  function deleteProfile(id) {
-    if (!confirm(t('family.del.confirm'))) return;
+  // ★ 刪除某筆紀錄
+  function deleteProfileById(id) {
+    if (!confirm(t('profile.del.confirm'))) return;
     var data = getProfiles();
     data.profiles = data.profiles.filter(function(p) { return p.id !== id; });
-    if (data.activeId === id) data.activeId = data.profiles.length > 0 ? data.profiles[0].id : null;
     saveProfiles(data);
-    if (data.activeId) switchProfile(data.activeId);
-    else renderProfileChips();
+    renderProfileQuickPick();
   }
   
-  function openAddFamily() {
-    document.getElementById('famLabel').value = '';
-    document.getElementById('famName').value = '';
-    document.getElementById('famPhone').value = '';
-    document.getElementById('addFamilyModal').classList.add('show');
-    setTimeout(function() { document.getElementById('famLabel').focus(); }, 100);
-  }
-  function cancelAddFamily() {
-    document.getElementById('addFamilyModal').classList.remove('show');
-  }
-  function saveNewFamily() {
-    var label = document.getElementById('famLabel').value.trim();
-    var name = document.getElementById('famName').value.trim();
-    var phone = document.getElementById('famPhone').value.trim();
-    if (!label || !name || phone.length < 9) { alert(t('err.fill')); return; }
-    var data = getProfiles();
-    var newId = 'fam_' + Date.now();
-    data.profiles.push({ id: newId, label: label, name: name, phone: phone });
-    data.activeId = newId;
-    saveProfiles(data);
-    document.getElementById('uName').value = name;
-    document.getElementById('uPhone').value = phone;
-    document.getElementById('addFamilyModal').classList.remove('show');
-    renderProfileChips();
+  // ★ 取得目前表單的關係資訊
+  function getCurrentRelationInfo() {
+    var rel = document.querySelector('input[name="relation"]:checked').value;
+    var label;
+    if (rel === 'self') {
+      label = t('relation.self'); // '本人'
+    } else {
+      label = document.getElementById('relationLabel').value.trim();
+    }
+    return { relation: rel, label: label };
   }
   
-  // 上傳成功後把當前資料存為 profile（self 或 active family）
+  // ★ 切換本人 / 非本人
+  function onRelationChange() {
+    var rel = document.querySelector('input[name="relation"]:checked').value;
+    document.getElementById('relOptSelf').classList.toggle('active', rel === 'self');
+    document.getElementById('relOptOther').classList.toggle('active', rel === 'other');
+    var labelInput = document.getElementById('relationLabel');
+    if (rel === 'other') {
+      labelInput.style.display = '';
+    } else {
+      labelInput.style.display = 'none';
+      labelInput.value = '';
+    }
+  }
+  
+  // ★ 上傳成功後存當前資料為新 profile 或更新
   function persistCurrentProfile(name, phone) {
     var data = getProfiles();
-    var activeId = data.activeId;
+    var info = getCurrentRelationInfo();
     
-    // 如果沒有任何 profile，建立預設 self
-    if (data.profiles.length === 0) {
-      data.profiles.push({ id: 'self', label: t('profile.self'), name: name, phone: phone });
-      data.activeId = 'self';
-    } else if (activeId) {
-      // 更新現有 active profile
-      var p = data.profiles.find(function(x) { return x.id === activeId; });
-      if (p) { p.name = name; p.phone = phone; }
+    // 找是否已存在：本人用 relation 比對；非本人用 (label + name) 比對
+    var existing = data.profiles.find(function(p) {
+      if (info.relation === 'self') return p.relation === 'self';
+      return p.relation === 'other' && p.label === info.label && p.name === name;
+    });
+    
+    if (existing) {
+      existing.name = name;
+      existing.phone = phone;
+      existing.updatedAt = Date.now();
     } else {
-      // 沒 active 但有 profiles → 把 self 補上
-      var self = data.profiles.find(function(x) { return x.id === 'self'; });
-      if (self) { self.name = name; self.phone = phone; data.activeId = 'self'; }
-      else { data.profiles.unshift({ id: 'self', label: t('profile.self'), name: name, phone: phone }); data.activeId = 'self'; }
+      data.profiles.push({
+        id: 'p_' + Date.now(),
+        label: info.label,
+        relation: info.relation,
+        name: name,
+        phone: phone,
+        updatedAt: Date.now()
+      });
     }
+    // 最近使用排到最前面
+    data.profiles.sort(function(a, b) { return (b.updatedAt || 0) - (a.updatedAt || 0); });
     saveProfiles(data);
   }
   
@@ -1024,12 +1097,23 @@
     var name = document.getElementById('uName').value.trim();
     var phone = document.getElementById('uPhone').value.trim();
     if (!name || phone.length < 9) return alert(t('err.fill'));
+    
+    // ★ 關係檢查：非本人必填關係名稱
+    var info = getCurrentRelationInfo();
+    if (info.relation === 'other' && !info.label) {
+      return alert(t('relation.required'));
+    }
+    
     if (!document.getElementById('privacyConsentUpload').checked) return alert(t('err.consent'));
     
-    // active profile 顯示
-    var data = getProfiles();
-    var active = data.profiles.find(function(p) { return p.id === data.activeId; });
-    document.getElementById('confirmProfile').textContent = active ? active.label : t('profile.self');
+    // 只有「非本人」才在 confirm modal 顯示「代誰領藥」這一行
+    if (info.relation === 'other') {
+      document.getElementById('confirmProfile').textContent = info.label;
+      document.getElementById('confirmProfileRow').style.display = '';
+    } else {
+      document.getElementById('confirmProfileRow').style.display = 'none';
+    }
+    
     document.getElementById('confirmName').textContent = name;
     document.getElementById('confirmPhone').textContent = phone;
     document.getElementById('confirmPhotos').textContent = uploadedImages.length + ' 張';
@@ -1251,16 +1335,13 @@
     document.getElementById('view-home').classList.add('hidden-mode'); 
     document.getElementById('view-form').classList.remove('hidden-mode'); 
     
-    // ★ 套用 active profile（#1 自動帶入）
-    var data = getProfiles();
-    if (data.profiles.length > 0 && data.activeId) {
-      var p = data.profiles.find(function(x) { return x.id === data.activeId; });
-      if (p) {
-        document.getElementById('uName').value = p.name || '';
-        document.getElementById('uPhone').value = p.phone || '';
-      }
-    }
-    renderProfileChips();
+    // ★ 進入表單時：清空舊輸入、預設「本人」、顯示「上次紀錄」清單
+    document.getElementById('uName').value = '';
+    document.getElementById('uPhone').value = '';
+    document.getElementById('relationLabel').value = '';
+    document.querySelector('input[name="relation"][value="self"]').checked = true;
+    onRelationChange();
+    renderProfileQuickPick();
   }
 
   function openStatus() { goHome(); document.getElementById('view-home').classList.add('hidden-mode'); document.getElementById('view-status').classList.remove('hidden-mode'); fetchUploadHistory(); }
