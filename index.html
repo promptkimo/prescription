@@ -124,6 +124,65 @@
     
     /* ★ 送出鎖定倒數提示 */
     .submit-locked-tip { font-size: 0.82rem; color: #999; text-align: center; margin-top: 8px; }
+    
+    /* ★ 家人/本人 profile chips */
+    .profile-chips-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+    .profile-chip { display: inline-flex; align-items: center; gap: 6px; background: #f0f0f0; border: 2px solid transparent; border-radius: 18px; padding: 6px 14px; cursor: pointer; font-size: 0.88rem; color: #555; user-select: none; transition: all 0.15s; }
+    .profile-chip.active { background: #E8F5E9; border-color: #06C755; color: #2E7D32; font-weight: bold; }
+    .profile-chip .del-btn { color: #C62828; opacity: 0.5; font-size: 0.7rem; padding: 0 2px; }
+    .profile-chip .del-btn:hover { opacity: 1; }
+    .profile-chip.add { background: white; border: 2px dashed #B0BEC5; color: #607D8B; }
+    .profile-chip.add:hover { border-color: #06C755; color: #06C755; }
+    .profile-hint { font-size: 0.78rem; color: #888; margin-bottom: 10px; }
+    
+    /* ★ 拍照/相簿兩顆按鈕 */
+    .photo-action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
+    .photo-action-btn { background: white; border: 2px solid #06C755; color: #06C755; padding: 14px 8px; border-radius: 10px; font-weight: bold; font-size: 0.95rem; cursor: pointer; transition: all 0.15s; }
+    .photo-action-btn:hover { background: #E8F5E9; }
+    .photo-action-btn .ico { font-size: 1.6rem; display: block; margin-bottom: 4px; }
+    
+    /* ★ 縮圖預覽（含刪除按鈕） */
+    .preview-thumb { position: relative; cursor: pointer; }
+    .preview-thumb img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; border: 1px solid #ddd; }
+    .preview-thumb .del-x { position: absolute; top: -6px; right: -6px; width: 24px; height: 24px; background: #C62828; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+    .preview-count { font-size: 0.8rem; color: #06C755; margin-bottom: 6px; font-weight: bold; }
+    
+    /* ★ 大圖預覽 lightbox */
+    .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 11000; display: none; align-items: center; justify-content: center; padding: 20px; }
+    .lightbox.show { display: flex; }
+    .lightbox img { max-width: 100%; max-height: 95vh; object-fit: contain; }
+    .lightbox .close-btn { position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,0.15); color: white; border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 1.4rem; cursor: pointer; }
+    
+    /* ★ 送出前確認 modal */
+    .confirm-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px; }
+    .confirm-overlay.show { display: flex; }
+    .confirm-card { background: white; border-radius: 14px; padding: 22px 20px; max-width: 380px; width: 100%; box-shadow: 0 10px 30px rgba(0,0,0,0.18); }
+    .confirm-card h5 { font-weight: bold; color: #1976D2; margin-bottom: 12px; text-align: center; }
+    .confirm-row { padding: 8px 10px; background: #FAFAFA; border-radius: 6px; margin-bottom: 6px; display: flex; gap: 10px; }
+    .confirm-row .label { color: #888; min-width: 70px; font-size: 0.85rem; }
+    .confirm-row .val { font-weight: bold; color: #333; flex: 1; word-break: break-all; }
+    .confirm-card .btn-row { display: flex; gap: 8px; margin-top: 14px; }
+    .confirm-card .btn-row button { flex: 1; padding: 12px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; font-size: 0.95rem; }
+    .confirm-card .btn-back { background: #f0f0f0; color: #555; }
+    .confirm-card .btn-confirm { background: #06C755; color: white; }
+    
+    /* ★ 新增家人 modal */
+    .add-fam-card { background: white; border-radius: 14px; padding: 22px 20px; max-width: 360px; width: 100%; }
+    .add-fam-card h5 { font-weight: bold; color: #2E7D32; margin-bottom: 14px; text-align: center; }
+    .add-fam-card input { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 10px; font-size: 0.95rem; }
+    .add-fam-card .btn-row { display: flex; gap: 8px; margin-top: 8px; }
+    .add-fam-card .btn-row button { flex: 1; padding: 11px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; }
+    
+    /* ★ 慶祝彩帶（純 CSS） */
+    .confetti-wrap { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 9000; }
+    .confetti { position: absolute; width: 8px; height: 14px; opacity: 0.9; animation: confetti-fall 2.5s ease-in forwards; }
+    @keyframes confetti-fall {
+      0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+    }
+    
+    /* ★ 分享按鈕 */
+    .share-btn { background: #00B900; color: white; border: none; padding: 10px 18px; border-radius: 22px; font-weight: bold; cursor: pointer; margin-top: 14px; box-shadow: 0 2px 6px rgba(0,185,0,0.25); }
   </style>
 </head>
 <body>
@@ -229,6 +288,10 @@
       <h5 class="fw-bold text-success mb-2"><i class="bi bi-person-lines-fill"></i> <span data-i18n="upload.title">建立領藥檔案</span></h5>
       <p class="small text-muted mb-3" data-i18n="upload.hint">請點擊下方選擇相片。若僅需綁定 LINE，可不傳照片直接送出！</p>
       
+      <!-- ★ 病患/家人 profile chips（#1 自動帶入 + #5 多病患） -->
+      <div id="profileChipsRow" class="profile-chips-row" style="display:none;"></div>
+      <div id="profileHint" class="profile-hint" style="display:none;"></div>
+      
       <!-- ★ 拍照指引（可摺疊） -->
       <details class="photo-tips-card">
         <summary><span data-i18n="upload.tips.title">📸 如何拍出清晰處方箋</span></summary>
@@ -248,19 +311,29 @@
       </details>
       
       <div id="cameraSection" class="mb-3">
+        <div id="previewCount" class="preview-count" style="display:none;"></div>
         <div class="row g-2 mb-2" id="previewGrid"></div>
         
-        <div class="p-3 border rounded bg-white text-center shadow-sm">
-          <label class="form-label text-success fw-bold mb-2" data-i18n="upload.photo.label">📷 請選擇處方照片</label>
-          <input type="file" id="fileInput" accept="image/*" class="form-control" onchange="handleFile(this)">
-          <div class="text-muted small mt-2" data-i18n="upload.photo.hint">(無處方箋可略過)</div>
+        <!-- ★ 拍照 / 相簿 兩顆獨立按鈕 -->
+        <div class="photo-action-grid">
+          <button type="button" class="photo-action-btn" onclick="document.getElementById('cameraInput').click()">
+            <span class="ico">📸</span>
+            <span data-i18n="upload.btn.camera">打開相機拍照</span>
+          </button>
+          <button type="button" class="photo-action-btn" onclick="document.getElementById('galleryInput').click()">
+            <span class="ico">🖼️</span>
+            <span data-i18n="upload.btn.gallery">從相簿選照片</span>
+          </button>
         </div>
+        <input type="file" id="cameraInput" accept="image/*" capture="environment" onchange="handleFile(this)" style="display:none;">
+        <input type="file" id="galleryInput" accept="image/*" onchange="handleFile(this)" style="display:none;">
+        <div class="text-muted small mt-2 text-center" data-i18n="upload.photo.hint">(無處方箋可略過)</div>
       </div>
       
       <div class="mb-3 mt-3"><label class="form-label small fw-bold" data-i18n="upload.name.label">領藥人姓名</label><input type="text" class="form-control" id="uName" data-i18n-ph="upload.name.ph" placeholder="請輸入姓名"></div>
       <div class="mb-3"><label class="form-label small fw-bold" data-i18n="upload.phone.label">聯絡電話</label><input type="tel" class="form-control" id="uPhone" data-i18n-ph="upload.phone.ph" placeholder="請輸入手機號碼"></div>
       <div class="form-check mb-4"><input class="form-check-input" type="checkbox" id="privacyConsentUpload"><label class="form-check-label text-muted small" for="privacyConsentUpload" data-i18n="upload.consent">我已同意隱私權保護與服務條款，並授權藥局建檔通知。</label></div>
-      <button id="submitBtn" class="btn btn-success w-100 fw-bold py-2 shadow-sm fs-5" onclick="submitData()"><span data-i18n="upload.submit">確認送出資料</span></button>
+      <button id="submitBtn" class="btn btn-success w-100 fw-bold py-2 shadow-sm fs-5" onclick="showSubmitConfirm()"><span data-i18n="upload.submit">確認送出資料</span></button>
       <div id="submitLockTip" class="submit-locked-tip" style="display:none;"></div>
     </div>
   </div>
@@ -309,8 +382,46 @@
     </div>
     
     <button class="btn btn-outline-secondary rounded-pill px-5 fw-bold mt-2" onclick="closeLiffWindow()"><span data-i18n="success.close">關閉視窗</span></button>
+    <button class="share-btn" onclick="shareToFamily()" id="shareBtn"><i class="bi bi-share-fill"></i> <span data-i18n="success.share">分享給家人</span></button>
   </div>
 </div>
+
+<!-- ★ 照片大圖預覽 lightbox（#3） -->
+<div id="lightbox" class="lightbox" onclick="closeLightbox()">
+  <button class="close-btn" onclick="closeLightbox()">✕</button>
+  <img id="lightboxImg" src="">
+</div>
+
+<!-- ★ 送出前確認 modal（#4） -->
+<div id="submitConfirmModal" class="confirm-overlay">
+  <div class="confirm-card">
+    <h5 data-i18n="confirm.title">請確認您的資料</h5>
+    <div class="confirm-row"><span class="label" data-i18n="confirm.profile">代誰領藥</span><span class="val" id="confirmProfile">本人</span></div>
+    <div class="confirm-row"><span class="label" data-i18n="confirm.name">姓名</span><span class="val" id="confirmName"></span></div>
+    <div class="confirm-row"><span class="label" data-i18n="confirm.phone">電話</span><span class="val" id="confirmPhone"></span></div>
+    <div class="confirm-row"><span class="label" data-i18n="confirm.photos">照片</span><span class="val" id="confirmPhotos"></span></div>
+    <div class="btn-row">
+      <button class="btn-back" onclick="cancelSubmitConfirm()"><span data-i18n="confirm.back">回去修改</span></button>
+      <button class="btn-confirm" onclick="confirmSubmit()"><span data-i18n="confirm.submit">確認送出</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- ★ 新增家人 modal（#5） -->
+<div id="addFamilyModal" class="confirm-overlay">
+  <div class="add-fam-card">
+    <h5 data-i18n="family.add.title">新增家人領藥</h5>
+    <input type="text" id="famLabel" data-i18n-ph="family.add.label" placeholder="標籤（例如：媽媽）" maxlength="8">
+    <input type="text" id="famName" data-i18n-ph="family.add.name" placeholder="家人姓名">
+    <input type="tel" id="famPhone" data-i18n-ph="family.add.phone" placeholder="家人電話">
+    <div class="btn-row">
+      <button class="btn-back" onclick="cancelAddFamily()"><span data-i18n="confirm.back">取消</span></button>
+      <button class="btn-confirm" onclick="saveNewFamily()"><span data-i18n="family.add.save">儲存</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- ★ 慶祝彩帶（#9）：動態插入 div.confetti -->
 
 <!-- ★ 照片品質警告 modal -->
 <div id="qualityWarningModal" class="quality-overlay hidden-mode">
@@ -392,7 +503,19 @@
       'success.estimate': '藥師預計 30 分鐘內處理完成',
       'success.call': '撥打藥局', 'success.close': '關閉視窗',
       'pharmacy.addr': '地址', 'pharmacy.phone': '電話', 'pharmacy.hours': '營業',
-      'submit.locked': '✅ 已送出，{s} 秒後才能再上傳'
+      'submit.locked': '✅ 已送出，{s} 秒後才能再上傳',
+      'upload.btn.camera': '打開相機拍照', 'upload.btn.gallery': '從相簿選照片',
+      'confirm.title': '請確認您的資料', 'confirm.profile': '代誰領藥',
+      'confirm.name': '姓名', 'confirm.phone': '電話', 'confirm.photos': '照片',
+      'confirm.back': '回去修改', 'confirm.submit': '確認送出',
+      'profile.self': '本人', 'profile.hint.saved': '上次填的資料，可以修改',
+      'profile.add': '+ 新增家人',
+      'family.add.title': '新增家人領藥', 'family.add.label': '標籤（例如：媽媽）',
+      'family.add.name': '家人姓名', 'family.add.phone': '家人電話',
+      'family.add.save': '儲存',
+      'family.del.confirm': '確定要刪除這個家人的記錄嗎？',
+      'success.share': '分享給家人',
+      'share.copied': '✅ 連結已複製，可貼給家人'
     },
     'vi': {
       'brand.subtitle': 'Hiệu Thuốc Lawson · Dịch Vụ Đám Mây',
@@ -434,7 +557,21 @@
       'success.estimate': 'Dược sĩ dự kiến xử lý trong vòng 30 phút',
       'success.call': 'Gọi hiệu thuốc', 'success.close': 'Đóng cửa sổ',
       'pharmacy.addr': 'Địa chỉ', 'pharmacy.phone': 'Điện thoại', 'pharmacy.hours': 'Giờ mở cửa',
-      'submit.locked': '✅ Đã gửi, có thể gửi lại sau {s} giây'
+      'submit.locked': '✅ Đã gửi, có thể gửi lại sau {s} giây',
+      'upload.btn.camera': 'Mở máy ảnh', 'upload.btn.gallery': 'Chọn từ thư viện',
+      'confirm.title': 'Vui lòng xác nhận thông tin',
+      'confirm.profile': 'Nhận thuốc cho',
+      'confirm.name': 'Tên', 'confirm.phone': 'Điện thoại', 'confirm.photos': 'Ảnh',
+      'confirm.back': 'Sửa lại', 'confirm.submit': 'Xác nhận gửi',
+      'profile.self': 'Bản thân', 'profile.hint.saved': 'Dữ liệu lần trước, có thể chỉnh sửa',
+      'profile.add': '+ Thêm người nhà',
+      'family.add.title': 'Thêm người nhà nhận thuốc',
+      'family.add.label': 'Nhãn (vd: Mẹ)',
+      'family.add.name': 'Tên người nhà', 'family.add.phone': 'Số điện thoại',
+      'family.add.save': 'Lưu',
+      'family.del.confirm': 'Xoá bản ghi người nhà này?',
+      'success.share': 'Chia sẻ với người nhà',
+      'share.copied': '✅ Đã sao chép link'
     },
     'en': {
       'brand.subtitle': 'Lawson Pharmacy · Cloud Service',
@@ -480,7 +617,20 @@
       'success.estimate': 'Pharmacist will process within 30 minutes',
       'success.call': 'Call Pharmacy', 'success.close': 'Close',
       'pharmacy.addr': 'Address', 'pharmacy.phone': 'Phone', 'pharmacy.hours': 'Hours',
-      'submit.locked': '✅ Submitted. Can submit again in {s} seconds'
+      'submit.locked': '✅ Submitted. Can submit again in {s} seconds',
+      'upload.btn.camera': 'Open Camera', 'upload.btn.gallery': 'From Gallery',
+      'confirm.title': 'Please Confirm Your Information', 'confirm.profile': 'Pickup For',
+      'confirm.name': 'Name', 'confirm.phone': 'Phone', 'confirm.photos': 'Photos',
+      'confirm.back': 'Back to Edit', 'confirm.submit': 'Confirm & Submit',
+      'profile.self': 'Self', 'profile.hint.saved': 'Previous data, you can edit',
+      'profile.add': '+ Add Family',
+      'family.add.title': 'Add Family Member',
+      'family.add.label': 'Label (e.g., Mom)',
+      'family.add.name': 'Family Name', 'family.add.phone': 'Family Phone',
+      'family.add.save': 'Save',
+      'family.del.confirm': 'Delete this family member record?',
+      'success.share': 'Share with Family',
+      'share.copied': '✅ Link copied, you can paste to family'
     },
     'id': {
       'brand.subtitle': 'Apotek Lawson · Layanan Cloud',
@@ -522,7 +672,21 @@
       'success.estimate': 'Apoteker akan memproses dalam 30 menit',
       'success.call': 'Telepon Apotek', 'success.close': 'Tutup',
       'pharmacy.addr': 'Alamat', 'pharmacy.phone': 'Telepon', 'pharmacy.hours': 'Jam Buka',
-      'submit.locked': '✅ Sudah dikirim, bisa kirim lagi setelah {s} detik'
+      'submit.locked': '✅ Sudah dikirim, bisa kirim lagi setelah {s} detik',
+      'upload.btn.camera': 'Buka Kamera', 'upload.btn.gallery': 'Dari Galeri',
+      'confirm.title': 'Mohon Konfirmasi Data Anda',
+      'confirm.profile': 'Untuk',
+      'confirm.name': 'Nama', 'confirm.phone': 'Telepon', 'confirm.photos': 'Foto',
+      'confirm.back': 'Kembali Ubah', 'confirm.submit': 'Konfirmasi Kirim',
+      'profile.self': 'Sendiri', 'profile.hint.saved': 'Data sebelumnya, bisa diubah',
+      'profile.add': '+ Tambah Keluarga',
+      'family.add.title': 'Tambah Anggota Keluarga',
+      'family.add.label': 'Label (mis: Ibu)',
+      'family.add.name': 'Nama Keluarga', 'family.add.phone': 'Telepon',
+      'family.add.save': 'Simpan',
+      'family.del.confirm': 'Hapus catatan keluarga ini?',
+      'success.share': 'Bagikan ke Keluarga',
+      'share.copied': '✅ Tautan disalin'
     }
   };
 
@@ -721,6 +885,212 @@
   let lineUserId = "", lineDisplayName = "", linePictureUrl = "";
   let uploadedImages = []; 
   
+  // ═══════════════════════════════════════════════════════════
+  // ★ Profile 系統（#1 自動帶入 + #5 多病患/家人模式）
+  // ═══════════════════════════════════════════════════════════
+  function getProfiles() {
+    try {
+      var raw = localStorage.getItem('lawsonProfiles');
+      var obj = raw ? JSON.parse(raw) : null;
+      if (!obj || !obj.profiles) return { profiles: [], activeId: null };
+      return obj;
+    } catch(e) { return { profiles: [], activeId: null }; }
+  }
+  
+  function saveProfiles(obj) {
+    try { localStorage.setItem('lawsonProfiles', JSON.stringify(obj)); } catch(e) {}
+  }
+  
+  function renderProfileChips() {
+    var row = document.getElementById('profileChipsRow');
+    var hint = document.getElementById('profileHint');
+    var data = getProfiles();
+    var profiles = data.profiles || [];
+    
+    // 沒有 profile 就完全隱藏
+    if (profiles.length === 0) {
+      row.style.display = 'none';
+      hint.style.display = 'none';
+      return;
+    }
+    
+    var html = profiles.map(function(p) {
+      var isActive = p.id === data.activeId;
+      var del = (p.id !== 'self') ? '<span class="del-btn" onclick="event.stopPropagation();deleteProfile(\'' + p.id + '\')" title="刪除">✕</span>' : '';
+      return '<div class="profile-chip' + (isActive ? ' active' : '') + '" onclick="switchProfile(\'' + p.id + '\')">' +
+        '<span>' + (p.id === 'self' ? '👤' : '👨‍👩‍👧') + ' ' + escapeHTML(p.label) + '</span>' + del +
+      '</div>';
+    }).join('');
+    html += '<div class="profile-chip add" onclick="openAddFamily()">' + t('profile.add') + '</div>';
+    
+    row.innerHTML = html;
+    row.style.display = 'flex';
+    hint.textContent = t('profile.hint.saved');
+    hint.style.display = 'block';
+  }
+  
+  function switchProfile(id) {
+    var data = getProfiles();
+    var p = data.profiles.find(function(x) { return x.id === id; });
+    if (!p) return;
+    data.activeId = id;
+    saveProfiles(data);
+    document.getElementById('uName').value = p.name || '';
+    document.getElementById('uPhone').value = p.phone || '';
+    renderProfileChips();
+  }
+  
+  function deleteProfile(id) {
+    if (!confirm(t('family.del.confirm'))) return;
+    var data = getProfiles();
+    data.profiles = data.profiles.filter(function(p) { return p.id !== id; });
+    if (data.activeId === id) data.activeId = data.profiles.length > 0 ? data.profiles[0].id : null;
+    saveProfiles(data);
+    if (data.activeId) switchProfile(data.activeId);
+    else renderProfileChips();
+  }
+  
+  function openAddFamily() {
+    document.getElementById('famLabel').value = '';
+    document.getElementById('famName').value = '';
+    document.getElementById('famPhone').value = '';
+    document.getElementById('addFamilyModal').classList.add('show');
+    setTimeout(function() { document.getElementById('famLabel').focus(); }, 100);
+  }
+  function cancelAddFamily() {
+    document.getElementById('addFamilyModal').classList.remove('show');
+  }
+  function saveNewFamily() {
+    var label = document.getElementById('famLabel').value.trim();
+    var name = document.getElementById('famName').value.trim();
+    var phone = document.getElementById('famPhone').value.trim();
+    if (!label || !name || phone.length < 9) { alert(t('err.fill')); return; }
+    var data = getProfiles();
+    var newId = 'fam_' + Date.now();
+    data.profiles.push({ id: newId, label: label, name: name, phone: phone });
+    data.activeId = newId;
+    saveProfiles(data);
+    document.getElementById('uName').value = name;
+    document.getElementById('uPhone').value = phone;
+    document.getElementById('addFamilyModal').classList.remove('show');
+    renderProfileChips();
+  }
+  
+  // 上傳成功後把當前資料存為 profile（self 或 active family）
+  function persistCurrentProfile(name, phone) {
+    var data = getProfiles();
+    var activeId = data.activeId;
+    
+    // 如果沒有任何 profile，建立預設 self
+    if (data.profiles.length === 0) {
+      data.profiles.push({ id: 'self', label: t('profile.self'), name: name, phone: phone });
+      data.activeId = 'self';
+    } else if (activeId) {
+      // 更新現有 active profile
+      var p = data.profiles.find(function(x) { return x.id === activeId; });
+      if (p) { p.name = name; p.phone = phone; }
+    } else {
+      // 沒 active 但有 profiles → 把 self 補上
+      var self = data.profiles.find(function(x) { return x.id === 'self'; });
+      if (self) { self.name = name; self.phone = phone; data.activeId = 'self'; }
+      else { data.profiles.unshift({ id: 'self', label: t('profile.self'), name: name, phone: phone }); data.activeId = 'self'; }
+    }
+    saveProfiles(data);
+  }
+  
+  function escapeHTML(s) {
+    return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+  
+  // ═══════════════════════════════════════════════════════════
+  // ★ 縮圖刪除 + 大圖預覽 lightbox（#3）
+  // ═══════════════════════════════════════════════════════════
+  function removeUploadedImage(idx) {
+    uploadedImages.splice(idx, 1);
+    renderPreviews();
+  }
+  function openLightbox(src) {
+    document.getElementById('lightboxImg').src = src;
+    document.getElementById('lightbox').classList.add('show');
+  }
+  function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('show');
+  }
+  
+  // ═══════════════════════════════════════════════════════════
+  // ★ 送出前確認 modal（#4）
+  // ═══════════════════════════════════════════════════════════
+  function showSubmitConfirm() {
+    var name = document.getElementById('uName').value.trim();
+    var phone = document.getElementById('uPhone').value.trim();
+    if (!name || phone.length < 9) return alert(t('err.fill'));
+    if (!document.getElementById('privacyConsentUpload').checked) return alert(t('err.consent'));
+    
+    // active profile 顯示
+    var data = getProfiles();
+    var active = data.profiles.find(function(p) { return p.id === data.activeId; });
+    document.getElementById('confirmProfile').textContent = active ? active.label : t('profile.self');
+    document.getElementById('confirmName').textContent = name;
+    document.getElementById('confirmPhone').textContent = phone;
+    document.getElementById('confirmPhotos').textContent = uploadedImages.length + ' 張';
+    document.getElementById('submitConfirmModal').classList.add('show');
+  }
+  function cancelSubmitConfirm() {
+    document.getElementById('submitConfirmModal').classList.remove('show');
+  }
+  function confirmSubmit() {
+    document.getElementById('submitConfirmModal').classList.remove('show');
+    submitData();
+  }
+  
+  // ═══════════════════════════════════════════════════════════
+  // ★ 慶祝彩帶（#9）
+  // ═══════════════════════════════════════════════════════════
+  function triggerConfetti() {
+    var colors = ['#06C755', '#FFC107', '#2196F3', '#E91E63', '#9C27B0', '#FF5722'];
+    var wrap = document.createElement('div');
+    wrap.className = 'confetti-wrap';
+    for (var i = 0; i < 60; i++) {
+      var c = document.createElement('div');
+      c.className = 'confetti';
+      c.style.background = colors[Math.floor(Math.random() * colors.length)];
+      c.style.left = (Math.random() * 100) + 'vw';
+      c.style.animationDelay = (Math.random() * 0.6) + 's';
+      c.style.animationDuration = (1.8 + Math.random() * 1.4) + 's';
+      c.style.transform = 'rotate(' + (Math.random() * 360) + 'deg)';
+      wrap.appendChild(c);
+    }
+    document.body.appendChild(wrap);
+    setTimeout(function() { wrap.remove(); }, 3500);
+  }
+  
+  // ═══════════════════════════════════════════════════════════
+  // ★ 分享給家人（#8）
+  // ═══════════════════════════════════════════════════════════
+  function shareToFamily() {
+    var liffUrl = 'https://liff.line.me/' + LIFF_ID;
+    var shareText = '樂森藥局 · LINE 領藥通知服務\n上傳處方箋自動辨識、領藥日自動通知\n' + liffUrl;
+    
+    // 優先用 LIFF shareTargetPicker
+    if (typeof liff !== 'undefined' && liff.shareTargetPicker && liff.isLoggedIn && liff.isLoggedIn()) {
+      liff.shareTargetPicker([{ type: 'text', text: shareText }])
+        .catch(function() { fallbackCopyShare(shareText); });
+    } else {
+      fallbackCopyShare(shareText);
+    }
+  }
+  function fallbackCopyShare(text) {
+    // 退路：複製連結到剪貼簿
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function() { alert(t('share.copied')); });
+    } else {
+      var ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); alert(t('share.copied')); } catch(e) {}
+      document.body.removeChild(ta);
+    }
+  }
+  
   const NHI_DEPT_MAP = {
     "00":"不分科","01":"家醫科","02":"內科","03":"外科","04":"小兒科","05":"婦產科",
     "06":"骨科","07":"泌尿科","08":"耳鼻喉科","09":"眼科","10":"皮膚科","11":"神經科",
@@ -880,6 +1250,17 @@
     goHome(); 
     document.getElementById('view-home').classList.add('hidden-mode'); 
     document.getElementById('view-form').classList.remove('hidden-mode'); 
+    
+    // ★ 套用 active profile（#1 自動帶入）
+    var data = getProfiles();
+    if (data.profiles.length > 0 && data.activeId) {
+      var p = data.profiles.find(function(x) { return x.id === data.activeId; });
+      if (p) {
+        document.getElementById('uName').value = p.name || '';
+        document.getElementById('uPhone').value = p.phone || '';
+      }
+    }
+    renderProfileChips();
   }
 
   function openStatus() { goHome(); document.getElementById('view-home').classList.add('hidden-mode'); document.getElementById('view-status').classList.remove('hidden-mode'); fetchUploadHistory(); }
@@ -1099,9 +1480,28 @@
   }
 
   function renderPreviews() {
-    const grid = document.getElementById('previewGrid'); grid.innerHTML = '';
-    uploadedImages.forEach((img, i) => {
-      grid.innerHTML += `<div class="col-4"><div class="thumb-wrap"><img src="${img.base64}"><button class="thumb-remove" onclick="uploadedImages.splice(${i},1);renderPreviews();">×</button></div></div>`;
+    const grid = document.getElementById('previewGrid'); 
+    const countEl = document.getElementById('previewCount');
+    grid.innerHTML = '';
+    
+    if (uploadedImages.length === 0) {
+      if (countEl) countEl.style.display = 'none';
+    } else {
+      if (countEl) {
+        countEl.style.display = 'block';
+        countEl.textContent = '📸 共 ' + uploadedImages.length + ' 張照片（點縮圖可放大、右上 ✕ 可刪除）';
+      }
+    }
+    
+    uploadedImages.forEach(function(img, i) {
+      var safe = img.base64.replace(/'/g, "&apos;");
+      grid.innerHTML += 
+        '<div class="col-4">' +
+          '<div class="preview-thumb">' +
+            '<img src="' + img.base64 + '" onclick="openLightbox(this.src)">' +
+            '<div class="del-x" onclick="event.stopPropagation();removeUploadedImage(' + i + ')">✕</div>' +
+          '</div>' +
+        '</div>';
     });
   }
 
@@ -1147,8 +1547,12 @@
         if (hashes && hashes.length > 0) recordUploads(hashes);
         // 啟動 60 秒送出鎖
         startSubmitLock();
+        // ★ 儲存 profile 給下次使用
+        persistCurrentProfile(name, phone);
         
         showSuccessView(res.todayCount || 0);
+        // ★ 觸發彩帶慶祝
+        setTimeout(triggerConfetti, 300);
       } else { alert(res.message); }
     }).catch(() => { 
       document.getElementById('loading').style.display = 'none'; 
