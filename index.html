@@ -196,6 +196,21 @@
     
     /* ★ 分享按鈕 */
     .share-btn { background: #00B900; color: white; border: none; padding: 10px 18px; border-radius: 22px; font-weight: bold; cursor: pointer; margin-top: 14px; box-shadow: 0 2px 6px rgba(0,185,0,0.25); }
+    
+    /* ★ 回診預約頁面 */
+    .rr-tabs { display: flex; gap: 6px; background: #f0f0f0; padding: 4px; border-radius: 10px; margin-bottom: 16px; }
+    .rr-tab { flex: 1; border: none; background: transparent; padding: 10px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; color: #666; font-size: 0.9rem; transition: all 0.15s; }
+    .rr-tab.active { background: white; color: #FB8C00; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+    .rr-section-title { color: #E65100; font-weight: bold; font-size: 0.92rem; margin: 18px 0 10px; padding-bottom: 4px; border-bottom: 1px solid #FFE0B2; }
+    .rr-calc-result { background: linear-gradient(135deg,#FFF3E0 0%,#FFE0B2 100%); border-radius: 10px; padding: 14px; margin-top: 10px; text-align: center; }
+    .rr-calc-result .label { font-size: 0.82rem; color: #888; }
+    .rr-calc-result .date { font-size: 1.35rem; font-weight: bold; color: #E65100; margin-top: 4px; }
+    .rr-chip-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 4px; }
+    .rr-chip { border: 2px solid #FFE0B2; background: white; color: #E65100; padding: 7px 14px; border-radius: 20px; cursor: pointer; font-weight: bold; font-size: 0.88rem; }
+    .rr-chip.active { background: #FB8C00; color: white; border-color: #FB8C00; }
+    .rr-preview { background: #E8F5E9; border: 1px dashed #06C755; border-radius: 10px; padding: 12px; margin-top: 12px; text-align: center; font-size: 0.88rem; color: #2E7D32; }
+    .rr-preview b { color: #06C755; font-size: 1rem; }
+    .rr-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   </style>
 </head>
 <body>
@@ -247,6 +262,11 @@
           <button class="menu-btn" onclick="openStatus()">
             <img src="3.png" class="menu-icon" alt="狀態查詢" onerror="this.style.display='none'">
             <span data-i18n="home.button.status">領藥狀態查詢</span>
+          </button>
+          <!-- ★ 回診通知預約 -->
+          <button class="menu-btn" onclick="openReturnReminder()">
+            <i class="bi bi-calendar-event-fill menu-icon-emoji" style="font-size:2.5rem;color:#FB8C00;"></i>
+            <span data-i18n="home.button.return">📅 回診通知預約</span>
           </button>
           <button class="menu-btn" onclick="openMedHistory()" style="display:none;">
             <img src="4.png" class="menu-icon" alt="雲端藥歷" onerror="this.style.display='none'">
@@ -382,6 +402,84 @@
     <div class="card p-4 shadow-sm border-0">
       <h5 class="fw-bold text-info mb-3"><i class="bi bi-card-checklist"></i> <span data-i18n="status.title">領藥狀態查詢</span></h5>
       <div id="uploadHistoryList"></div>
+    </div>
+  </div>
+
+  <!-- ★ 回診通知預約頁 -->
+  <div id="view-return-reminder" class="hidden-mode sub-view">
+    <div class="back-btn-container"><button class="back-btn" onclick="goHome()"><i class="bi bi-chevron-left"></i> <span data-i18n="back">返回主畫面</span></button></div>
+    <div class="card p-4 shadow-sm border-0 bg-light">
+      <h5 class="fw-bold mb-1" style="color:#FB8C00;"><i class="bi bi-calendar-event"></i> <span data-i18n="rr.title">回診通知預約</span></h5>
+      <p class="small text-muted mb-3" data-i18n="rr.subtitle">系統會在您指定的時間，透過 LINE 提醒您回診</p>
+      
+      <!-- 方式切換 -->
+      <div class="rr-tabs">
+        <button class="rr-tab active" id="rrTabAuto" onclick="rrSwitchTab('auto')" data-i18n="rr.tab.auto">📐 自動計算</button>
+        <button class="rr-tab" id="rrTabManual" onclick="rrSwitchTab('manual')" data-i18n="rr.tab.manual">📅 直接輸入</button>
+      </div>
+      
+      <!-- 方式一：自動計算 -->
+      <div id="rrAutoSection">
+        <div class="mb-2"><label class="form-label small fw-bold" data-i18n="rr.rxdate">處方開立日期</label><input type="date" class="form-control" id="rrRxDate" oninput="rrCalc()"></div>
+        <div class="rr-grid-2">
+          <div class="mb-2"><label class="form-label small fw-bold" data-i18n="rr.days">每次用藥天數</label><input type="number" class="form-control" id="rrDays" placeholder="例如 28" min="1" max="180" oninput="rrCalc()"></div>
+          <div class="mb-2"><label class="form-label small fw-bold" data-i18n="rr.times">領藥次數</label>
+            <select class="form-control" id="rrTimes" onchange="rrCalc()">
+              <option value="1">1 次</option>
+              <option value="2">2 次</option>
+              <option value="3" selected>3 次</option>
+            </select>
+          </div>
+        </div>
+        <div class="rr-calc-result">
+          <div class="label" data-i18n="rr.calc.result">預計回診日</div>
+          <div class="date" id="rrCalcedDate">—</div>
+        </div>
+      </div>
+      
+      <!-- 方式二：直接輸入 -->
+      <div id="rrManualSection" style="display:none;">
+        <div class="mb-2"><label class="form-label small fw-bold" data-i18n="rr.manual.date">預計回診日期</label><input type="date" class="form-control" id="rrManualDate" oninput="rrCalc()"></div>
+      </div>
+      
+      <!-- 通知設定 -->
+      <div class="rr-section-title" data-i18n="rr.notify">🔔 通知設定</div>
+      
+      <div class="mb-2"><label class="form-label small fw-bold" data-i18n="rr.days.ahead">提前幾天通知</label>
+        <div class="rr-chip-row">
+          <button type="button" class="rr-chip active" data-days="1" onclick="rrSetDaysAhead(1)" data-i18n="rr.day1">前 1 天</button>
+          <button type="button" class="rr-chip" data-days="2" onclick="rrSetDaysAhead(2)" data-i18n="rr.day2">前 2 天</button>
+          <button type="button" class="rr-chip" data-days="3" onclick="rrSetDaysAhead(3)" data-i18n="rr.day3">前 3 天</button>
+          <button type="button" class="rr-chip" data-days="5" onclick="rrSetDaysAhead(5)" data-i18n="rr.day5">前 5 天</button>
+          <button type="button" class="rr-chip" data-days="7" onclick="rrSetDaysAhead(7)" data-i18n="rr.day7">前 7 天</button>
+        </div>
+      </div>
+      
+      <div class="mb-2"><label class="form-label small fw-bold" data-i18n="rr.time">通知時間</label>
+        <select class="form-control" id="rrTime" onchange="rrCalc()">
+          <option value="08:00">早上 8:00</option>
+          <option value="09:00" selected>早上 9:00</option>
+          <option value="10:00">早上 10:00</option>
+          <option value="12:00">中午 12:00</option>
+          <option value="14:00">下午 2:00</option>
+          <option value="18:00">傍晚 6:00</option>
+          <option value="20:00">晚上 8:00</option>
+        </select>
+      </div>
+      
+      <!-- 預覽 -->
+      <div class="rr-preview">
+        📲 <span data-i18n="rr.preview.label">將於</span> <b id="rrPreviewTime">—</b> <span data-i18n="rr.preview.push">用 LINE 推送提醒</span>
+      </div>
+      
+      <!-- 病患資料 -->
+      <div class="rr-section-title" data-i18n="rr.person">👤 領藥人資料</div>
+      <div class="mb-2"><label class="form-label small fw-bold" data-i18n="upload.name.label">病人姓名</label><input type="text" class="form-control" id="rrName" placeholder="請輸入病人姓名"></div>
+      <div class="mb-3"><label class="form-label small fw-bold" data-i18n="upload.phone.label">聯絡電話</label><input type="tel" class="form-control" id="rrPhone" placeholder="請輸入手機號碼"></div>
+      
+      <div class="form-check mb-4"><input class="form-check-input" type="checkbox" id="rrConsent"><label class="form-check-label text-muted small" for="rrConsent" data-i18n="rr.consent">我同意透過 LINE 接收回診提醒</label></div>
+      
+      <button class="btn w-100 fw-bold py-2 shadow-sm fs-5" style="background:#FB8C00;color:white;" onclick="rrSubmit()"><i class="bi bi-calendar-check"></i> <span data-i18n="rr.submit">預約回診通知</span></button>
     </div>
   </div>
 
@@ -546,7 +644,20 @@
       'relation.self': '本人', 'relation.other': '非本人（代領）',
       'relation.label.ph': '關係名稱（例如：爸爸、阿公、姪子）',
       'relation.required': '請填寫關係名稱（例如：爸爸、阿公）',
-      'profile.del.confirm': '要刪除這筆紀錄嗎？'
+            'profile.del.confirm': '要刪除這筆紀錄嗎？',
+      'home.button.return': '📅 回診通知預約',
+      'rr.title': '回診通知預約',
+      'rr.subtitle': '系統會在您指定的時間，透過 LINE 提醒您回診',
+      'rr.tab.auto': '📐 自動計算', 'rr.tab.manual': '📅 直接輸入',
+      'rr.rxdate': '處方開立日期', 'rr.days': '每次用藥天數', 'rr.times': '領藥次數',
+      'rr.calc.result': '預計回診日', 'rr.manual.date': '預計回診日期',
+      'rr.notify': '🔔 通知設定', 'rr.days.ahead': '提前幾天通知',
+      'rr.day1': '前 1 天', 'rr.day2': '前 2 天', 'rr.day3': '前 3 天', 'rr.day5': '前 5 天', 'rr.day7': '前 7 天',
+      'rr.time': '通知時間',
+      'rr.preview.label': '將於', 'rr.preview.push': '用 LINE 推送提醒',
+      'rr.person': '👤 領藥人資料',
+      'rr.consent': '我同意透過 LINE 接收回診提醒',
+      'rr.submit': '預約回診通知'
     },
     'vi': {
       'brand.subtitle': 'Hiệu Thuốc Lawson · Dịch Vụ Đám Mây',
@@ -608,7 +719,20 @@
       'relation.self': 'Bản thân', 'relation.other': 'Người khác (Đại diện)',
       'relation.label.ph': 'Quan hệ (vd: Bố, Ông, Cháu)',
       'relation.required': 'Vui lòng nhập tên quan hệ',
-      'profile.del.confirm': 'Xoá bản ghi này?'
+            'profile.del.confirm': 'Xoá bản ghi này?',
+      'home.button.return': '📅 Đặt lịch nhắc tái khám',
+      'rr.title': 'Đặt lịch nhắc tái khám',
+      'rr.subtitle': 'Hệ thống sẽ nhắc qua LINE vào thời điểm bạn chọn',
+      'rr.tab.auto': '📐 Tính tự động', 'rr.tab.manual': '📅 Nhập trực tiếp',
+      'rr.rxdate': 'Ngày kê đơn', 'rr.days': 'Số ngày mỗi lần', 'rr.times': 'Số lần lấy',
+      'rr.calc.result': 'Ngày dự kiến tái khám', 'rr.manual.date': 'Ngày tái khám',
+      'rr.notify': '🔔 Cài đặt nhắc', 'rr.days.ahead': 'Trước bao nhiêu ngày',
+      'rr.day1': 'Trước 1 ngày', 'rr.day2': 'Trước 2 ngày', 'rr.day3': 'Trước 3 ngày', 'rr.day5': 'Trước 5 ngày', 'rr.day7': 'Trước 7 ngày',
+      'rr.time': 'Giờ nhắc',
+      'rr.preview.label': 'Sẽ nhắc lúc', 'rr.preview.push': 'qua LINE',
+      'rr.person': '👤 Thông tin bệnh nhân',
+      'rr.consent': 'Tôi đồng ý nhận nhắc tái khám qua LINE',
+      'rr.submit': 'Đặt lịch nhắc'
     },
     'en': {
       'brand.subtitle': 'Lawson Pharmacy · Cloud Service',
@@ -673,7 +797,20 @@
       'relation.self': 'Self', 'relation.other': 'Other (Pickup For)',
       'relation.label.ph': 'Relation (e.g., Father, Grandpa, Nephew)',
       'relation.required': 'Please enter the relationship name',
-      'profile.del.confirm': 'Delete this saved entry?'
+            'profile.del.confirm': 'Delete this saved entry?',
+      'home.button.return': '📅 Return Visit Reminder',
+      'rr.title': 'Return Visit Reminder',
+      'rr.subtitle': 'You will get a LINE notification at your chosen time',
+      'rr.tab.auto': '📐 Auto Calculate', 'rr.tab.manual': '📅 Direct Input',
+      'rr.rxdate': 'Prescription Date', 'rr.days': 'Days per dose', 'rr.times': 'Refill times',
+      'rr.calc.result': 'Estimated Return Date', 'rr.manual.date': 'Return Visit Date',
+      'rr.notify': '🔔 Notification Settings', 'rr.days.ahead': 'Days in Advance',
+      'rr.day1': '1 day', 'rr.day2': '2 days', 'rr.day3': '3 days', 'rr.day5': '5 days', 'rr.day7': '7 days',
+      'rr.time': 'Notification Time',
+      'rr.preview.label': 'Will notify at', 'rr.preview.push': 'via LINE',
+      'rr.person': '👤 Patient Info',
+      'rr.consent': 'I agree to receive return visit reminders via LINE',
+      'rr.submit': 'Reserve Return Reminder'
     },
     'id': {
       'brand.subtitle': 'Apotek Lawson · Layanan Cloud',
@@ -735,7 +872,20 @@
       'relation.self': 'Sendiri', 'relation.other': 'Orang Lain (Wakil)',
       'relation.label.ph': 'Hubungan (mis: Ayah, Kakek, Keponakan)',
       'relation.required': 'Mohon isi nama hubungan',
-      'profile.del.confirm': 'Hapus catatan ini?'
+            'profile.del.confirm': 'Hapus catatan ini?',
+      'home.button.return': '📅 Pengingat Kontrol Ulang',
+      'rr.title': 'Pengingat Kontrol Ulang',
+      'rr.subtitle': 'Sistem akan mengingatkan via LINE pada waktu yang Anda pilih',
+      'rr.tab.auto': '📐 Hitung Otomatis', 'rr.tab.manual': '📅 Input Langsung',
+      'rr.rxdate': 'Tanggal Resep', 'rr.days': 'Hari per dosis', 'rr.times': 'Jumlah Ambil',
+      'rr.calc.result': 'Perkiraan Tgl Kontrol', 'rr.manual.date': 'Tanggal Kontrol',
+      'rr.notify': '🔔 Pengaturan Notifikasi', 'rr.days.ahead': 'Berapa Hari Sebelumnya',
+      'rr.day1': '1 hari', 'rr.day2': '2 hari', 'rr.day3': '3 hari', 'rr.day5': '5 hari', 'rr.day7': '7 hari',
+      'rr.time': 'Waktu Notifikasi',
+      'rr.preview.label': 'Akan mengingatkan', 'rr.preview.push': 'via LINE',
+      'rr.person': '👤 Data Pasien',
+      'rr.consent': 'Saya setuju menerima pengingat kontrol via LINE',
+      'rr.submit': 'Pesan Pengingat'
     }
   };
 
@@ -1320,7 +1470,9 @@
     document.getElementById('view-status').classList.add('hidden-mode');
     document.getElementById('view-meds').classList.add('hidden-mode');
     document.getElementById('view-success').classList.add('hidden-mode');
-    document.getElementById('view-quickbind-confirm').classList.add('hidden-mode'); // ★ 新增：確認頁也要收起來
+    document.getElementById('view-quickbind-confirm').classList.add('hidden-mode');
+    var rrView = document.getElementById('view-return-reminder');
+    if (rrView) rrView.classList.add('hidden-mode');
   }
 
   // 🌟 核心防禦機制：當使用者點擊「處方上傳」時，檢查並跳脫 LINE
@@ -1357,6 +1509,197 @@
 
   function openStatus() { goHome(); document.getElementById('view-home').classList.add('hidden-mode'); document.getElementById('view-status').classList.remove('hidden-mode'); fetchUploadHistory(); }
   function openMedHistory() { goHome(); document.getElementById('view-home').classList.add('hidden-mode'); document.getElementById('view-meds').classList.remove('hidden-mode'); resetMedQuery(); }
+  
+  // ═══════════════════════════════════════════════════════════
+  // ★ 回診通知預約
+  // ═══════════════════════════════════════════════════════════
+  var _rrMode = 'auto';
+  var _rrDaysAhead = 1;
+  
+  function openReturnReminder() {
+    goHome();
+    document.getElementById('view-home').classList.add('hidden-mode');
+    document.getElementById('view-return-reminder').classList.remove('hidden-mode');
+    
+    // 預設處方開立日 = 今天
+    var today = new Date();
+    var todayStr = today.toISOString().split('T')[0];
+    document.getElementById('rrRxDate').value = todayStr;
+    document.getElementById('rrDays').value = '28';
+    document.getElementById('rrTimes').value = '3';
+    document.getElementById('rrManualDate').value = '';
+    document.getElementById('rrConsent').checked = false;
+    
+    // 自動帶入上次 profile（沿用 lawsonProfiles）
+    var data = getProfiles();
+    if (data.profiles && data.profiles.length > 0) {
+      var p = data.profiles[0]; // 最近使用的
+      document.getElementById('rrName').value = p.name || '';
+      document.getElementById('rrPhone').value = p.phone || '';
+    } else {
+      document.getElementById('rrName').value = '';
+      document.getElementById('rrPhone').value = '';
+    }
+    
+    rrSwitchTab('auto');
+    rrCalc();
+  }
+  
+  function rrSwitchTab(mode) {
+    _rrMode = mode;
+    document.getElementById('rrTabAuto').classList.toggle('active', mode === 'auto');
+    document.getElementById('rrTabManual').classList.toggle('active', mode === 'manual');
+    document.getElementById('rrAutoSection').style.display = (mode === 'auto') ? '' : 'none';
+    document.getElementById('rrManualSection').style.display = (mode === 'manual') ? '' : 'none';
+    rrCalc();
+  }
+  
+  function rrSetDaysAhead(n) {
+    _rrDaysAhead = n;
+    document.querySelectorAll('.rr-chip').forEach(function(b) {
+      b.classList.toggle('active', parseInt(b.getAttribute('data-days')) === n);
+    });
+    rrCalc();
+  }
+  
+  function rrGetReturnDate() {
+    if (_rrMode === 'auto') {
+      var rxStr = document.getElementById('rrRxDate').value;
+      var days = parseInt(document.getElementById('rrDays').value) || 0;
+      var times = parseInt(document.getElementById('rrTimes').value) || 1;
+      if (!rxStr || !days) return null;
+      var rxDate = new Date(rxStr.replace(/-/g, '/'));
+      if (isNaN(rxDate.getTime())) return null;
+      rxDate.setDate(rxDate.getDate() + days * times);
+      return rxDate;
+    } else {
+      var v = document.getElementById('rrManualDate').value;
+      if (!v) return null;
+      var d = new Date(v.replace(/-/g, '/'));
+      if (isNaN(d.getTime())) return null;
+      return d;
+    }
+  }
+  
+  function rrCalc() {
+    var returnDate = rrGetReturnDate();
+    
+    // 自動計算的回診日顯示
+    if (_rrMode === 'auto') {
+      var el = document.getElementById('rrCalcedDate');
+      if (returnDate) {
+        el.textContent = rrFmtDate(returnDate);
+      } else {
+        el.textContent = '—';
+      }
+    }
+    
+    // 通知時間預覽
+    var prevEl = document.getElementById('rrPreviewTime');
+    if (!returnDate) { prevEl.textContent = '—'; return; }
+    
+    var notifyAt = new Date(returnDate);
+    notifyAt.setDate(notifyAt.getDate() - _rrDaysAhead);
+    var timeStr = document.getElementById('rrTime').value;
+    var hm = timeStr.split(':');
+    notifyAt.setHours(parseInt(hm[0]), parseInt(hm[1]), 0, 0);
+    
+    // 顯示星期幾
+    var weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+    var w = weekdays[notifyAt.getDay()];
+    prevEl.textContent = rrFmtDate(notifyAt) + ' (週' + w + ') ' + timeStr;
+  }
+  
+  function rrFmtDate(d) {
+    var y = d.getFullYear();
+    var m = String(d.getMonth() + 1).padStart(2, '0');
+    var day = String(d.getDate()).padStart(2, '0');
+    return y + '/' + m + '/' + day;
+  }
+  
+  function rrSubmit() {
+    var name = document.getElementById('rrName').value.trim();
+    var phone = document.getElementById('rrPhone').value.trim();
+    if (!name) { alert('請輸入病人姓名'); return; }
+    if (phone.length < 9) { alert('請輸入正確電話'); return; }
+    
+    var returnDate = rrGetReturnDate();
+    if (!returnDate) { alert('請完整填寫回診相關資訊'); return; }
+    
+    // 通知時間不能過去
+    var notifyAt = new Date(returnDate);
+    notifyAt.setDate(notifyAt.getDate() - _rrDaysAhead);
+    var timeStr = document.getElementById('rrTime').value;
+    var hm = timeStr.split(':');
+    notifyAt.setHours(parseInt(hm[0]), parseInt(hm[1]), 0, 0);
+    if (notifyAt < new Date()) {
+      alert('通知時間已經過了，請調整「提前天數」或「回診日期」');
+      return;
+    }
+    
+    if (!document.getElementById('rrConsent').checked) {
+      alert('請勾選同意接收 LINE 通知');
+      return;
+    }
+    
+    if (!lineUserId) {
+      alert('請先綁定 LINE 帳號');
+      return;
+    }
+    
+    document.getElementById('loading').style.display = 'flex';
+    document.getElementById('loadingText').innerText = '預約中...';
+    
+    var returnDateStr = returnDate.getFullYear() + '-' + 
+      String(returnDate.getMonth() + 1).padStart(2, '0') + '-' + 
+      String(returnDate.getDate()).padStart(2, '0');
+    
+    sendToGAS({
+      action: 'reserve_return_reminder',
+      lineUserId: lineUserId,
+      patientName: name,
+      phone: phone,
+      returnDate: returnDateStr,
+      daysAhead: _rrDaysAhead,
+      notifyTime: timeStr,
+      rxDate: document.getElementById('rrRxDate').value,
+      medDays: document.getElementById('rrDays').value,
+      times: document.getElementById('rrTimes').value
+    }).then(function(res) {
+      document.getElementById('loading').style.display = 'none';
+      if (res.status === 'success') {
+        // 切到成功頁，顯示預約資訊
+        showRRSuccess(res);
+      } else {
+        alert('預約失敗：' + (res.message || '未知錯誤'));
+      }
+    }).catch(function() {
+      document.getElementById('loading').style.display = 'none';
+      alert('連線失敗');
+    });
+  }
+  
+  function showRRSuccess(res) {
+    // 重複利用 success view
+    document.getElementById('view-return-reminder').classList.add('hidden-mode');
+    document.getElementById('view-success').classList.remove('hidden-mode');
+    
+    // 改 title/desc 為回診預約專用
+    var titleEl = document.getElementById('successTitle');
+    var descEl = document.getElementById('successDesc');
+    if (titleEl) titleEl.textContent = '✅ 回診提醒預約成功！';
+    if (descEl) descEl.textContent = '請查看 LINE 已收到的預約確認卡';
+    
+    // 用今日上傳數提示位置改顯示預約資訊
+    var banner = document.getElementById('todayCountBanner');
+    if (banner) {
+      banner.style.display = '';
+      document.getElementById('todayCountText').textContent = '📅 回診日：' + res.returnDate;
+    }
+    
+    // 觸發彩帶
+    setTimeout(triggerConfetti, 300);
+  }
 
   function fetchUploadHistory() {
     document.getElementById('uploadHistoryList').innerHTML = '<div class="text-center py-4">' + t('status.loading') + '</div>';
