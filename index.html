@@ -211,6 +211,22 @@
     .rr-preview { background: #E8F5E9; border: 1px dashed #06C755; border-radius: 10px; padding: 12px; margin-top: 12px; text-align: center; font-size: 0.88rem; color: #2E7D32; }
     .rr-preview b { color: #06C755; font-size: 1rem; }
     .rr-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    
+    /* ★ 既有預約列表 */
+    .rr-list-title { color: #E65100; font-weight: bold; font-size: 0.95rem; margin-bottom: 10px; display:flex; align-items:center; gap:6px; }
+    .rr-card { background: white; border: 1px solid #FFE0B2; border-radius: 12px; padding: 12px 14px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+    .rr-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed #FFE0B2; gap:8px; }
+    .rr-card-label { font-weight: bold; color: #E65100; font-size: 0.95rem; flex:1; word-break:break-all; }
+    .rr-card-actions { display: flex; gap: 4px; flex-shrink:0; }
+    .rr-action { border: 1px solid #ddd; background: white; padding: 4px 10px; border-radius: 14px; font-size: 0.75rem; cursor: pointer; white-space: nowrap; }
+    .rr-action.copy { color: #1976D2; border-color: #BBDEFB; }
+    .rr-action.copy:hover { background: #E3F2FD; }
+    .rr-action.cancel { color: #C62828; border-color: #FFCDD2; }
+    .rr-action.cancel:hover { background: #FFEBEE; }
+    .rr-card-row { display: flex; justify-content: space-between; font-size: 0.82rem; margin: 4px 0; gap:8px; }
+    .rr-card-key { color: #888; flex-shrink:0; }
+    .rr-card-val { color: #333; font-weight: 500; text-align:right; }
+    .rr-card-val.highlight { color: #E65100; font-weight: bold; }
   </style>
 </head>
 <body>
@@ -412,6 +428,24 @@
       <h5 class="fw-bold mb-1" style="color:#FB8C00;"><i class="bi bi-calendar-event"></i> <span data-i18n="rr.title">回診通知預約</span></h5>
       <p class="small text-muted mb-3" data-i18n="rr.subtitle">系統會在您指定的時間，透過 LINE 提醒您回診</p>
       
+      <!-- ★ 既有預約列表（有預約才顯示） -->
+      <div id="rrListSection" style="display:none;">
+        <div class="rr-list-title"><i class="bi bi-bookmark-fill"></i> <span data-i18n="rr.list.title">我目前的預約</span> <span class="badge bg-warning text-dark" id="rrListCount">0</span></div>
+        <div id="rrList"></div>
+        <button class="btn w-100 fw-bold py-2 mt-2" style="background:#FB8C00;color:white;" onclick="rrShowForm(null)">
+          <i class="bi bi-plus-circle"></i> <span data-i18n="rr.add.new">新增一筆回診預約</span>
+        </button>
+      </div>
+      
+      <!-- 表單區 -->
+      <div id="rrFormSection">
+        <!-- 從列表進來時的「返回」按鈕 -->
+        <div id="rrBackToListBtn" style="display:none; margin-bottom:12px;">
+          <button class="btn btn-sm btn-outline-secondary" onclick="rrLoadList()">
+            <i class="bi bi-arrow-left"></i> <span data-i18n="rr.back.list">返回預約清單</span>
+          </button>
+        </div>
+      
       <!-- 方式切換 -->
       <div class="rr-tabs">
         <button class="rr-tab active" id="rrTabAuto" onclick="rrSwitchTab('auto')" data-i18n="rr.tab.auto">📐 自動計算</button>
@@ -477,9 +511,16 @@
       <div class="mb-2"><label class="form-label small fw-bold" data-i18n="upload.name.label">病人姓名</label><input type="text" class="form-control" id="rrName" placeholder="請輸入病人姓名"></div>
       <div class="mb-3"><label class="form-label small fw-bold" data-i18n="upload.phone.label">聯絡電話</label><input type="tel" class="form-control" id="rrPhone" placeholder="請輸入手機號碼"></div>
       
+      <!-- ★ 醫院 / 科別（選填）-->
+      <div class="rr-section-title" data-i18n="rr.optional.title">🏥 醫院／科別（選填）</div>
+      <div class="small text-muted mb-2" style="line-height:1.5;" data-i18n="rr.optional.hint">同時要回診多家醫院或多個科別時，可清楚註明（不寫也可以）</div>
+      <div class="mb-2"><input type="text" class="form-control" id="rrHospital" data-i18n-ph="rr.hospital.ph" placeholder="醫院名稱（例如：成大、奇美…）" maxlength="80"></div>
+      <div class="mb-3"><input type="text" class="form-control" id="rrDept" data-i18n-ph="rr.dept.ph" placeholder="科別（例如：心臟科、骨科…）" maxlength="80"></div>
+      
       <div class="form-check mb-4"><input class="form-check-input" type="checkbox" id="rrConsent"><label class="form-check-label text-muted small" for="rrConsent" data-i18n="rr.consent">我同意透過 LINE 接收回診提醒</label></div>
       
       <button class="btn w-100 fw-bold py-2 shadow-sm fs-5" style="background:#FB8C00;color:white;" onclick="rrSubmit()"><i class="bi bi-calendar-check"></i> <span data-i18n="rr.submit">預約回診通知</span></button>
+      </div> <!-- ★ close rrFormSection -->
     </div>
   </div>
 
@@ -673,7 +714,11 @@
       'rr.preview.label': '將於', 'rr.preview.push': '用 LINE 推送提醒',
       'rr.person': '👤 領藥人資料',
       'rr.consent': '我同意透過 LINE 接收回診提醒',
-      'rr.submit': '預約回診通知'
+      'rr.submit': '預約回診通知',
+      'rr.optional.title': '🏥 醫院／科別（選填）',
+      'rr.optional.hint': '同時要回診多家醫院或多個科別時，可清楚註明（不寫也可以）',
+      'rr.hospital.ph': '醫院名稱（例如：成大、奇美…）',
+      'rr.dept.ph': '科別（例如：心臟科、骨科…）'
     },
     'vi': {
       'brand.subtitle': 'Hiệu Thuốc Lawson · Dịch Vụ Đám Mây',
@@ -748,7 +793,11 @@
       'rr.preview.label': 'Sẽ nhắc lúc', 'rr.preview.push': 'qua LINE',
       'rr.person': '👤 Thông tin bệnh nhân',
       'rr.consent': 'Tôi đồng ý nhận nhắc tái khám qua LINE',
-      'rr.submit': 'Đặt lịch nhắc'
+      'rr.submit': 'Đặt lịch nhắc',
+      'rr.optional.title': '🏥 Bệnh viện / Khoa (Tùy chọn)',
+      'rr.optional.hint': 'Nếu cần tái khám nhiều bệnh viện/khoa, ghi rõ cho dễ phân biệt (không bắt buộc)',
+      'rr.hospital.ph': 'Tên bệnh viện',
+      'rr.dept.ph': 'Khoa'
     },
     'en': {
       'brand.subtitle': 'Lawson Pharmacy · Cloud Service',
@@ -826,7 +875,11 @@
       'rr.preview.label': 'Will notify at', 'rr.preview.push': 'via LINE',
       'rr.person': '👤 Patient Info',
       'rr.consent': 'I agree to receive return visit reminders via LINE',
-      'rr.submit': 'Reserve Return Reminder'
+      'rr.submit': 'Reserve Return Reminder',
+      'rr.optional.title': '🏥 Hospital / Department (Optional)',
+      'rr.optional.hint': 'If you need to visit multiple hospitals or departments, enter for clarity (optional)',
+      'rr.hospital.ph': 'Hospital name (e.g., CKHC, Chimei…)',
+      'rr.dept.ph': 'Department (e.g., Cardiology, Orthopedics…)'
     },
     'id': {
       'brand.subtitle': 'Apotek Lawson · Layanan Cloud',
@@ -901,7 +954,11 @@
       'rr.preview.label': 'Akan mengingatkan', 'rr.preview.push': 'via LINE',
       'rr.person': '👤 Data Pasien',
       'rr.consent': 'Saya setuju menerima pengingat kontrol via LINE',
-      'rr.submit': 'Pesan Pengingat'
+      'rr.submit': 'Pesan Pengingat',
+      'rr.optional.title': '🏥 RS / Departemen (Opsional)',
+      'rr.optional.hint': 'Jika perlu kontrol di beberapa RS/departemen, isi untuk lebih jelas (opsional)',
+      'rr.hospital.ph': 'Nama Rumah Sakit',
+      'rr.dept.ph': 'Departemen'
     }
   };
 
@@ -1531,25 +1588,171 @@
   // ═══════════════════════════════════════════════════════════
   var _rrMode = 'auto';
   var _rrDaysAhead = 1;
+  var _rrReminders = [];  // 暫存從後端取回的清單
   
   function openReturnReminder() {
     goHome();
     document.getElementById('view-home').classList.add('hidden-mode');
     document.getElementById('view-return-reminder').classList.remove('hidden-mode');
     
-    // 預設處方開立日 = 今天
+    // 進入時優先載入既有預約清單
+    rrLoadList();
+  }
+  
+  // ★ 載入這位 LINE 使用者的所有 pending 預約
+  function rrLoadList() {
+    var listSec = document.getElementById('rrListSection');
+    var formSec = document.getElementById('rrFormSection');
+    
+    if (!lineUserId || !lineUserId.startsWith('U')) {
+      // 沒 LINE UID 直接顯示表單
+      rrShowForm(null);
+      return;
+    }
+    
+    document.getElementById('loading').style.display = 'flex';
+    document.getElementById('loadingText').innerText = '載入預約清單...';
+    
+    sendToGAS({ action: 'list_return_reminders', lineUserId: lineUserId })
+      .then(function(res) {
+        document.getElementById('loading').style.display = 'none';
+        if (res.status === 'success' && res.reminders && res.reminders.length > 0) {
+          _rrReminders = res.reminders;
+          rrRenderList(res.reminders);
+          listSec.style.display = '';
+          formSec.style.display = 'none';
+        } else {
+          // 沒既有預約 → 直接顯示新增表單
+          rrShowForm(null);
+        }
+      })
+      .catch(function() {
+        document.getElementById('loading').style.display = 'none';
+        rrShowForm(null); // 失敗就退回表單
+      });
+  }
+  
+  function rrRenderList(reminders) {
+    document.getElementById('rrListCount').textContent = reminders.length + ' 筆';
+    
+    var html = reminders.map(function(r) {
+      var label = '';
+      if (r.hospital && r.dept) label = r.hospital + ' · ' + r.dept;
+      else if (r.hospital) label = r.hospital;
+      else if (r.dept) label = r.dept;
+      else label = (r.patientName || '預約') + ' 回診';
+      
+      var hospitalLine = (r.hospital || r.dept)
+        ? '<div class="rr-card-row"><span class="rr-card-key">病人</span><span class="rr-card-val">' + escapeHTML(r.patientName) + '</span></div>'
+        : '';
+      
+      return '<div class="rr-card">' +
+        '<div class="rr-card-header">' +
+          '<div class="rr-card-label">🏥 ' + escapeHTML(label) + '</div>' +
+          '<div class="rr-card-actions">' +
+            '<button class="rr-action copy" onclick="rrCopy(' + r.rowIndex + ')">📋 複製</button>' +
+            '<button class="rr-action cancel" onclick="rrCancel(' + r.rowIndex + ')">✖ 取消</button>' +
+          '</div>' +
+        '</div>' +
+        hospitalLine +
+        '<div class="rr-card-row"><span class="rr-card-key">📅 回診日</span><span class="rr-card-val highlight">' + escapeHTML(r.returnDate) + '</span></div>' +
+        '<div class="rr-card-row"><span class="rr-card-key">🔔 LINE 通知</span><span class="rr-card-val">' + escapeHTML(r.planAt) + ' (前 ' + r.daysAhead + ' 天)</span></div>' +
+      '</div>';
+    }).join('');
+    
+    document.getElementById('rrList').innerHTML = html;
+  }
+  
+  // ★ 取消某筆預約
+  function rrCancel(rowIndex) {
+    if (!confirm('確定要取消這筆回診預約嗎？\n取消後將不會再收到 LINE 提醒。')) return;
+    
+    document.getElementById('loading').style.display = 'flex';
+    document.getElementById('loadingText').innerText = '取消中...';
+    
+    sendToGAS({ action: 'cancel_return_reminder', lineUserId: lineUserId, rowIndex: rowIndex })
+      .then(function(res) {
+        document.getElementById('loading').style.display = 'none';
+        if (res.status === 'success') {
+          rrLoadList(); // 重新載入
+        } else {
+          alert('取消失敗：' + (res.message || '未知錯誤'));
+        }
+      })
+      .catch(function() {
+        document.getElementById('loading').style.display = 'none';
+        alert('連線失敗');
+      });
+  }
+  
+  // ★ 複製某筆預約到新增表單
+  function rrCopy(rowIndex) {
+    rrShowForm(rowIndex);
+  }
+  
+  // ★ 顯示新增表單（copyFromRowIndex 不為 null 時從某筆複製欄位）
+  function rrShowForm(copyFromRowIndex) {
+    document.getElementById('rrListSection').style.display = 'none';
+    document.getElementById('rrFormSection').style.display = '';
+    
+    // 如果有既有預約清單，顯示「返回清單」按鈕
+    document.getElementById('rrBackToListBtn').style.display = (_rrReminders.length > 0) ? '' : 'none';
+    
     var today = new Date();
     var todayStr = today.toISOString().split('T')[0];
+    
+    if (copyFromRowIndex) {
+      // 從某筆複製
+      var src = _rrReminders.find(function(r) { return r.rowIndex === copyFromRowIndex; });
+      if (src) {
+        document.getElementById('rrName').value = src.patientName || '';
+        document.getElementById('rrPhone').value = src.phone || '';
+        document.getElementById('rrHospital').value = src.hospital || '';
+        document.getElementById('rrDept').value = src.dept || '';
+        document.getElementById('rrTime').value = src.notifyTime || '09:00';
+        document.getElementById('rrConsent').checked = false;
+        
+        // 切到「直接輸入」模式（複製場景通常是新的日期）
+        rrSwitchTab('manual');
+        
+        // 預設新回診日 = 原本回診日 + 7 天（避免一樣的日期）
+        var src_rd = new Date(String(src.returnDate).replace(/\//g, '-'));
+        if (!isNaN(src_rd.getTime())) {
+          src_rd.setDate(src_rd.getDate() + 7);
+          var newDateStr = src_rd.getFullYear() + '-' + String(src_rd.getMonth() + 1).padStart(2, '0') + '-' + String(src_rd.getDate()).padStart(2, '0');
+          document.getElementById('rrManualDate').value = newDateStr;
+        } else {
+          document.getElementById('rrManualDate').value = '';
+        }
+        
+        rrSetDaysAhead(src.daysAhead || 1);
+        rrCalc();
+        
+        // 提示已複製
+        setTimeout(function() {
+          alert('已從上一筆預約複製：\n👤 ' + (src.patientName || '') + 
+                (src.hospital ? '\n🏥 ' + src.hospital : '') +
+                (src.dept ? '\n👨‍⚕️ ' + src.dept : '') +
+                '\n\n請修改「回診日」或其他資訊後送出。');
+        }, 100);
+        return;
+      }
+    }
+    
+    // 全新建立：重設所有欄位
     document.getElementById('rrRxDate').value = todayStr;
     document.getElementById('rrDays').value = '28';
     document.getElementById('rrTimes').value = '3';
     document.getElementById('rrManualDate').value = '';
+    document.getElementById('rrHospital').value = '';
+    document.getElementById('rrDept').value = '';
     document.getElementById('rrConsent').checked = false;
+    document.getElementById('rrTime').value = '09:00';
     
-    // 自動帶入上次 profile（沿用 lawsonProfiles）
+    // 自動帶入 profile
     var data = getProfiles();
     if (data.profiles && data.profiles.length > 0) {
-      var p = data.profiles[0]; // 最近使用的
+      var p = data.profiles[0];
       document.getElementById('rrName').value = p.name || '';
       document.getElementById('rrPhone').value = p.phone || '';
     } else {
@@ -1558,6 +1761,7 @@
     }
     
     rrSwitchTab('auto');
+    rrSetDaysAhead(1);
     rrCalc();
   }
   
@@ -1680,7 +1884,9 @@
       notifyTime: timeStr,
       rxDate: document.getElementById('rrRxDate').value,
       medDays: document.getElementById('rrDays').value,
-      times: document.getElementById('rrTimes').value
+      times: document.getElementById('rrTimes').value,
+      hospital: document.getElementById('rrHospital').value.trim(),
+      dept: document.getElementById('rrDept').value.trim()
     }).then(function(res) {
       document.getElementById('loading').style.display = 'none';
       if (res.status === 'success') {
@@ -1706,11 +1912,27 @@
     if (titleEl) titleEl.textContent = '✅ 回診提醒預約成功！';
     if (descEl) descEl.textContent = '請查看 LINE 已收到的預約確認卡';
     
+    // ★ 回診預約場景：藥局資訊卡用不到，隱藏
+    var pcard = document.getElementById('pharmacyCard');
+    if (pcard) pcard.style.display = 'none';
+    
     // 用今日上傳數提示位置改顯示預約資訊
     var banner = document.getElementById('todayCountBanner');
     if (banner) {
       banner.style.display = '';
       document.getElementById('todayCountText').textContent = '📅 回診日：' + res.returnDate;
+    }
+    
+    // ★ 把「分享給家人」按鈕改成「📋 返回我的預約」
+    var shareBtn = document.getElementById('shareBtn');
+    if (shareBtn) {
+      shareBtn.innerHTML = '<i class="bi bi-list-check"></i> 📋 返回我的預約清單';
+      shareBtn.onclick = function() {
+        document.getElementById('view-success').classList.add('hidden-mode');
+        document.getElementById('view-return-reminder').classList.remove('hidden-mode');
+        rrLoadList();
+      };
+      shareBtn.style.background = '#FB8C00';
     }
     
     // 觸發彩帶
@@ -2089,7 +2311,18 @@
       banner.style.display = 'none';
     }
     
-    // 藥局資訊
+    // 藥局資訊（若先前因回診預約被隱藏，這裡恢復顯示）
+    var pcard = document.getElementById('pharmacyCard');
+    if (pcard) pcard.style.display = '';
+    
+    // ★ 還原「分享給家人」按鈕（回診預約成功頁會改它）
+    var shareBtn = document.getElementById('shareBtn');
+    if (shareBtn) {
+      shareBtn.innerHTML = '<i class="bi bi-share-fill"></i> <span data-i18n="success.share">' + t('success.share') + '</span>';
+      shareBtn.onclick = shareToFamily;
+      shareBtn.style.background = '#00B900';
+    }
+    
     document.getElementById('pharmacyName').textContent = PHARMACY_INFO.name;
     document.getElementById('pharmacyAddr').textContent = PHARMACY_INFO.address;
     document.getElementById('pharmacyPhone').textContent = PHARMACY_INFO.phone;
