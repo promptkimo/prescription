@@ -265,8 +265,8 @@
           </button>
           <!-- ★ 回診通知預約 -->
           <button class="menu-btn" onclick="openReturnReminder()">
-            <i class="bi bi-calendar-event-fill menu-icon-emoji" style="font-size:2.5rem;color:#FB8C00;"></i>
-            <span data-i18n="home.button.return">📅 回診通知預約</span>
+            <img src="https://promptkimo.github.io/prescription/phone.png" class="menu-icon" alt="回診通知" onerror="this.style.display='none'">
+            <span data-i18n="home.button.return">回診通知預約</span>
           </button>
           <button class="menu-btn" onclick="openMedHistory()" style="display:none;">
             <img src="4.png" class="menu-icon" alt="雲端藥歷" onerror="this.style.display='none'">
@@ -544,6 +544,22 @@
   </div>
 </div>
 
+<!-- ★ 伺服器端重複上傳警告 modal -->
+<div id="srvDupModal" class="confirm-overlay">
+  <div class="confirm-card">
+    <h5 style="color:#FF6F00;">⚠️ 偵測到重複上傳</h5>
+    <p class="small text-muted" style="line-height:1.6;">您 <b id="srvDupMins" style="color:#FF6F00;font-size:1.1em;">0</b> 分鐘前剛上傳過資料，藥局已經收到了。</p>
+    <div class="confirm-row"><span class="label">上傳時間</span><span class="val" id="srvDupTime"></span></div>
+    <div class="confirm-row"><span class="label">病人姓名</span><span class="val" id="srvDupName"></span></div>
+    <div class="confirm-row"><span class="label">目前狀態</span><span class="val" id="srvDupStatus"></span></div>
+    <p class="small text-muted mt-2" style="line-height:1.5;">💡 不用再次上傳。藥師正在處理中，請耐心等候 LINE 通知。</p>
+    <div class="btn-row">
+      <button class="btn-confirm" style="background:#06C755;" onclick="closeSrvDupModal()">👍 知道了</button>
+      <button class="btn-back" style="background:#FFE0B2;color:#E65100;" onclick="srvDupContinueAnyway()">這是新處方，仍要上傳</button>
+    </div>
+  </div>
+</div>
+
 <!-- ★ 慶祝彩帶（#9）：動態插入 div.confetti -->
 
 <!-- ★ 照片品質警告 modal -->
@@ -645,7 +661,7 @@
       'relation.label.ph': '關係名稱（例如：爸爸、阿公、姪子）',
       'relation.required': '請填寫關係名稱（例如：爸爸、阿公）',
             'profile.del.confirm': '要刪除這筆紀錄嗎？',
-      'home.button.return': '📅 回診通知預約',
+      'home.button.return': '回診通知預約',
       'rr.title': '回診通知預約',
       'rr.subtitle': '系統會在您指定的時間，透過 LINE 提醒您回診',
       'rr.tab.auto': '📐 自動計算', 'rr.tab.manual': '📅 直接輸入',
@@ -720,7 +736,7 @@
       'relation.label.ph': 'Quan hệ (vd: Bố, Ông, Cháu)',
       'relation.required': 'Vui lòng nhập tên quan hệ',
             'profile.del.confirm': 'Xoá bản ghi này?',
-      'home.button.return': '📅 Đặt lịch nhắc tái khám',
+      'home.button.return': 'Đặt lịch nhắc tái khám',
       'rr.title': 'Đặt lịch nhắc tái khám',
       'rr.subtitle': 'Hệ thống sẽ nhắc qua LINE vào thời điểm bạn chọn',
       'rr.tab.auto': '📐 Tính tự động', 'rr.tab.manual': '📅 Nhập trực tiếp',
@@ -798,7 +814,7 @@
       'relation.label.ph': 'Relation (e.g., Father, Grandpa, Nephew)',
       'relation.required': 'Please enter the relationship name',
             'profile.del.confirm': 'Delete this saved entry?',
-      'home.button.return': '📅 Return Visit Reminder',
+      'home.button.return': 'Return Visit Reminder',
       'rr.title': 'Return Visit Reminder',
       'rr.subtitle': 'You will get a LINE notification at your chosen time',
       'rr.tab.auto': '📐 Auto Calculate', 'rr.tab.manual': '📅 Direct Input',
@@ -873,7 +889,7 @@
       'relation.label.ph': 'Hubungan (mis: Ayah, Kakek, Keponakan)',
       'relation.required': 'Mohon isi nama hubungan',
             'profile.del.confirm': 'Hapus catatan ini?',
-      'home.button.return': '📅 Pengingat Kontrol Ulang',
+      'home.button.return': 'Pengingat Kontrol Ulang',
       'rr.title': 'Pengingat Kontrol Ulang',
       'rr.subtitle': 'Sistem akan mengingatkan via LINE pada waktu yang Anda pilih',
       'rr.tab.auto': '📐 Hitung Otomatis', 'rr.tab.manual': '📅 Input Langsung',
@@ -1993,9 +2009,15 @@
     }
   }
   
-  function _doSubmit(name, phone, hashes) {
+  // ★ 全域：儲存上次提交資料，供「確認覆蓋」重送
+  var _lastSubmitContext = null;
+  
+  function _doSubmit(name, phone, hashes, confirmDuplicate) {
     document.getElementById('loading').style.display = 'flex';
     document.getElementById('loadingText').innerText = '資料上傳中...';
+    
+    // 紀錄上次 submit context 供「繼續上傳」按鈕用
+    _lastSubmitContext = { name: name, phone: phone, hashes: hashes };
     
     sendToGAS({ 
       action: "upload", 
@@ -2007,26 +2029,49 @@
       fileDataArray: uploadedImages.map(i=>i.base64), 
       isRegister: false, 
       dept: "一般", 
-      notify: "LINE通知" 
+      notify: "LINE通知",
+      confirmDuplicate: confirmDuplicate === true
     })
     .then(res => {
       document.getElementById('loading').style.display = 'none';
+      
+      // ★ 伺服器端重複偵測
+      if (res.status === 'duplicate') {
+        showServerDuplicateModal(res);
+        return;
+      }
+      
       if(res.status === 'success') { 
-        // 記錄已上傳的 hash 避免短時間內重複
         if (hashes && hashes.length > 0) recordUploads(hashes);
-        // 啟動 60 秒送出鎖
         startSubmitLock();
-        // ★ 儲存 profile 給下次使用
         persistCurrentProfile(name, phone);
-        
         showSuccessView(res.todayCount || 0);
-        // ★ 觸發彩帶慶祝
         setTimeout(triggerConfetti, 300);
       } else { alert(res.message); }
     }).catch(() => { 
       document.getElementById('loading').style.display = 'none'; 
       alert(t('err.connection')); 
     });
+  }
+  
+  // ★ 顯示伺服器重複上傳警告
+  function showServerDuplicateModal(res) {
+    var p = res.previousUpload || {};
+    document.getElementById('srvDupMins').textContent = p.minutes || 0;
+    document.getElementById('srvDupTime').textContent = p.time || '—';
+    document.getElementById('srvDupName').textContent = p.patientName || '—';
+    document.getElementById('srvDupStatus').textContent = p.status || '處理中';
+    document.getElementById('srvDupModal').classList.add('show');
+  }
+  function closeSrvDupModal() {
+    document.getElementById('srvDupModal').classList.remove('show');
+  }
+  // 病患確認「這是新處方箋，仍要上傳」 → 帶 confirmDuplicate=true 重送
+  function srvDupContinueAnyway() {
+    closeSrvDupModal();
+    if (_lastSubmitContext) {
+      _doSubmit(_lastSubmitContext.name, _lastSubmitContext.phone, _lastSubmitContext.hashes, true);
+    }
   }
   
   // ★ 顯示成功頁（含暖心提示）
